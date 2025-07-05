@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        max-width: 450px;
+        width: 100%;
+        padding: 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .auth-logo {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-logo i {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 2px solid #eee;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        background-color: #eee;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .strength-weak { background-color: #dc3545; width: 33%; }
+    .strength-medium { background-color: #ffc107; width: 66%; }
+    .strength-strong { background-color: #28a745; width: 100%; }
+
+    .alert-custom {
+        border-radius: 8px;
+        border: none;
+    }
+
+    .terms-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <i class="fas fa-user-plus"></i>
+            <h2 class="fw-bold text-dark">회원가입</h2>
+            <p class="text-muted">새로운 계정을 만들어보세요</p>
+        </div>
+
+        <!-- 오류 메시지 -->
+        <div id="alert-container"></div>
+
+        <!-- 회원가입 폼 -->
+        <form id="registerForm">
+            <div class="mb-3">
+                <label for="email" class="form-label fw-semibold">이메일 <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" id="email" name="email" required
+                       placeholder="이메일을 입력하세요">
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label fw-semibold">비밀번호 <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="password" name="password" required
+                       placeholder="비밀번호를 입력하세요" minlength="8">
+                <div class="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <small class="text-muted" id="strengthText">최소 8자 이상, 숫자와 특수문자 포함</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="passwordConfirm" class="form-label fw-semibold">비밀번호 확인 <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required
+                       placeholder="비밀번호를 다시 입력하세요">
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                <label class="form-check-label terms-text" for="agreeTerms">
+                    <a href="#" class="text-decoration-none">이용약관</a> 및 <a href="#" class="text-decoration-none">개인정보처리방침</a>에 동의합니다 <span class="text-danger">*</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-auth mb-3">
+                <i class="fas fa-user-plus me-2"></i>계정 만들기
+            </button>
+        </form>
+
+        <div class="text-center">
+            <p class="mb-0">이미 계정이 있으신가요? <a href="/auth/login" class="text-decoration-none">로그인</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 비밀번호 강도 체크
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+
+    let strength = 0;
+    let message = '';
+
+    if (password.length >= 8) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+
+    strengthFill.className = 'strength-fill';
+
+    if (strength < 2) {
+        strengthFill.classList.add('strength-weak');
+        message = '약함 - 더 복잡한 비밀번호를 사용하세요';
+    } else if (strength < 3) {
+        strengthFill.classList.add('strength-medium');
+        message = '보통 - 특수문자나 대문자를 추가하세요';
+    } else {
+        strengthFill.classList.add('strength-strong');
+        message = '강함 - 안전한 비밀번호입니다';
+    }
+
+    strengthText.textContent = message;
+});
+
+// 비밀번호 확인 체크
+document.getElementById('passwordConfirm').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+
+    if (confirmPassword && password !== confirmPassword) {
+        this.classList.add('is-invalid');
+        this.nextElementSibling.textContent = '비밀번호가 일치하지 않습니다';
+    } else {
+        this.classList.remove('is-invalid');
+        this.nextElementSibling.textContent = '';
+    }
+});
+
+// 폼 제출 처리
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('passwordConfirm');
+
+    // 비밀번호 확인
+    if (password !== passwordConfirm) {
+        showAlert('danger', '비밀번호가 일치하지 않습니다.');
+        return;
+    }
+
+    const data = {
+        email: formData.get('email'),
+        password: password,
+        password_confirm: passwordConfirm
+    };
+
+    try {
+        const response = await fetch('/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            showAlert('success', '회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 2000);
+        } else {
+            // 오류 메시지 처리 개선
+            let errorMessage = '회원가입에 실패했습니다.';
+
+            // API 응답의 message 필드 우선 확인
+            if (result.message) {
+                errorMessage = result.message;
+            } else if (result.detail) {
+                if (typeof result.detail === 'string') {
+                    errorMessage = result.detail;
+                } else if (Array.isArray(result.detail)) {
+                    // 유효성 검사 오류의 경우
+                    errorMessage = result.detail.map(err => err.msg || err.message || err).join(', ');
+                } else if (typeof result.detail === 'object') {
+                    errorMessage = Object.values(result.detail).join(', ') || '알 수 없는 오류가 발생했습니다.';
+                }
+            } else if (result.error) {
+                errorMessage = result.error;
+            }
+
+            showAlert('danger', errorMessage);
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showAlert('danger', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+});
+
+function showAlert(type, message) {
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-custom alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

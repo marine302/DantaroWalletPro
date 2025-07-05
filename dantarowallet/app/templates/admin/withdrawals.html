@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Withdrawals - DantaroWallet Admin{% endblock %}
+
+{% block content %}
+<h2>Withdrawal Management</h2>
+
+<!-- 상태 필터 -->
+<div class="search-box">
+    <select onchange="window.location.href='?status=' + this.value">
+        <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="processing" {% if current_status == 'processing' %}selected{% endif %}>Processing</option>
+        <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+</div>
+
+<!-- 출금 테이블 -->
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>To Address</th>
+                <th>Status</th>
+                <th>Requested</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in withdrawals %}
+            <tr>
+                <td>{{ item.withdrawal.id }}</td>
+                <td>{{ item.user.email }}</td>
+                <td>${{ "%.2f"|format(item.withdrawal.amount) }}</td>
+                <td>${{ "%.2f"|format(item.withdrawal.fee if item.withdrawal.fee else 0) }}</td>
+                <td title="{{ item.withdrawal.to_address }}">
+                    {{ item.withdrawal.to_address[:8] }}...{{ item.withdrawal.to_address[-6:] }}
+                </td>
+                <td>
+                    <span class="status-badge status-{{ item.withdrawal.status }}">
+                        {{ item.withdrawal.status|upper }}
+                    </span>
+                </td>
+                <td>{{ item.withdrawal.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if item.withdrawal.status == 'pending' %}
+                    <button class="btn btn-small btn-success" onclick="alert('Processing feature not implemented yet')">
+                        Approve
+                    </button>
+                    <button class="btn btn-small btn-danger" onclick="alert('Rejection feature not implemented yet')">
+                        Reject
+                    </button>
+                    {% elif item.withdrawal.status == 'processing' %}
+                    <span style="color: #f39c12;">Processing...</span>
+                    {% elif item.withdrawal.status == 'completed' %}
+                    {% if item.withdrawal.tx_hash %}
+                    <a href="https://tronscan.org/#/transaction/{{ item.withdrawal.tx_hash }}"
+                       target="_blank" class="btn btn-small">View TX</a>
+                    {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

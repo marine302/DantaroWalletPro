@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - DantaroWallet Admin{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<!-- 통계 카드 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.active_users }}</div>
+        <div class="stat-label">Active Users</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value">${{ "%.2f"|format(stats.total_balance) }}</div>
+        <div class="stat-label">Total Balance</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.pending_withdrawals }}</div>
+        <div class="stat-label">Pending Withdrawals</div>
+    </div>
+</div>
+
+<!-- 오늘의 활동 -->
+<div class="card">
+    <h3>Today's Activity</h3>
+    <div class="stats-grid" style="margin-top: 1rem;">
+        <div>
+            <strong>Deposits:</strong> {{ stats.today_deposits.count }}
+            (${{"%.2f"|format(stats.today_deposits.amount)}})
+        </div>
+        <div>
+            <strong>Withdrawals:</strong> {{ stats.today_withdrawals.count }}
+            (${{"%.2f"|format(stats.today_withdrawals.amount)}})
+        </div>
+    </div>
+</div>
+
+<!-- 시스템 상태 -->
+<div class="card">
+    <h3>System Health</h3>
+    <div style="margin-top: 1rem;">
+        <strong>Overall Status:</strong>
+        <span class="status-badge status-{{ health.status }}">{{ health.status|upper }}</span>
+    </div>
+
+    <table style="margin-top: 1rem;">
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Status</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for name, check in health.checks.items() %}
+            <tr>
+                <td>{{ name|title }}</td>
+                <td>
+                    <span class="status-badge status-{{ check.status }}">
+                        {{ check.status|upper }}
+                    </span>
+                </td>
+                <td>{{ check.message }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 최근 활동 -->
+<div class="card">
+    <h3>Recent Activities</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Details</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in activities %}
+            <tr>
+                <td>
+                    <span class="status-badge status-{{ activity.type }}">
+                        {{ activity.type|upper }}
+                    </span>
+                </td>
+                <td>${{ "%.2f"|format(activity.amount) }}</td>
+                <td>{{ activity.details }}</td>
+                <td>{{ activity.time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

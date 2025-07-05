@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}설정 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .settings-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .settings-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .settings-section {
+        border-bottom: 1px solid #eee;
+        padding: 1.5rem 0;
+    }
+
+    .settings-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #667eea;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 페이지 헤더 -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-cog me-2"></i>
+                    설정
+                </h1>
+                <p class="mb-0 opacity-75">계정 및 보안 설정을 관리하세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- 계정 설정 -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        계정 설정
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="settings-section">
+                        <div class="section-title">이메일 주소</div>
+                        <div class="section-description">현재 로그인에 사용 중인 이메일 주소입니다.</div>
+                        <div class="input-group">
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="section-title">비밀번호 변경</div>
+                        <div class="section-description">보안을 위해 정기적으로 비밀번호를 변경해주세요.</div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-key me-1"></i>
+                            비밀번호 변경
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 보안 설정 -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        보안 설정
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="settings-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="section-title">2단계 인증 (2FA)</div>
+                                <div class="section-description">추가 보안을 위해 2단계 인증을 활성화합니다.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="section-title">이메일 알림</div>
+                                <div class="section-description">중요한 거래 및 보안 알림을 이메일로 받습니다.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="section-title">활성 세션</div>
+                        <div class="section-description">현재 로그인된 기기 및 세션을 관리합니다.</div>
+                        <button class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            모든 기기에서 로그아웃
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 지갑 설정 -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-wallet me-2"></i>
+                        지갑 설정
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="settings-section">
+                        <div class="section-title">TRON 지갑 주소</div>
+                        <div class="section-description">
+                            {% if current_user.tron_address %}
+                                현재 연결된 TRON 지갑 주소입니다.
+                            {% else %}
+                                TRON 지갑 주소가 연결되지 않았습니다.
+                            {% endif %}
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   value="{{ current_user.tron_address or '지갑 주소가 없습니다' }}" readonly>
+                            <button class="btn btn-outline-primary" type="button">
+                                {% if current_user.tron_address %}
+                                    <i class="fas fa-copy"></i>
+                                {% else %}
+                                    <i class="fas fa-plus"></i>
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="section-title">자동 백업</div>
+                                <div class="section-description">지갑 데이터를 정기적으로 백업합니다.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 위험 구역 -->
+            <div class="card settings-card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        위험 구역
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="settings-section">
+                        <div class="section-title text-danger">계정 삭제</div>
+                        <div class="section-description">
+                            계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                        </div>
+                        <button class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>
+                            계정 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="/dashboard/" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    대시보드로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

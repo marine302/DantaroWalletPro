@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .bg-primary-gradient { background: linear-gradient(45deg, #007bff, #0056b3); }
+    .bg-success-gradient { background: linear-gradient(45deg, #28a745, #1e7e34); }
+    .bg-warning-gradient { background: linear-gradient(45deg, #ffc107, #d39e00); }
+    .bg-info-gradient { background: linear-gradient(45deg, #17a2b8, #117a8b); }
+
+    .balance-display {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .currency-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .action-card {
+        border: none;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .action-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    .transaction-item {
+        border-bottom: 1px solid #eee;
+        padding: 1rem 0;
+    }
+
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+
+    .transaction-type {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .transaction-amount {
+        font-weight: bold;
+    }
+
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+    }
+
+    .refresh-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 대시보드 헤더 -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">안녕하세요! 👋</h1>
+                <p class="mb-0 opacity-75">오늘도 안전한 거래를 시작해보세요</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-light btn-sm" onclick="refreshBalance()">
+                    <i class="fas fa-sync-alt me-1"></i>잔고 새로고침
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 잔고 현황 -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-primary-gradient me-3">
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="currency-label">TRX 잔고</div>
+                            <div class="balance-display text-primary" id="trx-balance">
+                                {{ user_balance.trx_balance or "0.00" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-success-gradient me-3">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="currency-label">USDT 잔고</div>
+                            <div class="balance-display text-success" id="usdt-balance">
+                                {{ user_balance.usdt_balance or "0.00" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-info-gradient mx-auto mb-2">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <h6 class="card-title">총 입금</h6>
+                    <h4 class="text-info mb-0">{{ wallet_stats.total_deposits or "0" }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-warning-gradient mx-auto mb-2">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <h6 class="card-title">총 출금</h6>
+                    <h4 class="text-warning mb-0">{{ wallet_stats.total_withdrawals or "0" }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-success-gradient mx-auto mb-2">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h6 class="card-title">완료된 거래</h6>
+                    <h4 class="text-success mb-0">{{ wallet_stats.completed_transactions or "0" }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-primary-gradient mx-auto mb-2">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h6 class="card-title">마지막 거래</h6>
+                    <small class="text-muted">{{ wallet_stats.last_transaction_date or "없음" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 빠른 액션 -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>빠른 액션
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="action-card p-3 text-center" onclick="showDepositModal()">
+                                <i class="fas fa-plus-circle text-success mb-2" style="font-size: 2rem;"></i>
+                                <div class="fw-semibold">입금</div>
+                                <small class="text-muted">자산 입금</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="action-card p-3 text-center" onclick="showWithdrawModal()">
+                                <i class="fas fa-minus-circle text-danger mb-2" style="font-size: 2rem;"></i>
+                                <div class="fw-semibold">출금</div>
+                                <small class="text-muted">자산 출금</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 잔고 차트 -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>잔고 변화
+                    </h5>
+                    <button class="btn btn-sm btn-outline-secondary refresh-btn" onclick="refreshChart()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 거래 내역 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>최근 거래 내역
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                        {% for transaction in recent_transactions %}
+                        <div class="transaction-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <div class="transaction-type
+                                        {% if transaction.transaction_type == 'deposit' %}text-success{% endif %}
+                                        {% if transaction.transaction_type == 'withdrawal' %}text-danger{% endif %}">
+                                        {% if transaction.transaction_type == 'deposit' %}
+                                            <i class="fas fa-arrow-down me-1"></i>입금
+                                        {% else %}
+                                            <i class="fas fa-arrow-up me-1"></i>출금
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="transaction-amount">
+                                        {{ transaction.amount }} {{ transaction.asset }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="status-badge
+                                        {% if transaction.status == 'completed' %}bg-success text-white{% endif %}
+                                        {% if transaction.status == 'pending' %}bg-warning text-dark{% endif %}
+                                        {% if transaction.status == 'failed' %}bg-danger text-white{% endif %}">
+                                        {{ transaction.status }}
+                                    </span>
+                                </div>
+                                <div class="col-md-4 text-muted">
+                                    <small>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>아직 거래 내역이 없습니다.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 입금 모달 -->
+<div class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">입금하기</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    아래 지갑 주소로 자산을 전송하세요. 입금은 자동으로 감지됩니다.
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">지갑 주소</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="walletAddress"
+                               value="{{ wallet_address or 'TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx' }}" readonly>
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard('walletAddress')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">지원 자산</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <i class="fab fa-bitcoin text-warning fa-2x mb-1"></i>
+                                <div>TRX</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <i class="fas fa-dollar-sign text-success fa-2x mb-1"></i>
+                                <div>USDT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 출금 모달 -->
+<div class="modal fade" id="withdrawModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">출금하기</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="withdrawForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">자산 선택</label>
+                        <select class="form-select" id="asset" name="asset" required>
+                            <option value="">자산을 선택하세요</option>
+                            <option value="TRX">TRX</option>
+                            <option value="USDT">USDT</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">출금 주소</label>
+                        <input type="text" class="form-control" id="toAddress" name="toAddress"
+                               placeholder="받을 지갑 주소를 입력하세요" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">출금 금액</label>
+                        <input type="number" class="form-control" id="amount" name="amount"
+                               placeholder="출금할 금액을 입력하세요" step="0.000001" min="0" required>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        출금은 관리자 승인 후 처리됩니다. 주소를 정확히 확인해주세요.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-warning" onclick="submitWithdraw()">출금 신청</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 잔고 데이터 초기화
+const balanceHistoryData = {
+    dates: {{ balance_history.dates | tojson | safe }},
+    trx_values: {{ balance_history.trx_values | tojson | safe }},
+    usdt_values: {{ balance_history.usdt_values | tojson | safe }}
+};
+
+// 잔고 차트 생성
+const ctx = document.getElementById('balanceChart').getContext('2d');
+const balanceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: balanceHistoryData.dates,
+        datasets: [{
+            label: 'TRX',
+            data: balanceHistoryData.trx_values,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }, {
+            label: 'USDT',
+            data: balanceHistoryData.usdt_values,
+            borderColor: 'rgb(255, 99, 132)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: '최근 7일 잔고 변화'
+            }
+        }
+    }
+});
+
+// 모달 함수들
+function showDepositModal() {
+    new bootstrap.Modal(document.getElementById('depositModal')).show();
+}
+
+function showWithdrawModal() {
+    new bootstrap.Modal(document.getElementById('withdrawModal')).show();
+}
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+    alert('주소가 복사되었습니다!');
+}
+
+function refreshBalance() {
+    location.reload();
+}
+
+function refreshChart() {
+    // 차트 데이터 새로고침 로직
+    location.reload();
+}
+
+async function submitWithdraw() {
+    const form = document.getElementById('withdrawForm');
+    const formData = new FormData(form);
+
+    const data = {
+        asset: formData.get('asset'),
+        to_address: formData.get('toAddress'),
+        amount: parseFloat(formData.get('amount'))
+    };
+
+    try {
+        const response = await fetch('/api/v1/withdrawals/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert('출금 신청이 완료되었습니다.');
+            bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+            location.reload();
+        } else {
+            alert('출금 신청에 실패했습니다: ' + result.detail);
+        }
+    } catch (error) {
+        alert('네트워크 오류가 발생했습니다.');
+    }
+}
+</script>
+{% endblock %}

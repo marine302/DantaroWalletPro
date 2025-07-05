@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}프로필 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 2rem;
+    }
+
+    .info-item {
+        border-bottom: 1px solid #eee;
+        padding: 1rem 0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 페이지 헤더 -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-user-cog me-2"></i>
+                    프로필
+                </h1>
+                <p class="mb-0 opacity-75">계정 정보를 확인하고 관리하세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- 프로필 정보 카드 -->
+            <div class="card profile-card">
+                <div class="card-body text-center">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <h4 class="card-title mb-4">{{ current_user.email }}</h4>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">이메일 주소</div>
+                                <div class="info-value">{{ current_user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">계정 상태</div>
+                                <div class="info-value">
+                                    {% if current_user.is_active %}
+                                        <span class="badge bg-success">활성</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">비활성</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">이메일 인증</div>
+                                <div class="info-value">
+                                    {% if current_user.is_verified %}
+                                        <span class="badge bg-success">인증됨</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">미인증</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">가입일</div>
+                                <div class="info-value">{{ current_user.created_at.strftime('%Y년 %m월 %d일') if current_user.created_at else '정보 없음' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if current_user.tron_address %}
+                    <div class="info-item">
+                        <div class="info-label">TRON 지갑 주소</div>
+                        <div class="info-value">
+                            <code>{{ current_user.tron_address }}</code>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="/dashboard/settings" class="btn btn-primary me-2">
+                            <i class="fas fa-cog me-1"></i>
+                            설정
+                        </a>
+                        <a href="/dashboard/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            대시보드로 돌아가기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

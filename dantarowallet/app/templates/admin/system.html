@@ -1,0 +1,121 @@
+{% extends "admin/base.html" %}
+
+{% block title %}System - DantaroWallet Admin{% endblock %}
+
+{% block content %}
+<h2>System Management</h2>
+
+<!-- 긴급 정지 -->
+<div class="card">
+    <h3>Emergency Controls</h3>
+    <p>Emergency stop will halt all withdrawals and critical operations.</p>
+
+    <form method="post" action="/admin/emergency-stop" style="margin-top: 1rem;">
+        {% if emergency_stop_enabled %}
+        <div class="alert alert-danger">
+            ⚠️ EMERGENCY STOP IS CURRENTLY ACTIVE
+        </div>
+        <input type="hidden" name="action" value="disable">
+        <button type="submit" class="btn btn-success">Disable Emergency Stop</button>
+        {% else %}
+        <input type="hidden" name="action" value="enable">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Are you sure? This will halt all critical operations!')">
+            Enable Emergency Stop
+        </button>
+        {% endif %}
+    </form>
+</div>
+
+<!-- 시스템 메트릭 -->
+<div class="card">
+    <h3>System Metrics</h3>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ metrics.cpu_percent }}%</div>
+            <div class="stat-label">CPU Usage</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">{{ metrics.memory_percent }}%</div>
+            <div class="stat-label">Memory Usage</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">{{ metrics.disk_percent }}%</div>
+            <div class="stat-label">Disk Usage</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">{{ metrics.active_requests }}</div>
+            <div class="stat-label">Active Requests</div>
+        </div>
+    </div>
+
+    <table style="margin-top: 2rem;">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total Requests</td>
+                <td>{{ metrics.total_requests }}</td>
+            </tr>
+            <tr>
+                <td>Error Rate</td>
+                <td>{{ metrics.error_rate }}%</td>
+            </tr>
+            <tr>
+                <td>Avg Response Time</td>
+                <td>{{ metrics.avg_response_time_ms }}ms</td>
+            </tr>
+            <tr>
+                <td>P95 Response Time</td>
+                <td>{{ metrics.p95_response_time_ms }}ms</td>
+            </tr>
+            <tr>
+                <td>P99 Response Time</td>
+                <td>{{ metrics.p99_response_time_ms }}ms</td>
+            </tr>
+            <tr>
+                <td>Uptime</td>
+                <td>{{ (metrics.uptime_seconds // 3600) }}h {{ ((metrics.uptime_seconds % 3600) // 60) }}m</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 백그라운드 태스크 -->
+<div class="card">
+    <h3>Background Tasks</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in task_status %}
+            <tr>
+                <td>{{ task.name }}</td>
+                <td>
+                    {% if task.done %}
+                        <span class="status-badge status-failed">Done</span>
+                    {% elif task.cancelled %}
+                        <span class="status-badge status-failed">Cancelled</span>
+                    {% else %}
+                        <span class="status-badge status-active">Running</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

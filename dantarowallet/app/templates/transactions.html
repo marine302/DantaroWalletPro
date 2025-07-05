@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}거래 내역 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .transaction-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .transaction-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .transaction-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .transaction-in { background: linear-gradient(45deg, #28a745, #20c997); }
+    .transaction-out { background: linear-gradient(45deg, #dc3545, #fd7e14); }
+    .transaction-pending { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+
+    .transaction-amount {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .amount-in { color: #28a745; }
+    .amount-out { color: #dc3545; }
+    .amount-pending { color: #ffc107; }
+
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    거래 내역
+                </h1>
+                <p class="mb-0 mt-2 opacity-75">모든 거래 내역을 확인하세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 필터 섹션 -->
+    <div class="filter-section">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">거래 유형</label>
+                <select class="form-select" id="transactionType">
+                    <option value="">모든 거래</option>
+                    <option value="deposit">입금</option>
+                    <option value="withdrawal">출금</option>
+                    <option value="transfer">전송</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">상태</label>
+                <select class="form-select" id="transactionStatus">
+                    <option value="">모든 상태</option>
+                    <option value="completed">완료</option>
+                    <option value="pending">대기 중</option>
+                    <option value="failed">실패</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">시작 날짜</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">종료 날짜</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+        </div>
+    </div>
+
+    <!-- 거래 내역 목록 -->
+    <div class="row">
+        <div class="col-12">
+            {% if transactions %}
+                {% for transaction in transactions %}
+                <div class="transaction-card card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="transaction-icon
+                                    {% if transaction.direction == 'in' %}transaction-in
+                                    {% elif transaction.direction == 'out' %}transaction-out
+                                    {% else %}transaction-pending{% endif %}">
+                                    {% if transaction.direction == 'in' %}
+                                        <i class="fas fa-arrow-down"></i>
+                                    {% elif transaction.direction == 'out' %}
+                                        <i class="fas fa-arrow-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-clock"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">{{ transaction.transaction_type|title }}</h6>
+                                <small class="text-muted">
+                                    {{ transaction.created_at.strftime('%Y-%m-%d %H:%M') if transaction.created_at else 'N/A' }}
+                                </small>
+                            </div>
+                            <div class="col-auto text-end">
+                                <div class="transaction-amount
+                                    {% if transaction.direction == 'in' %}amount-in
+                                    {% elif transaction.direction == 'out' %}amount-out
+                                    {% else %}amount-pending{% endif %}">
+                                    {% if transaction.direction == 'out' %}-{% endif %}
+                                    {{ transaction.amount }} {{ transaction.currency }}
+                                </div>
+                                <span class="status-badge badge
+                                    {% if transaction.status == 'completed' %}bg-success
+                                    {% elif transaction.status == 'pending' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {% if transaction.status == 'completed' %}완료
+                                    {% elif transaction.status == 'pending' %}대기 중
+                                    {% else %}실패{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% if transaction.wallet_address %}
+                        <div class="row mt-2">
+                            <div class="col">
+                                <small class="text-muted">
+                                    주소: {{ transaction.wallet_address[:10] }}...{{ transaction.wallet_address[-10:] }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">거래 내역이 없습니다</h5>
+                    <p class="text-muted">첫 번째 거래를 시작해보세요!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 필터링 기능
+document.addEventListener('DOMContentLoaded', function() {
+    const typeFilter = document.getElementById('transactionType');
+    const statusFilter = document.getElementById('transactionStatus');
+    const startDateFilter = document.getElementById('startDate');
+    const endDateFilter = document.getElementById('endDate');
+
+    [typeFilter, statusFilter, startDateFilter, endDateFilter].forEach(filter => {
+        filter.addEventListener('change', filterTransactions);
+    });
+
+    function filterTransactions() {
+        // 실제 구현에서는 API 호출로 필터링된 데이터를 가져올 수 있습니다
+        console.log('필터링:', {
+            type: typeFilter.value,
+            status: statusFilter.value,
+            startDate: startDateFilter.value,
+            endDate: endDateFilter.value
+        });
+    }
+});
+</script>
+{% endblock %}

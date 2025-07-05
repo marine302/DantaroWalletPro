@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .auth-card {
+        max-width: 400px;
+        width: 100%;
+        padding: 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .auth-logo {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-logo i {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 2px solid #eee;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .alert-custom {
+        border-radius: 8px;
+        border: none;
+    }
+</style>
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <i class="fas fa-wallet"></i>
+            <h2 class="fw-bold text-dark">단타로 월렛 프로</h2>
+            <p class="text-muted">안전한 디지털 자산 관리</p>
+        </div>
+
+        <!-- 오류 메시지 -->
+        <div id="alert-container"></div>
+
+        <!-- 로그인 폼 -->
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label fw-semibold">이메일</label>
+                <input type="email" class="form-control" id="email" name="email" required
+                       placeholder="이메일을 입력하세요">
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label fw-semibold">비밀번호</label>
+                <input type="password" class="form-control" id="password" name="password" required
+                       placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">
+                    로그인 상태 유지
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth mb-3">
+                <i class="fas fa-sign-in-alt me-2"></i>로그인
+            </button>
+        </form>
+
+        <div class="text-center">
+            <p class="mb-0">계정이 없으신가요? <a href="/auth/register" class="text-decoration-none">회원가입</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = {
+        email: formData.get('email'),
+        password: formData.get('password')
+    };
+
+    console.log('로그인 시도:', data.email); // 디버깅용 로그
+
+    try {
+        const response = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+
+        console.log('응답 상태:', response.status); // 디버깅용 로그
+        const result = await response.json();
+        console.log('응답 데이터:', result); // 디버깅용 로그
+
+        if (response.ok) {
+            // 토큰을 localStorage와 쿠키 모두에 저장
+            localStorage.setItem('access_token', result.access_token);
+            document.cookie = `access_token=${result.access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+            // 성공 메시지 표시 후 대시보드로 리디렉션
+            showAlert('success', '로그인 성공! 대시보드로 이동합니다.');
+
+            // 즉시 리디렉션 (타이머 없이)
+            setTimeout(() => {
+                window.location.href = '/dashboard/';
+            }, 500);
+        } else {
+            // 오류 메시지 처리 개선
+            let errorMessage = '로그인에 실패했습니다.';
+
+            // API 응답의 message 필드 우선 확인
+            if (result.message) {
+                errorMessage = result.message;
+            } else if (result.detail) {
+                if (typeof result.detail === 'string') {
+                    errorMessage = result.detail;
+                } else if (Array.isArray(result.detail)) {
+                    errorMessage = result.detail.map(err => err.msg || err.message || err).join(', ');
+                } else if (typeof result.detail === 'object') {
+                    errorMessage = Object.values(result.detail).join(', ') || '알 수 없는 오류가 발생했습니다.';
+                }
+            } else if (result.error) {
+                errorMessage = result.error;
+            }
+
+            showAlert('danger', errorMessage);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showAlert('danger', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+});
+
+function showAlert(type, message) {
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-custom alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

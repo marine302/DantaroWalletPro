@@ -1,0 +1,104 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Users - DantaroWallet Admin{% endblock %}
+
+{% block content %}
+<h2>User Management</h2>
+
+<!-- 검색 -->
+<form class="search-box" method="get">
+    <input type="text" name="search" placeholder="Search by email" value="{{ search or '' }}">
+    <select name="status">
+        <option value="">All Status</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+    <button type="submit" class="btn">Search</button>
+</form>
+
+<!-- 사용자 테이블 -->
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Wallet</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in users %}
+            <tr>
+                <td>{{ item.user.id }}</td>
+                <td>{{ item.user.email }}</td>
+                <td>
+                    {% if item.user.tron_address %}
+                        <small>{{ item.user.tron_address[:8] }}...{{ item.user.tron_address[-6:] }}</small>
+                    {% else %}
+                        <form method="post" action="/admin/users/{{ item.user.id }}/create-wallet" style="display: inline;">
+                            <button type="submit" class="btn btn-small">Create Wallet</button>
+                        </form>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.balances %}
+                        {% for balance in item.balances %}
+                            <div>{{ balance.asset }}: {{ "%.6f"|format(balance.amount) }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No balance</span>
+                    {% endif %}
+                    <br>
+                    <form method="post" action="/admin/users/{{ item.user.id }}/create-balance" style="display: inline; margin-top: 5px;">
+                        <select name="asset" style="width: 60px;">
+                            <option value="TRX">TRX</option>
+                            <option value="USDT">USDT</option>
+                        </select>
+                        <input type="number" name="amount" step="0.01" placeholder="Amount" style="width: 80px;">
+                        <button type="submit" class="btn btn-small">Add</button>
+                    </form>
+                </td>
+                <td>
+                    <span class="status-badge status-{{ 'active' if item.user.is_active else 'failed' }}">
+                        {{ 'Active' if item.user.is_active else 'Inactive' }}
+                    </span>
+                </td>
+                <td>{{ '✓' if item.user.is_verified else '✗' }}</td>
+                <td>{{ item.user.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <form method="post" action="/admin/users/{{ item.user.id }}/toggle-status" style="display: inline;">
+                        <button type="submit" class="btn btn-small {% if item.user.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                            {{ 'Deactivate' if item.user.is_active else 'Activate' }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 페이지네이션 -->
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}&search={{ search or '' }}&status={{ status or '' }}">Previous</a>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <a href="#" class="active">{{ p }}</a>
+        {% else %}
+        <a href="?page={{ p }}&search={{ search or '' }}&status={{ status or '' }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}&search={{ search or '' }}&status={{ status or '' }}">Next</a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}분석 - 단타로 월렛 프로{% endblock %}
+
+{% block head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .analytics-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .bg-primary-gradient { background: linear-gradient(45deg, #007bff, #0056b3); }
+    .bg-success-gradient { background: linear-gradient(45deg, #28a745, #1e7e34); }
+    .bg-warning-gradient { background: linear-gradient(45deg, #ffc107, #d39e00); }
+    .bg-info-gradient { background: linear-gradient(45deg, #17a2b8, #117a8b); }
+    .bg-danger-gradient { background: linear-gradient(45deg, #dc3545, #c82333); }
+
+    .period-selector {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .period-btn {
+        border: 2px solid #dee2e6;
+        border-radius: 25px;
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .period-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    분석
+                </h1>
+                <p class="mb-0 mt-2 opacity-75">거래 패턴과 자산 현황을 분석하세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 기간 선택 -->
+    <div class="period-selector text-center">
+        <button class="period-btn active" data-period="7">7일</button>
+        <button class="period-btn" data-period="30">30일</button>
+        <button class="period-btn" data-period="90">90일</button>
+        <button class="period-btn" data-period="365">1년</button>
+    </div>
+
+    <!-- 통계 요약 -->
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-icon bg-primary-gradient">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-value">{{ user_overview.total_balance if user_overview else 0 }}</div>
+            <div class="stat-label">총 잔고</div>
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-icon bg-success-gradient">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="stat-value">{{ wallet_stats.total_received if wallet_stats else 0 }}</div>
+            <div class="stat-label">총 입금</div>
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-icon bg-danger-gradient">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="stat-value">{{ wallet_stats.total_sent if wallet_stats else 0 }}</div>
+            <div class="stat-label">총 출금</div>
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-icon bg-warning-gradient">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="stat-value">{{ user_overview.total_transactions if user_overview else 0 }}</div>
+            <div class="stat-label">총 거래 수</div>
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-icon bg-info-gradient">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="stat-value">{{ wallet_stats.active_wallets if wallet_stats else 0 }}</div>
+            <div class="stat-label">활성 지갑</div>
+        </div>
+    </div>
+
+    <!-- 잔고 변화 차트 -->
+    <div class="analytics-card card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-area me-2"></i>
+                잔고 변화 추이
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="balanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 거래 분석 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="analytics-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-pie-chart me-2"></i>
+                        거래 유형 분포
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="transactionTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="analytics-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        월간 거래량
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="monthlyVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 활동 -->
+    <div class="analytics-card card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history me-2"></i>
+                최근 활동
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>유형</th>
+                                <th>금액</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions[:10] %}
+                            <tr>
+                                <td>{{ transaction.created_at.strftime('%m-%d %H:%M') if transaction.created_at else 'N/A' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if transaction.direction == 'in' else 'danger' }}">
+                                        {{ transaction.transaction_type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="{% if transaction.direction == 'in' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.direction == 'out' %}-{% endif %}
+                                        {{ transaction.amount }} {{ transaction.currency }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' if transaction.status == 'pending' else 'danger' }}">
+                                        {% if transaction.status == 'completed' %}완료
+                                        {% elif transaction.status == 'pending' %}대기 중
+                                        {% else %}실패{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">거래 데이터가 없습니다</h5>
+                    <p class="text-muted">거래를 시작하면 분석 데이터가 표시됩니다.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 잔고 변화 차트 데이터
+const balanceHistoryData = {
+    dates: {{ balance_history.dates | tojson | safe }},
+    trx_values: {{ balance_history.trx_values | tojson | safe }},
+    usdt_values: {{ balance_history.usdt_values | tojson | safe }}
+};
+
+// 잔고 차트 생성
+const balanceCtx = document.getElementById('balanceChart').getContext('2d');
+const balanceChart = new Chart(balanceCtx, {
+    type: 'line',
+    data: {
+        labels: balanceHistoryData.dates,
+        datasets: [{
+            label: 'TRX',
+            data: balanceHistoryData.trx_values,
+            borderColor: '#ff6b6b',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            fill: true,
+            tension: 0.4
+        }, {
+            label: 'USDT',
+            data: balanceHistoryData.usdt_values,
+            borderColor: '#26de81',
+            backgroundColor: 'rgba(38, 222, 129, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// 거래 유형 분포 차트
+const typeCtx = document.getElementById('transactionTypeChart').getContext('2d');
+const transactionTypeChart = new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['입금', '출금', '전송'],
+        datasets: [{
+            data: [45, 30, 25], // 실제 데이터로 교체 필요
+            backgroundColor: [
+                '#28a745',
+                '#dc3545',
+                '#ffc107'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// 월간 거래량 차트
+const volumeCtx = document.getElementById('monthlyVolumeChart').getContext('2d');
+const monthlyVolumeChart = new Chart(volumeCtx, {
+    type: 'bar',
+    data: {
+        labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+        datasets: [{
+            label: '거래량',
+            data: [65, 59, 80, 81, 56, 55], // 실제 데이터로 교체 필요
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: '#667eea',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// 기간 선택 기능
+document.addEventListener('DOMContentLoaded', function() {
+    const periodButtons = document.querySelectorAll('.period-btn');
+
+    periodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // 활성 상태 변경
+            periodButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            // 선택된 기간
+            const period = this.dataset.period;
+            console.log('선택된 기간:', period + '일');
+
+            // 실제 구현에서는 여기서 API 호출하여 데이터 갱신
+            // updateCharts(period);
+        });
+    });
+});
+
+function updateCharts(period) {
+    // 기간에 따른 차트 데이터 업데이트
+    console.log(`${period}일 데이터로 차트 업데이트`);
+}
+</script>
+{% endblock %}
