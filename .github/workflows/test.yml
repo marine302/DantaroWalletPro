@@ -1,0 +1,124 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.6.1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dantarowallet_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction --no-root
+    
+    - name: Create test env file
+      run: |
+        cat > .env.test << EOF
+        APP_NAME=DantaroWallet
+        APP_VERSION=test
+        DEBUG=True
+        SECRET_KEY=test-secret-key-for-ci-only
+        ACCESS_TOKEN_EXPIRE_MINUTES=30
+        ALGORITHM=HS256
+        DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/dantarowallet_test
+        REDIS_URL=redis://localhost:6379/0
+        BACKEND_CORS_ORIGINS=["http://localhost:3000"]
+        WALLET_ENCRYPTION_KEY=test-wallet-encryption-key-32char
+        TRON_NETWORK=nile
+        TESTING=True
+        EOF
+    
+    - name: Run migrations
+      run: |
+        cp .env.test .env
+        poetry run alembic upgrade head
+    
+    - name: Run tests with coverage
+      run: |
+        poetry run pytest -v --cov=app --cov-report=xml --cov-report=term-missing
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+    
+    - name: Run linting
+      run: |
+        poetry run flake8 app tests --max-line-length=88 --extend-ignore=E203
+        poetry run black app tests --check
+    
+    - name: Run type checking
+      run: |
+        poetry run mypy app --ignore-missing-imports
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
