@@ -6,15 +6,17 @@ from pydantic import BaseModel, Field
 
 # 에너지 풀 관련 스키마
 class EnergyPoolStatus(BaseModel):
-    """에너지 풀 상태 응답"""
+    """에너지 풀 상태 응답 (슈퍼 어드민용 확장)"""
     total_energy: int = Field(..., description="총 에너지량")
     available_energy: int = Field(..., description="사용 가능한 에너지")
     reserved_energy: int = Field(..., description="예약된 에너지")
+    allocated_energy: int = Field(0, description="파트너에게 할당된 에너지")
     daily_consumption: int = Field(..., description="일일 소모량")
-    energy_sufficient: bool = Field(..., description="에너지 충분 여부")
     alert_threshold: int = Field(..., description="알림 임계값")
-    is_emergency_mode: bool = Field(..., description="긴급 모드 여부")
-    last_recharge_at: Optional[datetime] = Field(None, description="마지막 충전 시간")
+    critical_threshold: int = Field(..., description="위험 임계값")
+    is_sufficient: bool = Field(..., description="에너지 충분 여부")
+    partner_count: int = Field(0, description="활성 파트너 수")
+    last_updated: datetime = Field(..., description="마지막 업데이트 시간")
 
 class EnergyRechargeRequest(BaseModel):
     """에너지 충전 요청"""
@@ -78,17 +80,12 @@ class QueueStatus(BaseModel):
 # 에너지 알림 관련 스키마
 class EnergyAlert(BaseModel):
     """에너지 알림"""
-    id: int
-    alert_type: str = Field(..., description="알림 유형")
-    title: str = Field(..., description="알림 제목")
-    message: Optional[str] = Field(None, description="알림 내용")
-    severity: str = Field(..., description="심각도")
-    is_active: bool = Field(..., description="활성 상태")
+    alert_type: str
+    message: str
+    current_energy: int
+    threshold: int
+    partner_id: Optional[str] = None
     created_at: datetime
-    resolved_at: Optional[datetime] = Field(None, description="해결 시간")
-
-    class Config:
-        from_attributes = True
 
 class CreateEnergyAlert(BaseModel):
     """에너지 알림 생성 요청"""
@@ -112,3 +109,34 @@ class EmergencyWithdrawalResponse(BaseModel):
     estimated_confirmation_time: int = Field(..., description="예상 확인 시간(분)")
     fee_amount: Decimal = Field(..., description="수수료")
     message: str = Field(..., description="상태 메시지")
+
+# 슈퍼 어드민용 추가 스키마
+class EnergyUsage(BaseModel):
+    """파트너 에너지 사용량"""
+    partner_id: str
+    current_balance: int
+    daily_usage: int
+    monthly_usage: int
+    avg_daily_usage: int
+    usage_efficiency: float
+    last_usage: Optional[datetime] = None
+
+class EnergyHistory(BaseModel):
+    """에너지 사용 이력"""
+    id: str
+    partner_id: str
+    partner_name: str
+    transaction_type: str
+    energy_amount: int
+    balance_before: int
+    balance_after: int
+    transaction_hash: str
+    created_at: datetime
+
+class EnergyAllocation(BaseModel):
+    """에너지 할당"""
+    partner_id: str
+    partner_name: str
+    allocated_amount: int
+    current_balance: int
+    allocation_date: datetime

@@ -1,5 +1,5 @@
 """파트너사 관련 모델"""
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, JSON, Integer, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.models.base import Base
@@ -9,45 +9,44 @@ class Partner(Base):
     """파트너사 테이블"""
     __tablename__ = "partners"
     
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False, comment="파트너사명")
-    domain = Column(String(255), comment="도메인")
-    api_key = Column(String(255), unique=True, nullable=False, comment="API 키")
-    api_secret = Column(String(255), nullable=False, comment="API 시크릿")
-    webhook_url = Column(String(500), comment="웹훅 URL")
-    commission_rate = Column(Numeric(5, 4), default=0, comment="수수료율")
-    is_active = Column(Boolean, default=True, comment="활성 상태")
-    settings = Column(Text, comment="커스텀 설정 (JSON)")
-    
-    # 화이트라벨링 설정
-    brand_name = Column(String(100), comment="브랜드명")
-    logo_url = Column(String(500), comment="로고 URL")
-    primary_color = Column(String(7), comment="주요 색상 (#RRGGBB)")
-    secondary_color = Column(String(7), comment="보조 색상 (#RRGGBB)")
-    custom_css = Column(Text, comment="커스텀 CSS")
-    
-    # 연락처 정보
-    contact_email = Column(String(255), comment="연락처 이메일")
+    id = Column(String(36), primary_key=True, index=True, comment="파트너 ID (UUID)")
+    name = Column(String(100), nullable=False, unique=True, comment="파트너사명")
+    display_name = Column(String(100), comment="표시명")
+    domain = Column(String(255), unique=True, comment="도메인")
+    contact_email = Column(String(255), nullable=False, unique=True, comment="연락처 이메일")
     contact_phone = Column(String(50), comment="연락처 전화번호")
-    contact_person = Column(String(100), comment="담당자명")
+    business_type = Column(String(50), nullable=False, comment="비즈니스 유형")
     
-    # 비즈니스 정보
-    business_type = Column(String(50), comment="비즈니스 유형")
-    country = Column(String(50), comment="국가")
-    timezone = Column(String(50), comment="타임존")
-    language = Column(String(10), default="ko", comment="기본 언어")
-    
-    # 제한 설정
-    daily_transaction_limit = Column(Numeric(18, 8), comment="일일 거래 한도")
-    monthly_transaction_limit = Column(Numeric(18, 8), comment="월간 거래 한도")
-    max_users = Column(Integer, comment="최대 사용자 수")
+    # API 관리
+    api_key = Column(String(255), unique=True, nullable=False, comment="API 키")
+    api_secret_hash = Column(String(255), nullable=False, comment="API 시크릿 해시")
+    previous_api_key = Column(String(255), comment="이전 API 키")
+    api_key_created_at = Column(DateTime(timezone=True), comment="API 키 생성일")
     
     # 상태 관리
+    status = Column(String(20), default="pending", comment="파트너 상태")
     onboarding_status = Column(String(50), default="pending", comment="온보딩 상태")
-    last_activity_at = Column(DateTime(timezone=True), comment="마지막 활동 시간")
     
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # 구독 및 제한
+    subscription_plan = Column(String(50), default="basic", comment="구독 플랜")
+    monthly_limit = Column(Numeric(18, 8), comment="월간 한도")
+    commission_rate = Column(Numeric(5, 4), default=0, comment="수수료율")
+    
+    # 에너지 관리
+    energy_balance = Column(Numeric(18, 8), default=0, comment="에너지 잔액")
+    
+    # 설정 (JSON)
+    settings = Column(JSON, default={}, comment="파트너 설정")
+    deployment_config = Column(JSON, default={}, comment="배포 설정")
+    
+    # 활동 추적
+    last_activity_at = Column(DateTime(timezone=True), comment="마지막 활동 시간")
+    activated_at = Column(DateTime(timezone=True), comment="활성화 시간")
+    suspended_at = Column(DateTime(timezone=True), comment="정지 시간")
+    
+    # 타임스탬프
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
     
     # 관계 설정
     users = relationship("PartnerUser", back_populates="partner")
