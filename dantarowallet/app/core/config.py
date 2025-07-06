@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
+    
+    # .env 파일에서 사용되는 추가 필드들
+    SYNC_DATABASE_URL: str = "sqlite:///./test.db"
+    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str = "DantaroWallet"
+    VERSION: str = "1.0.0"
+    TRON_API_KEYS: str = '["your-tronapi-key"]'
+    DEFAULT_ENERGY_POOL_SIZE: int = 1000000
+    ENERGY_REFRESH_INTERVAL: int = 300
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 43200
 
     # Security Configuration
     SECRET_KEY: str = "dev_secret_key_change_in_production"
