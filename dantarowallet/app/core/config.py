@@ -76,8 +76,8 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"
 
-    # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    # CORS Configuration - 개발용으로 모든 origin 허용
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
     # 보안 설정
     ALLOWED_HOSTS: List[str] = ["*"]

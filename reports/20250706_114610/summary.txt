@@ -1,0 +1,24 @@
+🚨 DantaroWallet 문제 보고서
+==================================
+생성 시간: Sun Jul  6 11:46:12 UTC 2025
+문제 설명: 진단 시스템 테스트
+
+📁 포함된 파일들:
+- system_diagnosis.log: 전체 시스템 진단 결과
+- error_collection.log: 에러 로그 수집 과정
+- error_report_*.txt: 상세 에러 로그 분석
+- snapshot.txt: 현재 상태 즉시 스냅샷
+- browser_test_guide.txt: 브라우저 테스트 가이드
+- summary.txt: 이 요약 보고서
+
+🎯 Copilot에게 보고하는 방법:
+1. 이 폴더의 모든 파일을 확인
+2. 주요 에러 메시지나 문제 상황을 설명
+3. '이 로그들을 분석해서 문제를 해결해 줘' 요청
+
+🚀 빠른 공유 명령어:
+cat reports/20250706_114610/snapshot.txt
+cat reports/20250706_114610/system_diagnosis.log | tail -50
+
+📊 보고서 크기:
+136K	reports/20250706_114610

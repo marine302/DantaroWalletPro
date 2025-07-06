@@ -4,7 +4,7 @@
 from .alert_service import AlertService
 from .base import TransactionAnalyticsService
 from .metrics_service import MetricsService
-from .pattern_service import PatternService
+from .pattern_service import PatternDetectionService
 from .statistics_service import StatisticsService
 
 __all__ = [
@@ -12,5 +12,5 @@ __all__ = [
     "StatisticsService",
     "AlertService",
     "MetricsService",
-    "PatternService",
+    "PatternDetectionService",
 ]

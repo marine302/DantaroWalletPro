@@ -1,7 +1,8 @@
 """
 관리자용 수수료 관리 API 엔드포인트
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from decimal import Decimal
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +13,7 @@ from app.models.user import User
 from app.services.fee.fee_service import FeeService
 from app.schemas.fee import (
     FeeConfig, FeeConfigCreate, FeeConfigUpdate,
-    DynamicFeeRule, DynamicFeeRuleCreate, DynamicFeeRuleUpdate,
-    FeeCalculationRequest, FeeCalculationResult,
-    PartnerFeeStats, TotalRevenueStats, FeeHistory
+    FeeCalculationRequest, FeeCalculationResult
 )
 from app.core.logger import get_logger
 
@@ -33,9 +32,10 @@ async def create_fee_config(
     """
     try:
         fee_service = FeeService(db)
+        admin_id: int = current_admin.id  # type: ignore
         config = await fee_service.create_fee_config(
             fee_data=fee_data,
-            admin_id=current_admin.id
+            admin_id=admin_id
         )
         
         logger.info(f"관리자 {current_admin.id}가 수수료 설정 생성: {config.id}")
@@ -44,78 +44,122 @@ async def create_fee_config(
     except Exception as e:
         logger.error(f"수수료 설정 생성 실패: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
             detail="수수료 설정 생성 중 오류가 발생했습니다."
         )
 
 
-@router.patch("/config/{config_id}")
+@router.patch("/configs/{config_id}", response_model=FeeConfig)
 async def update_fee_config(
     config_id: int,
-    base_fee: Optional[Decimal] = None,
-    percentage_fee: Optional[Decimal] = None,
-    min_fee: Optional[Decimal] = None,
-    max_fee: Optional[Decimal] = None,
-    is_active: Optional[bool] = None,
+    update_data: FeeConfigUpdate,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     기존 수수료 설정을 수정합니다.
     """
-    # TODO: 수수료 설정 수정 로직 구현
-    # fee_service = FeeConfigService(db)
-    # return await fee_service.update_config(config_id, ...)
-    return {"message": f"수수료 설정 {config_id} 수정 - 구현 필요"}
+    try:
+        fee_service = FeeService(db)
+        admin_id: int = current_admin.id  # type: ignore
+        config = await fee_service.update_fee_config(
+            config_id=config_id,
+            update_data=update_data,
+            admin_id=admin_id
+        )
+        
+        logger.info(f"관리자 {current_admin.id}가 수수료 설정 {config_id} 수정")
+        return config
+        
+    except Exception as e:
+        logger.error(f"수수료 설정 수정 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="수수료 설정 수정 중 오류가 발생했습니다."
+        )
 
 
-@router.get("/history")
-async def get_fee_history(
-    config_id: Optional[int] = Query(None, description="특정 설정 ID"),
-    limit: int = Query(50, ge=1, le=200),
-    current_admin: User = Depends(get_current_admin_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    수수료 변경 이력을 조회합니다.
-    """
-    # TODO: 수수료 변경 이력 조회 로직 구현
-    # fee_service = FeeConfigService(db)
-    # return await fee_service.get_history(config_id, limit)
-    return {"message": "수수료 변경 이력 조회 - 구현 필요"}
-
-
-@router.post("/calculate")
+@router.post("/calculate", response_model=FeeCalculationResult)
 async def calculate_fee(
-    transaction_type: str,
-    amount: Decimal,
-    partner_id: Optional[int] = None,
+    calculation_request: FeeCalculationRequest,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     특정 거래에 대한 수수료를 미리 계산합니다.
     """
-    # TODO: 수수료 계산 로직 구현
-    # fee_calculator = FeeCalculator(db)
-    # calculated_fee = await fee_calculator.calculate(transaction_type, amount, partner_id)
-    # return {"amount": amount, "calculated_fee": calculated_fee}
-    return {"message": "수수료 계산 - 구현 필요", "amount": str(amount)}
+    try:
+        fee_service = FeeService(db)
+        result = await fee_service.calculate_fee(calculation_request)
+        
+        logger.info(f"관리자 {current_admin.id}가 수수료 계산: {calculation_request.amount}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"수수료 계산 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="수수료 계산 중 오류가 발생했습니다."
+        )
 
 
-@router.put("/partner/{partner_id}")
-async def set_partner_fees(
+@router.get("/partner/{partner_id}/revenue-stats")
+async def get_partner_revenue_stats(
     partner_id: int,
-    withdrawal_percentage: Decimal,
-    withdrawal_min: Decimal,
-    withdrawal_max: Decimal,
+    days: int = Query(30, ge=1, le=365, description="통계 기간 (일)"),
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    파트너사별 수수료를 설정합니다.
+    파트너별 수수료 수익 통계를 조회합니다.
     """
-    # TODO: 파트너별 수수료 설정 로직 구현
-    # fee_service = FeeConfigService(db)
-    # return await fee_service.set_partner_fees(partner_id, ...)
-    return {"message": f"파트너 {partner_id} 수수료 설정 - 구현 필요"}
+    try:
+        fee_service = FeeService(db)
+        start_date = datetime.now() - timedelta(days=days)
+        end_date = datetime.now()
+        
+        stats = await fee_service.get_partner_revenue_stats(
+            partner_id=partner_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 수수료 통계 조회")
+        return stats
+        
+    except Exception as e:
+        logger.error(f"파트너 수수료 통계 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="파트너 수수료 통계 조회 중 오류가 발생했습니다."
+        )
+
+
+@router.get("/total-revenue-stats")
+async def get_total_revenue_stats(
+    days: int = Query(30, ge=1, le=365, description="통계 기간 (일)"),
+    current_admin: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    전체 수수료 수익 통계를 조회합니다.
+    """
+    try:
+        fee_service = FeeService(db)
+        start_date = datetime.now() - timedelta(days=days)
+        end_date = datetime.now()
+        
+        stats = await fee_service.get_total_revenue_stats(
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        logger.info(f"관리자 {current_admin.id}가 전체 수수료 수익 통계 조회")
+        return stats
+        
+    except Exception as e:
+        logger.error(f"전체 수수료 수익 통계 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="전체 수수료 수익 통계 조회 중 오류가 발생했습니다."
+        )

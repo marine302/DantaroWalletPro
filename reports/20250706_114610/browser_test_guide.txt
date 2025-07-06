@@ -1,0 +1,19 @@
+=== 브라우저 테스트 가이드 ===
+문제 재현을 위한 브라우저 테스트 단계:
+
+1. 브라우저에서 http://localhost:3010 접속
+2. 개발자 도구 열기 (F12)
+3. Network 탭 확인
+4. Console 탭에서 에러 메시지 확인
+5. 로그인 시도 및 API 호출 확인
+
+주요 확인 사항:
+- CORS 에러 여부
+- 401/403 인증 에러
+- ERR_CONNECTION_REFUSED
+- Failed to fetch
+
+현재 환경 설정:
+백엔드: http://localhost:8000
+프론트엔드: http://localhost:3010
+

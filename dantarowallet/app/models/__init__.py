@@ -5,7 +5,7 @@
 from app.models.balance import Balance
 from app.models.base import BaseModel
 from app.models.deposit import Deposit
-from app.models.energy_pool import EnergyPool, EnergyPriceHistory, EnergyUsageLog
+from app.models.energy_pool import EnergyPool, EnergyUsageLog
 from app.models.fee_config import FeeConfig, FeeHistory, FeeRevenueStats
 from app.models.partner import Partner
 from app.models.partner_history import (
@@ -60,7 +60,6 @@ __all__ = [
     "AlertType",
     "EnergyPool",
     "EnergyUsageLog",
-    "EnergyPriceHistory",
     "FeeConfig",
     "FeeHistory",
     "FeeRevenueStats",
@@ -74,6 +73,7 @@ __all__ = [
     "PartnerOnboardingStep",
     "PartnerDeployment",
     "SystemMonitoring",
+    "SystemAlert",
     "SuperAdminUser",
     "SuperAdminActivityLog",
     "PlatformRevenueStatistics",

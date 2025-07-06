@@ -7,7 +7,6 @@ import time
 from contextlib import asynccontextmanager
 
 from app.api.v1.api import api_router
-from app.api.v1.endpoints import admin_dashboard
 from app.core.config import settings
 from app.core.exceptions import DantaroException
 from app.core.logging import setup_logging
@@ -38,17 +37,17 @@ async def lifespan(app: FastAPI):
     logger.info(f"📊 Debug mode: {settings.DEBUG}")
     logger.info(f"🌐 Environment: {settings.TRON_NETWORK}")
 
-    # 입금 모니터링 백그라운드 시작
-    if not deposit_monitor.is_monitoring:
-        logger.info("🔍 Starting deposit monitoring...")
-        asyncio.create_task(deposit_monitor.start_monitoring())
+    # 입금 모니터링 백그라운드 시작 (임시 비활성화)
+    # if not deposit_monitor.is_monitoring:
+    #     logger.info("🔍 Starting deposit monitoring...")
+    #     asyncio.create_task(deposit_monitor.start_monitoring())
 
     # FastAPI에게 "준비 완료" 신호 전달
     yield
 
     # 종료 시 작업
     logger.info("🛑 Stopping deposit monitoring...")
-    await deposit_monitor.stop_monitoring()
+    # await deposit_monitor.stop_monitoring()
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
 
 
@@ -65,11 +64,11 @@ app = FastAPI(
 )
 
 
-# CORS 설정 미들웨어
+# CORS 설정 미들웨어 - 개발용으로 모든 origin 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-    allow_credentials=True,
+    allow_origins=["http://localhost:3010", "http://localhost:3000", "http://127.0.0.1:3010", "http://127.0.0.1:3000", "https://localhost:3010"],  # 명시적 origin 지정
+    allow_credentials=True,  # credentials를 True로 설정
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
 )
@@ -155,14 +154,6 @@ app.include_router(auth_pages_router, prefix="/auth", tags=["auth-pages"])
 from app.api.v1.web_dashboard import router as web_dashboard_router
 
 app.include_router(web_dashboard_router, prefix="/dashboard", tags=["web-dashboard"])
-
-# 테스트 대시보드 라우터 등록 (디버깅용)
-from app.api.v1.test_dashboard import router as test_dashboard_router
-
-app.include_router(test_dashboard_router, prefix="/test", tags=["test-dashboard"])
-
-# 관리자 대시보드 라우터 등록
-app.include_router(admin_dashboard.router, prefix="/admin", tags=["admin"])
 
 # 정적 파일 마운트 (CSS, JS, 이미지 등)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

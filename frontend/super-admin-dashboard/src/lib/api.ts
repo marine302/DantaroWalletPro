@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import {
-  ApiResponse,
   PaginatedResponse,
   Partner,
   PartnerConfig,
@@ -82,19 +81,27 @@ class ApiClient {
     return response.data;
   }
 
+  async superAdminLogin(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log('Attempting login with:', { email: credentials.email, baseURL: this.client.defaults.baseURL });
+    const response: AxiosResponse<AuthResponse> = await this.client.post('/auth/login', credentials);
+    console.log('Login response:', response.data);
+    this.setAuthToken(response.data.access_token);
+    return response.data;
+  }
+
   async logout(): Promise<void> {
     this.removeAuthToken();
   }
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response: AxiosResponse<ApiResponse<DashboardStats>> = await this.client.get('/admin/dashboard/stats');
-    return response.data.data;
+    const response: AxiosResponse<DashboardStats> = await this.client.get('/admin/dashboard/stats');
+    return response.data;
   }
 
   async getSystemHealth(): Promise<SystemHealth> {
-    const response: AxiosResponse<ApiResponse<SystemHealth>> = await this.client.get('/admin/system/health');
-    return response.data.data;
+    const response: AxiosResponse<SystemHealth> = await this.client.get('/admin/system/health');
+    return response.data;
   }
 
   // Partners
@@ -106,18 +113,18 @@ class ApiClient {
   }
 
   async getPartner(id: number): Promise<Partner> {
-    const response: AxiosResponse<ApiResponse<Partner>> = await this.client.get(`/admin/partners/${id}`);
-    return response.data.data;
+    const response: AxiosResponse<Partner> = await this.client.get(`/admin/partners/${id}`);
+    return response.data;
   }
 
   async createPartner(data: CreatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<ApiResponse<Partner>> = await this.client.post('/admin/partners', data);
-    return response.data.data;
+    const response: AxiosResponse<Partner> = await this.client.post('/admin/partners', data);
+    return response.data;
   }
 
   async updatePartner(id: number, data: UpdatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<ApiResponse<Partner>> = await this.client.put(`/admin/partners/${id}`, data);
-    return response.data.data;
+    const response: AxiosResponse<Partner> = await this.client.put(`/admin/partners/${id}`, data);
+    return response.data;
   }
 
   async deletePartner(id: number): Promise<void> {
@@ -125,37 +132,37 @@ class ApiClient {
   }
 
   async getPartnerConfig(partnerId: number): Promise<PartnerConfig> {
-    const response: AxiosResponse<ApiResponse<PartnerConfig>> = await this.client.get(`/admin/partners/${partnerId}/config`);
-    return response.data.data;
+    const response: AxiosResponse<PartnerConfig> = await this.client.get(`/admin/partners/${partnerId}/config`);
+    return response.data;
   }
 
   async getPartnerStatistics(partnerId: number, days = 30): Promise<PartnerDailyStatistics[]> {
-    const response: AxiosResponse<ApiResponse<PartnerDailyStatistics[]>> = await this.client.get(
+    const response: AxiosResponse<PartnerDailyStatistics[]> = await this.client.get(
       `/admin/partners/${partnerId}/statistics`,
       { params: { days } }
     );
-    return response.data.data;
+    return response.data;
   }
 
   // Energy Management
   async getEnergyPool(): Promise<EnergyPool> {
-    const response: AxiosResponse<ApiResponse<EnergyPool>> = await this.client.get('/admin/energy/pool');
-    return response.data.data;
+    const response: AxiosResponse<EnergyPool> = await this.client.get('/admin/energy/pool');
+    return response.data;
   }
 
   async rechargeEnergy(amount: number): Promise<EnergyTransaction> {
-    const response: AxiosResponse<ApiResponse<EnergyTransaction>> = await this.client.post('/admin/energy/recharge', {
+    const response: AxiosResponse<EnergyTransaction> = await this.client.post('/admin/energy/recharge', {
       amount,
     });
-    return response.data.data;
+    return response.data;
   }
 
   async allocateEnergy(partnerId: number, amount: number): Promise<EnergyTransaction> {
-    const response: AxiosResponse<ApiResponse<EnergyTransaction>> = await this.client.post('/admin/energy/allocate', {
+    const response: AxiosResponse<EnergyTransaction> = await this.client.post('/admin/energy/allocate', {
       partner_id: partnerId,
       amount,
     });
-    return response.data.data;
+    return response.data;
   }
 
   async getEnergyTransactions(page = 1, size = 20): Promise<PaginatedResponse<EnergyTransaction>> {
@@ -167,18 +174,18 @@ class ApiClient {
 
   // Fee Management
   async getFeeConfigs(): Promise<FeeConfig[]> {
-    const response: AxiosResponse<ApiResponse<FeeConfig[]>> = await this.client.get('/admin/fees/configs');
-    return response.data.data;
+    const response: AxiosResponse<FeeConfig[]> = await this.client.get('/admin/fees/configs');
+    return response.data;
   }
 
   async createFeeConfig(data: CreateFeeConfigRequest): Promise<FeeConfig> {
-    const response: AxiosResponse<ApiResponse<FeeConfig>> = await this.client.post('/admin/fees/configs', data);
-    return response.data.data;
+    const response: AxiosResponse<FeeConfig> = await this.client.post('/admin/fees/configs', data);
+    return response.data;
   }
 
   async updateFeeConfig(id: number, data: Partial<CreateFeeConfigRequest>): Promise<FeeConfig> {
-    const response: AxiosResponse<ApiResponse<FeeConfig>> = await this.client.put(`/admin/fees/configs/${id}`, data);
-    return response.data.data;
+    const response: AxiosResponse<FeeConfig> = await this.client.put(`/admin/fees/configs/${id}`, data);
+    return response.data;
   }
 
   async deleteFeeConfig(id: number): Promise<void> {
@@ -194,8 +201,8 @@ class ApiClient {
 
   // System Admins
   async getSystemAdmins(): Promise<SystemAdmin[]> {
-    const response: AxiosResponse<ApiResponse<SystemAdmin[]>> = await this.client.get('/admin/system/admins');
-    return response.data.data;
+    const response: AxiosResponse<SystemAdmin[]> = await this.client.get('/admin/system/admins');
+    return response.data;
   }
 
   async createSystemAdmin(data: {
@@ -205,8 +212,8 @@ class ApiClient {
     password: string;
     role: 'super_admin' | 'admin' | 'operator';
   }): Promise<SystemAdmin> {
-    const response: AxiosResponse<ApiResponse<SystemAdmin>> = await this.client.post('/admin/system/admins', data);
-    return response.data.data;
+    const response: AxiosResponse<SystemAdmin> = await this.client.post('/admin/system/admins', data);
+    return response.data;
   }
 
   async updateSystemAdmin(id: number, data: Partial<{
@@ -215,8 +222,8 @@ class ApiClient {
     role: 'super_admin' | 'admin' | 'operator';
     is_active: boolean;
   }>): Promise<SystemAdmin> {
-    const response: AxiosResponse<ApiResponse<SystemAdmin>> = await this.client.put(`/admin/system/admins/${id}`, data);
-    return response.data.data;
+    const response: AxiosResponse<SystemAdmin> = await this.client.put(`/admin/system/admins/${id}`, data);
+    return response.data;
   }
 
   async deleteSystemAdmin(id: number): Promise<void> {
