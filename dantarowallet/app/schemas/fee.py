@@ -145,14 +145,88 @@ class PartnerFeeStats(BaseModel):
     fee_percentage: Decimal = Field(..., description="전체 대비 수수료 비율")
 
 
+# 슈퍼 어드민용 추가 스키마
+class FeeConfigResponse(BaseModel):
+    """수수료 설정 응답 (슈퍼 어드민용)"""
+    id: str
+    partner_id: str
+    transaction_type: str
+    base_fee: Decimal
+    percentage_fee: Decimal
+    minimum_fee: Decimal
+    maximum_fee: Decimal
+    tier_config: Dict[str, Any]
+    volume_discounts: Dict[str, Any]
+    time_based_pricing: Dict[str, Any]
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class RevenueStats(BaseModel):
+    """파트너별 매출 통계"""
+    partner_id: str
+    partner_name: str
+    daily_revenue: Decimal
+    monthly_revenue: Decimal
+    total_revenue: Decimal
+    total_transactions: int
+    total_volume: Decimal
+    avg_fee_rate: float
+    total_fees_collected: Decimal
+    growth_rate: float
+    last_transaction: Optional[datetime] = None
+    status: str
+
+
 class TotalRevenueStats(BaseModel):
     """전체 매출 통계"""
+    total_partners: int
+    total_revenue: Decimal
+    daily_revenue: Decimal
+    monthly_revenue: Decimal
     total_transactions: int
-    total_fee_collected: Decimal
-    average_fee: Decimal
-    partners_count: int
-    top_partners: List[PartnerFeeStats]
-    daily_revenue: List[FeeRevenueStats]
+    daily_transactions: int
+    monthly_transactions: int
+    total_volume: Decimal
+    total_fees: Decimal
+    avg_fee_rate: float
+    growth_rate: float
+    partner_rankings: List[Dict[str, Any]]
+    last_updated: datetime
+
+
+class Settlement(BaseModel):
+    """정산"""
+    settlement_id: str
+    partner_id: str
+    partner_name: str
+    period: str
+    start_date: datetime
+    end_date: datetime
+    total_transactions: int
+    total_volume: Decimal
+    total_fees: Decimal
+    settlement_amount: Decimal
+    status: str
+    created_at: datetime
+
+
+class PartnerBilling(BaseModel):
+    """파트너 빌링"""
+    partner_id: str
+    partner_name: str
+    billing_period: str
+    total_charges: Decimal
+    transaction_fees: Decimal
+    service_fees: Decimal
+    energy_costs: Decimal
+    discounts: Decimal
+    tax_amount: Decimal
+    final_amount: Decimal
+    status: str
+    due_date: datetime
+    created_at: datetime
 
 
 # 수수료 설정 변경 요청 스키마
