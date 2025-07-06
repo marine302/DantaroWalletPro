@@ -128,3 +128,14 @@ class DatabaseError(DantaroException):
             error_code="DATABASE_ERROR",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+class EnergyInsufficientError(DantaroException):
+    """에너지 부족 예외"""
+
+    def __init__(self, message: str = "에너지가 부족합니다."):
+        super().__init__(
+            message=message,
+            error_code="ENERGY_INSUFFICIENT",
+            status_code=status.HTTP_409_CONFLICT,
+        )
