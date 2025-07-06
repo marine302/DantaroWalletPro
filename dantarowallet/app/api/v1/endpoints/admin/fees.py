@@ -1,51 +1,52 @@
 """
-수수료 관리 API 엔드포인트
+관리자용 수수료 관리 API 엔드포인트
 """
 from typing import List, Optional
-from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.deps import get_current_admin_user
 from app.models.user import User
+from app.services.fee.fee_service import FeeService
+from app.schemas.fee import (
+    FeeConfig, FeeConfigCreate, FeeConfigUpdate,
+    DynamicFeeRule, DynamicFeeRuleCreate, DynamicFeeRuleUpdate,
+    FeeCalculationRequest, FeeCalculationResult,
+    PartnerFeeStats, TotalRevenueStats, FeeHistory
+)
+from app.core.logger import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter(tags=["수수료 관리"])
 
 
-@router.get("/config")
-async def get_fee_config(
-    partner_id: Optional[int] = Query(None, description="파트너사 ID (없으면 글로벌 설정)"),
-    current_admin: User = Depends(get_current_admin_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    현재 수수료 설정을 조회합니다.
-    """
-    # TODO: 수수료 설정 조회 로직 구현
-    # fee_service = FeeConfigService(db)
-    # return await fee_service.get_config(partner_id)
-    return {"message": "수수료 설정 조회 - 구현 필요"}
-
-
-@router.post("/config")
+@router.post("/configs", response_model=FeeConfig)
 async def create_fee_config(
-    transaction_type: str,
-    base_fee: Decimal,
-    percentage_fee: Decimal,
-    min_fee: Decimal,
-    max_fee: Decimal,
-    partner_id: Optional[int] = None,
+    fee_data: FeeConfigCreate,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    새로운 수수료 설정을 생성합니다.
+    새 수수료 설정을 생성합니다.
     """
-    # TODO: 수수료 설정 생성 로직 구현
-    # fee_service = FeeConfigService(db)
-    # return await fee_service.create_config(...)
-    return {"message": "수수료 설정 생성 - 구현 필요"}
+    try:
+        fee_service = FeeService(db)
+        config = await fee_service.create_fee_config(
+            fee_data=fee_data,
+            admin_id=current_admin.id
+        )
+        
+        logger.info(f"관리자 {current_admin.id}가 수수료 설정 생성: {config.id}")
+        return config
+        
+    except Exception as e:
+        logger.error(f"수수료 설정 생성 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="수수료 설정 생성 중 오류가 발생했습니다."
+        )
 
 
 @router.patch("/config/{config_id}")
