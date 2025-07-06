@@ -278,3 +278,12 @@ async def get_system_risk_summary(
     """시스템 전체 리스크 요약"""
     admin_service = AdminService(db)
     return await admin_service.get_system_risk_summary()
+
+
+# 새로 추가된 관리자 기능들 import
+from app.api.v1.endpoints.admin import energy, fees, partners
+
+# 하위 라우터 등록
+router.include_router(energy.router, prefix="/energy", tags=["에너지 풀 관리"])
+router.include_router(fees.router, prefix="/fees", tags=["수수료 관리"])  
+router.include_router(partners.router, prefix="/partners", tags=["파트너사 관리"])
