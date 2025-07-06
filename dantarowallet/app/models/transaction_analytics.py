@@ -131,8 +131,9 @@ class TransactionSummary(BaseModel):
         )
 
 
-class SystemAlert(BaseModel):
-    """시스템 레벨 알림 모델"""
+class SystemTransactionAlert(BaseModel):
+    """시스템 트랜잭션 관련 알림 모델"""
+    __tablename__ = "system_transaction_alerts"
 
     # 알림 정보
     title = Column(String(200), nullable=False)
@@ -160,5 +161,5 @@ class SystemAlert(BaseModel):
 
     def __repr__(self):
         return (
-            f"<SystemAlert(id={self.id}, type={self.alert_type}, level={self.level})>"
+            f"<SystemTransactionAlert(id={self.id}, type={self.alert_type}, level={self.level})>"
         )

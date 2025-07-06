@@ -4,7 +4,7 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 
@@ -28,13 +28,14 @@ class SuperAdminPermission:
     ]
 
 
-def get_current_super_admin(
+async def get_current_super_admin(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """현재 슈퍼 어드민 사용자 인증"""
-    # 실제 구현에서는 JWT 토큰 검증, 사용자 조회 등 수행
-    # 현재는 기본적인 토큰 검증만 구현
+    from app.core.security import verify_token
+    from app.models.user import User
+    from sqlalchemy import select
     
     if not credentials:
         raise HTTPException(
@@ -44,21 +45,58 @@ def get_current_super_admin(
     
     token = credentials.credentials
     
-    # 기본 토큰 검증 (실제 구현에서는 JWT 검증)
-    if not token or token != "super_admin_token":
+    # JWT 토큰 검증
+    payload = verify_token(token)
+    if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials"
         )
     
-    # 슈퍼 어드민 사용자 정보 반환 (임시)
-    return {
-        "id": "super_admin_001",
-        "username": "super_admin",
-        "email": "admin@dantarowallet.com",
-        "role": "super_admin",
-        "permissions": SuperAdminPermission.ALL_PERMISSIONS
-    }
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+    
+    # 사용자 조회
+    try:
+        result = await db.execute(select(User).filter(User.id == int(user_id)))
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+        
+        # 관리자 권한 확인
+        if not getattr(user, 'is_admin', False):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required"
+            )
+        
+        # 활성 상태 확인
+        if not getattr(user, 'is_active', True):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account is deactivated"
+            )
+        
+        return {
+            "id": str(user.id),
+            "username": user.email.split("@")[0],
+            "email": user.email,
+            "role": "super_admin",
+            "permissions": SuperAdminPermission.ALL_PERMISSIONS
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Database error occurred"
+        )
 
 
 def require_super_admin_permission(required_permissions: list):

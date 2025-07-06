@@ -1,0 +1,122 @@
+📋 진단 결과가 diagnostic_20250706_114610.log 에 저장됩니다.
+
+1️⃣ 프로세스 상태 확인
+----------------------------------------
+🔍 백엔드 서버 (uvicorn) 프로세스:
+✅ 백엔드 서버 실행 중
+codespa+   24984  0.0  0.3 105888 27748 pts/11   Sl+  11:17   0:00 /workspaces/DantaroWalletPro/.venv/bin/python /workspaces/DantaroWalletPro/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+🔍 프론트엔드 서버 (next) 프로세스:
+✅ 프론트엔드 서버 실행 중
+codespa+   30155  0.0  0.0   2808  1664 pts/12   S+   11:25   0:00 sh -c next dev --turbopack -p 3010
+codespa+   30156  0.0  1.6 23488124 135732 pts/12 Sl+ 11:25   0:00 node /workspaces/DantaroWalletPro/frontend/super-admin-dashboard/node_modules/.bin/next dev --turbopack -p 3010
+codespa+   30185  1.8  9.6 24110660 784956 pts/12 Sl+ 11:25   0:23 next-server (v15.3.5)
+codespa+   30393  0.0  0.9 1063592 77976 pts/12  Sl+  11:25   0:01 node /workspaces/DantaroWalletPro/frontend/super-admin-dashboard/.next/transform.js 38457
+
+🔍 포트 사용 현황:
+포트 8000 (백엔드):
+COMMAND   PID      USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+uvicorn 24984 codespace    3u  IPv4 308959      0t0  TCP *:8000 (LISTEN)
+python  27802 codespace    3u  IPv4 308959      0t0  TCP *:8000 (LISTEN)
+포트 3010 (프론트엔드):
+포트 3010 사용 안됨
+
+2️⃣ 네트워크 연결 테스트
+----------------------------------------
+🔍 백엔드 연결 테스트:
+✅ 백엔드 health 응답 정상
+응답 내용:
+{
+  "status": "healthy",
+  "app_name": "DantaroWallet",
+  "version": "0.1.0",
+  "debug": false,
+  "environment": "mainnet"
+}
+
+🔍 프론트엔드 연결 테스트:
+✅ 프론트엔드 응답 정상
+
+3️⃣ 주요 API 엔드포인트 테스트
+----------------------------------------
+🔍 테스트: /health
+✅ 상태 코드: 200 (정상)
+
+🔍 테스트: /api/v1/admin/dashboard/stats
+✅ 상태 코드: 401 (정상)
+
+🔍 테스트: /api/v1/admin/system/health
+✅ 상태 코드: 401 (정상)
+
+🔍 테스트: /api/v1/admin/partners
+❌ 상태 코드: 307
+응답 내용:
+
+4️⃣ CORS 설정 확인
+----------------------------------------
+🔍 CORS preflight 테스트 (localhost:3010 → localhost:8000):
+✅ CORS preflight 성공
+CORS 헤더:
+> Access-Control-Request-Method: GET
+> Access-Control-Request-Headers: content-type
+< access-control-allow-methods: GET, POST, PUT, DELETE, PATCH, OPTIONS
+< access-control-max-age: 600
+< access-control-allow-credentials: true
+< access-control-allow-origin: http://localhost:3010
+< access-control-allow-headers: content-type
+
+5️⃣ 최근 로그 확인
+----------------------------------------
+🔍 백엔드 로그 (최근 10줄):
+{"message": "\ud83d\uded1 Stopping deposit monitoring...", "timestamp": "2025-07-02T20:12:07.754246", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\uded1 Shutting down DantaroWallet", "timestamp": "2025-07-02T20:12:07.754553", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\ude80 Starting DantaroWallet v0.1.0", "timestamp": "2025-07-02T20:12:08.917915", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\udcca Debug mode: False", "timestamp": "2025-07-02T20:12:08.917994", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83c\udf10 Environment: nile", "timestamp": "2025-07-02T20:12:08.918034", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\udd0d Starting deposit monitoring...", "timestamp": "2025-07-02T20:12:08.918082", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "GET /health - 200 - 0.001s", "request_id": "1751487129442270000", "timestamp": "2025-07-02T20:12:09.442982", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "Unhandled exception: (sqlite3.OperationalError) no such table: users\n[SQL: SELECT users.email, users.password_hash, users.is_active, users.is_admin, users.is_verified, users.tron_address, users.id, users.created_at, users.updated_at \nFROM users \nWHERE users.email = ?]\n[parameters: ('testwithdrawal@example.com',)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "exc_info": "Traceback (most recent call last):\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1963, in _exec_single_context\n    self.dialect.do_execute(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/default.py\", line 943, in do_execute\n    cursor.execute(statement, parameters)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 149, in execute\n    self._adapt_connection._handle_exception(error)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 300, in _handle_exception\n    raise error\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 131, in execute\n    self.await_(_cursor.execute(operation, parameters))\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 132, in await_only\n    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 196, in greenlet_spawn\n    value = await result\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/cursor.py\", line 40, in execute\n    await self._execute(self._cursor.execute, sql, parameters)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/cursor.py\", line 32, in _execute\n    return await self._conn._execute(fn, *args, **kwargs)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/core.py\", line 122, in _execute\n    return await future\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/core.py\", line 105, in run\n    result = function()\nsqlite3.OperationalError: no such table: users\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 181, in __call__\n    recv_stream.close()\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 135, in __exit__\n    self.gen.throw(type, value, traceback)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_utils.py\", line 82, in collapse_excgroups\n    raise exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 178, in __call__\n    response = await self.dispatch_func(request, call_next)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/app/main.py\", line 105, in add_request_id_and_logging\n    response = await call_next(request)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 156, in call_next\n    raise app_exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 141, in coro\n    await self.app(scope, receive_or_disconnect, send_no_error)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 181, in __call__\n    recv_stream.close()\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 135, in __exit__\n    self.gen.throw(type, value, traceback)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_utils.py\", line 82, in collapse_excgroups\n    raise exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 178, in __call__\n    response = await self.dispatch_func(request, call_next)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/app/middleware/rate_limit.py\", line 85, in dispatch\n    response = await call_next(request)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 156, in call_next\n    raise app_exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 141, in coro\n    await self.app(scope, receive_or_disconnect, send_no_error)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 181, in __call__\n    recv_stream.close()\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 135, in __exit__\n    self.gen.throw(type, value, traceback)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_utils.py\", line 82, in collapse_excgroups\n    raise exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 178, in __call__\n    response = await self.dispatch_func(request, call_next)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/app/middleware/validation.py\", line 68, in dispatch\n    response = await call_next(request)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 156, in call_next\n    raise app_exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/base.py\", line 141, in coro\n    await self.app(scope, receive_or_disconnect, send_no_error)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/trustedhost.py\", line 36, in __call__\n    await self.app(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py\", line 85, in __call__\n    await self.app(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py\", line 62, in __call__\n    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_exception_handler.py\", line 53, in wrapped_app\n    raise exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_exception_handler.py\", line 42, in wrapped_app\n    await app(scope, receive, sender)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/routing.py\", line 714, in __call__\n    await self.middleware_stack(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/routing.py\", line 734, in app\n    await route.handle(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/routing.py\", line 288, in handle\n    await self.app(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/routing.py\", line 76, in app\n    await wrap_app_handling_exceptions(app, request)(scope, receive, send)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_exception_handler.py\", line 53, in wrapped_app\n    raise exc\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/_exception_handler.py\", line 42, in wrapped_app\n    await app(scope, receive, sender)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/starlette/routing.py\", line 73, in app\n    response = await f(request)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/fastapi/routing.py\", line 301, in app\n    raw_response = await run_endpoint_function(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/fastapi/routing.py\", line 212, in run_endpoint_function\n    return await dependant.call(**values)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/app/api/v1/endpoints/auth.py\", line 53, in register\n    result = await db.execute(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/ext/asyncio/session.py\", line 463, in execute\n    result = await greenlet_spawn(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 201, in greenlet_spawn\n    result = context.throw(*sys.exc_info())\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py\", line 2365, in execute\n    return self._execute_internal(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/orm/session.py\", line 2251, in _execute_internal\n    result: Result[Any] = compile_state_cls.orm_execute_statement(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/orm/context.py\", line 306, in orm_execute_statement\n    result = conn.execute(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1415, in execute\n    return meth(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/sql/elements.py\", line 523, in _execute_on_connection\n    return connection._execute_clauseelement(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1637, in _execute_clauseelement\n    ret = self._execute_context(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1842, in _execute_context\n    return self._exec_single_context(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1982, in _exec_single_context\n    self._handle_dbapi_exception(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 2351, in _handle_dbapi_exception\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/base.py\", line 1963, in _exec_single_context\n    self.dialect.do_execute(\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/engine/default.py\", line 943, in do_execute\n    cursor.execute(statement, parameters)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 149, in execute\n    self._adapt_connection._handle_exception(error)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 300, in _handle_exception\n    raise error\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py\", line 131, in execute\n    self.await_(_cursor.execute(operation, parameters))\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 132, in await_only\n    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 196, in greenlet_spawn\n    value = await result\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/cursor.py\", line 40, in execute\n    await self._execute(self._cursor.execute, sql, parameters)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/cursor.py\", line 32, in _execute\n    return await self._conn._execute(fn, *args, **kwargs)\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/core.py\", line 122, in _execute\n    return await future\n  File \"/Users/danielkwon/DantaroWalletPro/DantaroWalletPro/dantarowallet/.venv/lib/python3.9/site-packages/aiosqlite/core.py\", line 105, in run\n    result = function()\nsqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: users\n[SQL: SELECT users.email, users.password_hash, users.is_active, users.is_admin, users.is_verified, users.tron_address, users.id, users.created_at, users.updated_at \nFROM users \nWHERE users.email = ?]\n[parameters: ('testwithdrawal@example.com',)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "request_id": "1751487129445455000", "timestamp": "2025-07-02T20:12:09.484440", "level": "ERROR", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\uded1 Stopping deposit monitoring...", "timestamp": "2025-07-02T20:15:14.476437", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "\ud83d\uded1 Shutting down DantaroWallet", "timestamp": "2025-07-02T20:15:14.477469", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+
+🔍 시스템 메모리 사용량:
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       5.9Gi       286Mi        61Mi       2.0Gi       1.9Gi
+Swap:             0B          0B          0B
+
+🔍 디스크 사용량:
+Filesystem      Size  Used Avail Use% Mounted on
+overlay          32G   13G   18G  41% /
+tmpfs            64M     0   64M   0% /dev
+shm              64M     0   64M   0% /dev/shm
+/dev/root        29G   14G   16G  48% /vscode
+
+6️⃣ 환경 설정 확인
+----------------------------------------
+🔍 백엔드 환경 변수:
+✅ .env 파일 존재
+주요 설정 (민감 정보 제외):
+DATABASE_URL=sqlite+aiosqlite:///./test.db
+API_V1_STR=/api/v1
+TRON_NETWORK=mainnet
+
+🔍 프론트엔드 환경 변수:
+✅ .env.local 파일 존재
+API 설정:
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_ADMIN_API_BASE_URL=http://localhost:8000/api/v1/admin
+
+==================================================
+🎯 진단 완료 Sun Jul  6 11:46:10 UTC 2025
+📄 전체 로그: diagnostic_20250706_114610.log
+
+📊 진단 요약
+----------------------------------------
+백엔드 프로세스: ✅ 실행중
+프론트엔드 프로세스: ✅ 실행중
+백엔드 응답: ✅ 정상
+프론트엔드 응답: ✅ 정상
+
+🔧 추천 조치사항:
+
+🚀 이 로그를 Copilot에게 공유하면 정확한 문제 진단을 받을 수 있습니다!

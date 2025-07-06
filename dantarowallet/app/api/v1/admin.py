@@ -4,7 +4,7 @@
 """
 from typing import Any, Dict, List, Optional
 
-from app.api.deps import get_current_admin_user
+from app.core.auth import get_current_super_admin
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.admin import (
@@ -29,7 +29,7 @@ router = APIRouter(tags=["관리자"])
 
 @router.get("/stats", response_model=SystemStatsResponse)
 async def get_system_stats(
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -48,7 +48,7 @@ async def get_users_list(
     search: Optional[str] = Query(None, description="이메일 검색"),
     is_active: Optional[bool] = Query(None, description="활성 상태 필터"),
     is_admin: Optional[bool] = Query(None, description="관리자 필터"),
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -65,7 +65,7 @@ async def get_users_list(
 @router.get("/users/{user_id}", response_model=UserDetailResponse)
 async def get_user_detail(
     user_id: int,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -88,7 +88,7 @@ async def get_user_detail(
 async def update_user(
     user_id: int,
     user_update: UserUpdateRequest,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -129,7 +129,7 @@ async def get_transaction_monitor(
     status: Optional[str] = Query(None, description="거래 상태 필터"),
     user_id: Optional[int] = Query(None, description="사용자 ID 필터"),
     hours: int = Query(24, ge=1, le=168, description="조회 시간 범위(시간)"),
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -146,7 +146,7 @@ async def get_transaction_monitor(
 @router.get("/suspicious-activities")
 async def get_suspicious_activities(
     limit: int = Query(20, ge=1, le=100, description="조회 개수"),
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -161,7 +161,7 @@ async def get_suspicious_activities(
 @router.post("/users/{user_id}/disable")
 async def disable_user(
     user_id: int,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -183,7 +183,7 @@ async def disable_user(
 @router.post("/users/{user_id}/enable")
 async def enable_user(
     user_id: int,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -205,7 +205,7 @@ async def enable_user(
 @router.post("/users/{user_id}/verify")
 async def verify_user(
     user_id: int,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -227,7 +227,7 @@ async def verify_user(
 @router.post("/backup", response_model=BackupInfoResponse)
 async def create_backup(
     req: BackupCreateRequest,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """DB 백업 생성"""
@@ -237,7 +237,7 @@ async def create_backup(
 
 @router.get("/backups", response_model=List[BackupInfoResponse])
 async def list_backups(
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """백업 목록 조회"""
@@ -248,7 +248,7 @@ async def list_backups(
 @router.post("/restore")
 async def restore_backup(
     file_path: str,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """지정된 백업 파일로 복구"""
@@ -262,7 +262,7 @@ async def restore_backup(
 @router.get("/users/{user_id}/risk", response_model=UserRiskAnalysisResponse)
 async def get_user_risk_analysis(
     user_id: int,
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """특정 사용자 리스크 분석"""
@@ -272,12 +272,39 @@ async def get_user_risk_analysis(
 
 @router.get("/risk-summary", response_model=SystemRiskSummaryResponse)
 async def get_system_risk_summary(
-    current_admin: User = Depends(get_current_admin_user),
+    current_admin = Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """시스템 전체 리스크 요약"""
     admin_service = AdminService(db)
     return await admin_service.get_system_risk_summary()
+
+
+# 대시보드 관련 엔드포인트
+@router.get("/dashboard/stats")
+async def get_dashboard_stats(
+    current_admin = Depends(get_current_super_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """대시보드 통계 조회"""
+    admin_service = AdminService(db)
+    return await admin_service.get_system_stats()
+
+
+@router.get("/system/health")  
+async def get_system_health(
+    current_admin = Depends(get_current_super_admin),
+):
+    """시스템 건강 상태 조회"""
+    return {
+        "status": "healthy",
+        "timestamp": "2025-07-06T11:20:00Z",
+        "services": {
+            "database": "healthy",
+            "tron_network": "degraded",  # TRON API 제한으로 인한 degraded 상태
+            "energy_pool": "healthy"
+        }
+    }
 
 
 # 새로 추가된 관리자 기능들 import

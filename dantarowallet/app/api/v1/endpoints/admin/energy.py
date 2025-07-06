@@ -1,144 +1,222 @@
 """
 TRON 에너지 풀 관리 API 엔드포인트
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.deps import get_current_admin_user
 from app.models.user import User
-from app.models.energy_pool import EnergyPool, EnergyUsageLog, EnergyPriceHistory
+from app.services.energy.energy_pool_service import EnergyPoolService
 from app.schemas.energy import (
-    EnergyPoolResponse,
-    EnergyPoolCreateRequest,
-    EnergyPoolUpdateRequest,
-    EnergyUsageLogResponse,
-    EnergyStatsResponse,
-    EnergyPriceHistoryResponse
+    EnergyPoolStatus, EnergyRechargeRequest, EnergyUsageStats,
+    EnergyQueueCreate, QueueStatus
 )
+from app.core.logger import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter(tags=["에너지 풀 관리"])
 
 
-@router.get("/status", response_model=List[EnergyPoolResponse])
-async def get_energy_pools_status(
+@router.get("/status", response_model=EnergyPoolStatus)
+async def get_energy_pool_status(
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    모든 에너지 풀의 현재 상태를 조회합니다.
+    현재 에너지 풀 상태를 조회합니다.
     """
-    # TODO: 에너지 풀 조회 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.get_all_pools()
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        status = await energy_service.get_energy_status()
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 풀 상태 조회")
+        return status
+        
+    except Exception as e:
+        logger.error(f"에너지 풀 상태 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 풀 상태 조회 중 오류가 발생했습니다."
+        )
 
 
-@router.post("/create-pool", response_model=EnergyPoolResponse)
-async def create_energy_pool(
-    pool_data: EnergyPoolCreateRequest,
+@router.post("/recharge")
+async def recharge_energy_pool(
+    recharge_data: EnergyRechargeRequest,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    새로운 에너지 풀을 생성합니다.
-    TRX를 freeze하여 에너지를 확보합니다.
+    에너지 풀을 충전합니다.
     """
-    # TODO: 에너지 풀 생성 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.create_pool(pool_data)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        result = await energy_service.recharge_energy(recharge_data)
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 풀 충전: {recharge_data.amount}")
+        return {"success": result, "message": "에너지 풀 충전이 완료되었습니다."}
+        
+    except Exception as e:
+        logger.error(f"에너지 풀 충전 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 풀 충전 중 오류가 발생했습니다."
+        )
 
 
-@router.get("/usage-stats", response_model=EnergyStatsResponse)
+@router.get("/usage-stats", response_model=EnergyUsageStats)
 async def get_energy_usage_stats(
-    days: int = Query(7, ge=1, le=30, description="통계 기간 (일)"),
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     에너지 사용 통계를 조회합니다.
     """
-    # TODO: 에너지 사용 통계 조회 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.get_usage_stats(days)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        stats = await energy_service.get_usage_stats()
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 사용 통계 조회")
+        return stats
+        
+    except Exception as e:
+        logger.error(f"에너지 사용 통계 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 사용 통계 조회 중 오류가 발생했습니다."
+        )
 
 
-@router.get("/usage-logs", response_model=List[EnergyUsageLogResponse])
-async def get_energy_usage_logs(
-    pool_id: Optional[int] = Query(None, description="특정 풀 ID"),
-    limit: int = Query(100, ge=1, le=1000, description="조회 개수"),
+@router.post("/queue")
+async def add_to_energy_queue(
+    queue_data: EnergyQueueCreate,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    에너지 사용 로그를 조회합니다.
+    에너지 대기 큐에 새 항목을 추가합니다.
     """
-    # TODO: 에너지 사용 로그 조회 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.get_usage_logs(pool_id, limit)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        # type: ignore을 사용하여 타입 체커 우회
+        admin_id: int = current_admin.id  # type: ignore
+        queue_id = await energy_service.add_to_queue(admin_id, queue_data)
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 대기 큐에 항목 추가")
+        return {"queue_id": queue_id, "message": "대기 큐에 추가되었습니다."}
+        
+    except Exception as e:
+        logger.error(f"에너지 대기 큐 추가 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 대기 큐 추가 중 오류가 발생했습니다."
+        )
 
 
-@router.post("/record-price")
-async def record_energy_price(
-    trx_amount: float,
-    energy_amount: int,
+@router.get("/queue-status")
+async def get_queue_status(
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    에너지 가격 정보를 기록합니다.
+    에너지 대기 큐 상태를 조회합니다.
     """
-    # TODO: 에너지 가격 기록 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.record_price(trx_amount, energy_amount)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        admin_id: int = current_admin.id  # type: ignore
+        status = await energy_service.get_queue_status(admin_id)
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 대기 큐 상태 조회")
+        return status
+        
+    except Exception as e:
+        logger.error(f"에너지 대기 큐 상태 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 대기 큐 상태 조회 중 오류가 발생했습니다."
+        )
 
 
-@router.get("/price-history", response_model=List[EnergyPriceHistoryResponse])
-async def get_energy_price_history(
-    days: int = Query(30, ge=1, le=365, description="조회 기간 (일)"),
+@router.post("/process-queue")
+async def process_energy_queue(
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    에너지 가격 변동 이력을 조회합니다.
+    에너지 대기 큐를 처리합니다.
     """
-    # TODO: 에너지 가격 이력 조회 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.get_price_history(days)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        processed_ids = await energy_service.process_queue()
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 대기 큐 처리: {len(processed_ids)}개 항목")
+        return {
+            "processed_count": len(processed_ids),
+            "processed_ids": processed_ids,
+            "message": "대기 큐 처리가 완료되었습니다."
+        }
+        
+    except Exception as e:
+        logger.error(f"에너지 대기 큐 처리 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 대기 큐 처리 중 오류가 발생했습니다."
+        )
 
 
-@router.post("/simulate-usage")
-async def simulate_energy_usage(
-    transaction_count: int,
+@router.get("/alerts")
+async def get_active_alerts(
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    특정 거래량에 대한 에너지 사용량을 시뮬레이션합니다.
+    활성 에너지 알림을 조회합니다.
     """
-    # TODO: 에너지 사용량 시뮬레이션 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.simulate_usage(transaction_count)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        alerts = await energy_service.get_active_alerts()
+        
+        logger.info(f"관리자 {current_admin.id}가 활성 에너지 알림 조회")
+        return alerts
+        
+    except Exception as e:
+        logger.error(f"활성 에너지 알림 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="활성 에너지 알림 조회 중 오류가 발생했습니다."
+        )
 
 
-@router.put("/auto-manage")
-async def update_auto_manage_settings(
-    auto_freeze: bool,
-    threshold_percentage: float,
+@router.delete("/queue/{queue_id}")
+async def cancel_queue_item(
+    queue_id: int,
     current_admin: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    자동 에너지 관리 설정을 업데이트합니다.
+    에너지 대기 큐 항목을 취소합니다.
     """
-    # TODO: 자동 관리 설정 업데이트 로직 구현
-    # energy_service = EnergyPoolService(db)
-    # return await energy_service.update_auto_settings(auto_freeze, threshold_percentage)
-    pass
+    try:
+        energy_service = EnergyPoolService(db)
+        admin_id: int = current_admin.id  # type: ignore
+        success = await energy_service.cancel_queue_item(queue_id, admin_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=404,
+                detail="대기 큐 항목을 찾을 수 없습니다."
+            )
+        
+        logger.info(f"관리자 {current_admin.id}가 에너지 대기 큐 항목 {queue_id} 취소")
+        return {"message": "대기 큐 항목이 취소되었습니다."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"에너지 대기 큐 항목 취소 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="에너지 대기 큐 항목 취소 중 오류가 발생했습니다."
+        )

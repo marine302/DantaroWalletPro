@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc, func
 from sqlalchemy.orm import selectinload
 
-from app.models.energy import EnergyPool, EnergyTransaction, EnergyQueue, EnergyAlert
+from app.models.energy_pool import EnergyPool
 from app.models.user import User
 from app.schemas.energy import (
     EnergyPoolStatus, EnergyRechargeRequest, EnergyUsageStats,
-    EnergyQueueCreate, QueueStatus, CreateEnergyAlert,
+    EnergyQueueCreate, QueueStatus, CreateEnergyAlert, EnergyAlert,
     EmergencyWithdrawalCreate, EmergencyWithdrawalResponse
 )
 from app.core.exceptions import EnergyInsufficientError, ValidationError

@@ -12,7 +12,7 @@ from app.models.transaction import (
     TransactionType,
 )
 from app.models.transaction_analytics import (
-    SystemAlert,
+    SystemTransactionAlert,
     TransactionAlert,
     TransactionSummary,
 )
