@@ -24,9 +24,21 @@ class TronService:
     """
     
     def __init__(self):
-        # 임시로 TRON 서비스 초기화를 비활성화 (무한루프 방지)
-        logger.info("TronService initialization disabled to prevent infinite loops")
-        self._initialized = False
+        """TRON 서비스 초기화"""
+        logger.info("Initializing TronService...")
+        try:
+            self._network_service = TronNetworkService()
+            self._wallet_manager = TronWalletManager()
+            self._balance_service = TronBalanceService()
+            self._transaction_service = TronTransactionService()
+            self._energy_service = TronEnergyService()
+            self._stats_service = TronNetworkStatsService()
+            self._initialized = True
+            logger.info("TronService initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize TronService: {e}")
+            self._initialized = False
+            raise
     
     @property
     def client(self):
@@ -38,12 +50,10 @@ class TronService:
     # =============================================================================
     
     def generate_wallet(self) -> Dict[str, str]:
-        """새 지갑 생성 (임시 비활성화)"""
-        return {"address": "TEMP_ADDRESS", "private_key": "TEMP_KEY"}
-    
+        """새 지갑 생성"""
+        return self._wallet_manager.generate_wallet()
+
     async def validate_address(self, address: str) -> bool:
-        """주소 검증 (임시 비활성화)"""
-        return True
         """주소 유효성 검증"""
         return await self._wallet_manager.validate_address(address)
     
