@@ -6,6 +6,25 @@ from app.models.balance import Balance
 from app.models.base import BaseModel
 from app.models.deposit import Deposit
 from app.models.energy_pool import EnergyPool, EnergyPriceHistory, EnergyUsageLog
+from app.models.fee_config import FeeConfig, FeeHistory, FeeRevenueStats
+from app.models.partner import Partner
+from app.models.partner_history import (
+    PartnerApiUsage,
+    PartnerDailyStatistics,
+    PartnerEnergyAllocation,
+    PartnerEnergyUsageHistory,
+    PartnerFeeRevenue,
+    PartnerFeeConfigHistory,
+    PartnerOnboardingStep,
+    PartnerDeployment,
+)
+from app.models.system_admin import (
+    SystemMonitoring,
+    SystemAlert,
+    SuperAdminUser,
+    SuperAdminActivityLog,
+    PlatformRevenueStatistics,
+)
 from app.models.transaction import (
     Transaction,
     TransactionDirection,
@@ -15,7 +34,6 @@ from app.models.transaction import (
 from app.models.transaction_analytics import (
     AlertLevel,
     AlertType,
-    SystemAlert,
     TransactionAlert,
     TransactionSummary,
 )
@@ -38,10 +56,25 @@ __all__ = [
     "WithdrawalPriority",
     "TransactionAlert",
     "TransactionSummary",
-    "SystemAlert",
     "AlertLevel",
     "AlertType",
     "EnergyPool",
     "EnergyUsageLog",
     "EnergyPriceHistory",
+    "FeeConfig",
+    "FeeHistory",
+    "FeeRevenueStats",
+    "Partner",
+    "PartnerApiUsage",
+    "PartnerDailyStatistics",
+    "PartnerEnergyAllocation",
+    "PartnerEnergyUsageHistory",
+    "PartnerFeeRevenue",
+    "PartnerFeeConfigHistory",
+    "PartnerOnboardingStep",
+    "PartnerDeployment",
+    "SystemMonitoring",
+    "SuperAdminUser",
+    "SuperAdminActivityLog",
+    "PlatformRevenueStatistics",
 ]

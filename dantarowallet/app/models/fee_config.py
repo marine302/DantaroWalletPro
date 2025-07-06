@@ -19,6 +19,9 @@ class FeeConfig(Base):
     is_active = Column(Boolean, default=True, comment="활성 상태")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # 관계 정의
+    partner_history = relationship("PartnerFeeConfigHistory", back_populates="fee_config", cascade="all, delete-orphan")
 
 
 class FeeHistory(Base):

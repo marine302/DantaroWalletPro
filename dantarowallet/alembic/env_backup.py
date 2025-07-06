@@ -1,18 +1,19 @@
+import asyncio
+
+# 프로젝트 설정 import
 import sys
 from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from sqlalchemy import create_engine, pool
+from sqlalchemy import pool
 from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-# 간단한 DATABASE_URL 설정
-DATABASE_URL = "sqlite:///./test.db"
-
-# SQLAlchemy Base import
-from app.models.base import Base
+from app.core.config import settings
+from app.core.database import Base
 
 # 모든 모델 import (중요!)
 from app.models import *  # noqa
@@ -30,7 +31,7 @@ target_metadata = Base.metadata
 
 def get_url():
     """데이터베이스 URL 가져오기"""
-    return DATABASE_URL
+    return settings.DATABASE_URL
 
 
 def run_migrations_offline() -> None:
@@ -54,18 +55,26 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    """온라인 모드에서 마이그레이션 실행"""
+async def run_async_migrations() -> None:
+    """비동기 모드에서 마이그레이션 실행"""
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = get_url()
 
-    connectable = create_engine(
-        get_url(),
+    connectable = async_engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
-        do_run_migrations(connection)
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+
+    await connectable.dispose()
+
+
+def run_migrations_online() -> None:
+    """온라인 모드에서 마이그레이션 실행"""
+    asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():
