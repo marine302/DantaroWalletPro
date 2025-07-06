@@ -30,7 +30,7 @@ class TransferRequest(BaseModel):
     """내부 이체 요청 스키마"""
 
     receiver_email: str
-    amount: Decimal = Field(..., gt=0, decimal_places=6)
+    amount: Decimal = Field(..., gt=0)
     description: Optional[str] = Field(None, max_length=200)
 
     @field_validator("amount")
