@@ -3,6 +3,7 @@ Main FastAPI application module for DantaroWallet.
 Production-ready FastAPI application with advanced middleware, logging, and error handling.
 """
 import asyncio
+import os
 import time
 from contextlib import asynccontextmanager
 
@@ -37,17 +38,17 @@ async def lifespan(app: FastAPI):
     logger.info(f"📊 Debug mode: {settings.DEBUG}")
     logger.info(f"🌐 Environment: {settings.TRON_NETWORK}")
 
-    # 입금 모니터링 백그라운드 시작 (임시 비활성화)
-    # if not deposit_monitor.is_monitoring:
-    #     logger.info("🔍 Starting deposit monitoring...")
-    #     asyncio.create_task(deposit_monitor.start_monitoring())
+    # 입금 모니터링 백그라운드 시작
+    if not deposit_monitor.is_monitoring:
+        logger.info("🔍 Starting deposit monitoring...")
+        asyncio.create_task(deposit_monitor.start_monitoring())
 
     # FastAPI에게 "준비 완료" 신호 전달
     yield
 
     # 종료 시 작업
     logger.info("🛑 Stopping deposit monitoring...")
-    # await deposit_monitor.stop_monitoring()
+    await deposit_monitor.stop_monitoring()
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
 
 
@@ -156,4 +157,5 @@ from app.api.v1.web_dashboard import router as web_dashboard_router
 app.include_router(web_dashboard_router, prefix="/dashboard", tags=["web-dashboard"])
 
 # 정적 파일 마운트 (CSS, JS, 이미지 등)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app", "static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
