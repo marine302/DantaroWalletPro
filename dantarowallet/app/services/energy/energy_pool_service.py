@@ -352,3 +352,82 @@ class EnergyPoolService:
         except Exception as e:
             logger.error(f"에너지 사용 통계 조회 실패: {str(e)}")
             raise
+
+    async def process_emergency_withdrawal(
+        self, user_id: int, withdrawal_data: EmergencyWithdrawalCreate
+    ) -> EmergencyWithdrawalResponse:
+        """긴급 출금을 처리합니다."""
+        try:
+            # 임시 응답 (실제 구현 시 블록체인 연동 필요)
+            transaction_id = f"emergency_{user_id}_{datetime.now().timestamp()}"
+            
+            # 높은 수수료 계산 (일반 수수료의 3배)
+            base_fee = Decimal("5.0")  # TRX
+            high_fee = base_fee * 3
+            
+            return EmergencyWithdrawalResponse(
+                transaction_id=transaction_id,
+                status="pending",
+                estimated_confirmation_time=5,  # 5분
+                fee_amount=high_fee,
+                message="긴급 출금이 처리 중입니다. 높은 수수료로 우선 처리됩니다."
+            )
+            
+        except Exception as e:
+            logger.error(f"긴급 출금 처리 실패: {str(e)}")
+            raise
+
+    async def get_active_alerts(self) -> List[EnergyAlert]:
+        """활성 에너지 알림을 조회합니다."""
+        try:
+            result = await self.db.execute(
+                select(EnergyAlert)
+                .where(EnergyAlert.is_active == True)
+                .order_by(desc(EnergyAlert.created_at))
+            )
+            alerts = result.scalars().all()
+            
+            return [
+                EnergyAlert(
+                    id=alert.id,
+                    alert_type=alert.alert_type,
+                    title=alert.title,
+                    message=alert.message,
+                    severity=alert.severity,
+                    is_active=alert.is_active,
+                    created_at=alert.created_at,
+                    resolved_at=alert.resolved_at
+                )
+                for alert in alerts
+            ]
+            
+        except Exception as e:
+            logger.error(f"활성 알림 조회 실패: {str(e)}")
+            raise
+
+    async def cancel_queue_item(self, queue_id: int, user_id: int) -> bool:
+        """대기열 항목을 취소합니다."""
+        try:
+            # 사용자 권한 확인 및 상태 업데이트
+            result = await self.db.execute(
+                update(EnergyQueue)
+                .where(
+                    EnergyQueue.id == queue_id,
+                    EnergyQueue.user_id == user_id,
+                    EnergyQueue.status == "pending"
+                )
+                .values(
+                    status="cancelled",
+                    processed_at=func.now()
+                )
+            )
+            
+            await self.db.commit()
+            
+            # 업데이트된 행이 있는지 확인
+            return result.rowcount > 0
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"대기열 항목 취소 실패: {str(e)}")
+            raise
