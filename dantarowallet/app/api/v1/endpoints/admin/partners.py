@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
+from app.core.database import get_sync_db
 from app.api.deps import get_current_admin_user
 from app.models.user import User
 from app.services.partner.partner_service import PartnerService
@@ -27,7 +27,7 @@ async def get_partners_list(
     search: Optional[str] = Query(None, description="파트너명 또는 도메인 검색"),
     status: Optional[str] = Query(None, description="상태 필터"),
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 목록 조회"""
     try:
@@ -53,7 +53,7 @@ async def get_partners_list(
 async def create_partner(
     partner_data: PartnerCreate,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """새 파트너사 등록"""
     try:
@@ -81,7 +81,7 @@ async def create_partner(
 async def get_partner_detail(
     partner_id: str,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 상세 정보 조회"""
     try:
@@ -106,7 +106,7 @@ async def update_partner(
     partner_id: str,
     update_data: PartnerUpdate,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 정보 수정"""
     try:
@@ -130,7 +130,7 @@ async def update_partner(
 async def delete_partner(
     partner_id: str,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 삭제"""
     try:
@@ -160,7 +160,7 @@ async def delete_partner(
 async def generate_api_key(
     partner_id: str,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 API 키 생성"""
     try:
@@ -182,7 +182,7 @@ async def generate_api_key(
 async def rotate_api_key(
     partner_id: str,
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 API 키 회전"""
     try:
@@ -205,7 +205,7 @@ async def get_partner_statistics(
     partner_id: str,
     days: int = Query(30, ge=1, le=365, description="통계 조회 기간 (일)"),
     current_admin: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_sync_db),
 ):
     """파트너사 통계 조회"""
     try:

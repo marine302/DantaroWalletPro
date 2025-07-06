@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class DepositRequest(BaseModel):
     """입금 요청 스키마"""
 
-    amount: Decimal = Field(..., gt=0, decimal_places=6)
+    amount: Decimal = Field(..., gt=0)
     asset: str = Field(default="USDT", pattern="^(USDT|TRX)$")
     description: Optional[str] = Field(None, max_length=200)
 

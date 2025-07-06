@@ -106,3 +106,24 @@ async def drop_tables() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         logger.info("Database tables dropped")
+
+# 동기 데이터베이스 세션 (파트너 관리용)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# 동기 엔진 생성
+sync_engine = create_engine(
+    settings.SYNC_DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.SYNC_DATABASE_URL else {},
+)
+
+# 동기 세션 로컬
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+
+def get_sync_db():
+    """동기 DB 세션 의존성"""
+    db = SyncSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

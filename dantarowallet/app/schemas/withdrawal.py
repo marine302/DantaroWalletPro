@@ -14,7 +14,7 @@ class WithdrawalRequest(BaseModel):
     """출금 요청 스키마"""
 
     to_address: str = Field(..., min_length=34, max_length=34, description="TRON 수신 주소")
-    amount: Decimal = Field(..., gt=0, decimal_places=6, description="출금 금액")
+    amount: Decimal = Field(..., gt=0, description="출금 금액")
     asset: str = Field(default="USDT", description="자산 종류")
     notes: Optional[str] = Field(None, max_length=500, description="사용자 메모")
 
@@ -92,7 +92,7 @@ class WithdrawalCompleteRequest(BaseModel):
     """출금 완료 요청"""
 
     tx_hash: str = Field(..., min_length=64, max_length=66, description="트랜잭션 해시")
-    tx_fee: Optional[Decimal] = Field(None, decimal_places=6, description="실제 네트워크 수수료")
+    tx_fee: Optional[Decimal] = Field(None, description="실제 네트워크 수수료")
 
 
 class WithdrawalProcessingGuide(BaseModel):
