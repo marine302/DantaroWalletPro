@@ -44,18 +44,39 @@ Super Admin Dashboard
 
 ### Phase 1: 핵심 서비스 레이어 구현 (1주)
 
-#### 1.1 파트너 관리 서비스
+#### 1.1 파트너 관리 서비스 ✅ (완료)
 ```python
 # app/services/partner/partner_service.py
 class PartnerService:
-    async def create_partner(partner_data: PartnerCreate) -> Partner
-    async def get_partner_by_id(partner_id: str) -> Partner
-    async def get_all_partners(skip: int, limit: int) -> List[Partner]
-    async def update_partner(partner_id: str, update_data: PartnerUpdate) -> Partner
-    async def delete_partner(partner_id: str) -> bool
-    async def generate_api_key(partner_id: str) -> str
-    async def rotate_api_key(partner_id: str) -> str
-    async def get_partner_statistics(partner_id: str) -> PartnerStats
+    async def get_all_partners() -> List[Partner]  # ✅ 구현됨
+    async def get_partner_statistics_detailed() -> Dict[str, Any]  # ✅ 구현됨 
+    async def bulk_update_partners() -> List[Partner]  # ✅ 구현됨
+    async def get_partner_performance_ranking() -> List[Dict[str, Any]]  # ✅ 구현됨
+    async def export_partner_data() -> str  # ✅ 구현됨
+```
+
+#### 1.2 에너지 풀 관리 서비스 🔄 (진행 중 - SQLAlchemy 타입 오류 수정 필요)
+```python
+# app/services/energy/energy_pool_service.py  
+class EnergyPoolService:
+    async def get_total_energy_status() -> Dict[str, Any]  # ✅ 구현됨
+    async def allocate_energy_to_partner() -> bool  # ✅ 구현됨
+    async def get_partner_energy_usage() -> List[Dict[str, Any]]  # ✅ 구현됨
+    async def recharge_energy_pool() -> bool  # ✅ 구현됨
+    async def monitor_energy_alerts() -> List[Dict[str, Any]]  # ✅ 구현됨
+    async def get_energy_usage_history() -> List[Dict[str, Any]]  # ✅ 구현됨
+    async def get_energy_analytics() -> Dict[str, Any]  # ✅ 구현됨
+```
+
+#### 1.3 수수료 & 매출 관리 서비스 🔄 (진행 중 - SQLAlchemy 타입 오류 수정 필요)
+```python
+# app/services/fee/super_admin_fee_service.py
+class SuperAdminFeeService:
+    async def get_total_revenue_stats() -> TotalRevenueStats  # ✅ 구현됨
+    async def process_bulk_settlement() -> List[Settlement]  # ✅ 구현됨
+    async def get_fee_analytics() -> Dict[str, Any]  # ✅ 구현됨
+    async def configure_dynamic_pricing() -> Dict[str, Any]  # ✅ 구현됨
+```
 ```
 
 #### 1.2 에너지 풀 관리 서비스
@@ -267,8 +288,9 @@ class DeploymentService:
 
 #### Phase 1: 서비스 레이어 (1주)
 - [x] `PartnerService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
-- [ ] `EnergyPoolService` 완전 구현  
-- [ ] `FeeService` 완전 구현
+- [x] `EnergyPoolService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료 
+- [x] `SuperAdminFeeService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
+- [ ] 🔄 SQLAlchemy 타입 오류 수정 (진행 중)
 - [ ] `SystemMonitorService` 기본 구현
 - [ ] `DeploymentService` 기본 구현
 

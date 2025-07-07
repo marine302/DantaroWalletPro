@@ -223,7 +223,7 @@ class PartnerService:
     async def get_partner_performance_ranking(self) -> List[Dict[str, Any]]:
         """파트너 성과 순위 조회"""
         try:
-            partners = self.db.query(Partner).filter(Partner.is_active == True).all()
+            partners = self.db.query(Partner).filter(Partner.status == "active").all()
             
             # 성과 지표 계산 (실제 구현에서는 transaction, revenue 데이터 기반)
             performance_data = []
@@ -281,9 +281,8 @@ class PartnerService:
                     "domain": partner.domain,
                     "contact_email": partner.contact_email,
                     "status": partner.status,
-                    "is_active": partner.is_active,
-                    "commission_rate": float(partner.commission_rate or 0),
-                    "created_at": partner.created_at.isoformat(),
+                    "commission_rate": float(partner.commission_rate) if partner.commission_rate else 0.0,
+                    "created_at": partner.created_at.isoformat() if partner.created_at else None,
                     "updated_at": partner.updated_at.isoformat() if partner.updated_at else None
                 }
                 
