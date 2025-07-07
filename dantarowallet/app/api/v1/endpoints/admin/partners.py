@@ -221,3 +221,99 @@ async def get_partner_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="파트너사 통계 조회 중 오류가 발생했습니다."
         )
+
+
+# ===== 슈퍼 어드민 전용 고급 파트너 관리 엔드포인트 =====
+
+@router.get("/statistics/detailed/{partner_id}", response_model=Dict[str, Any])
+async def get_partner_detailed_statistics(
+    partner_id: str,
+    current_admin: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_sync_db),
+):
+    """파트너 상세 통계 조회 (슈퍼 어드민용)"""
+    try:
+        partner_service = PartnerService(db)
+        detailed_stats = await partner_service.get_partner_statistics_detailed(partner_id)
+        
+        logger.info(f"슈퍼 어드민 {current_admin.id}가 파트너 {partner_id} 상세 통계 조회")
+        return detailed_stats
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"파트너 상세 통계 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="파트너 상세 통계 조회 중 오류가 발생했습니다."
+        )
+
+
+@router.post("/bulk-update", response_model=List[Dict[str, Any]])
+async def bulk_update_partners(
+    partner_ids: List[str],
+    update_data: Dict[str, Any],
+    current_admin: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_sync_db),
+):
+    """파트너 일괄 업데이트 (슈퍼 어드민용)"""
+    try:
+        partner_service = PartnerService(db)
+        results = await partner_service.bulk_update_partners(partner_ids, update_data)
+        
+        logger.info(f"슈퍼 어드민 {current_admin.id}가 파트너 {len(partner_ids)}개 일괄 업데이트")
+        return results
+        
+    except Exception as e:
+        logger.error(f"파트너 일괄 업데이트 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="파트너 일괄 업데이트 중 오류가 발생했습니다."
+        )
+
+
+@router.get("/performance-ranking", response_model=List[Dict[str, Any]])
+async def get_partner_performance_ranking(
+    current_admin: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_sync_db),
+):
+    """파트너 성과 순위 조회 (슈퍼 어드민용)"""
+    try:
+        partner_service = PartnerService(db)
+        ranking = await partner_service.get_partner_performance_ranking()
+        
+        logger.info(f"슈퍼 어드민 {current_admin.id}가 파트너 성과 순위 조회")
+        return ranking
+        
+    except Exception as e:
+        logger.error(f"파트너 성과 순위 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="파트너 성과 순위 조회 중 오류가 발생했습니다."
+        )
+
+
+@router.post("/export-data", response_model=Dict[str, str])
+async def export_partner_data(
+    partner_ids: Optional[List[str]] = None,
+    format: str = Query("csv", description="내보낼 형식 (csv, json, excel)"),
+    current_admin: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_sync_db),
+):
+    """파트너 데이터 내보내기 (슈퍼 어드민용)"""
+    try:
+        partner_service = PartnerService(db)
+        export_result = await partner_service.export_partner_data(
+            partner_ids=partner_ids,
+            format=format
+        )
+        
+        logger.info(f"슈퍼 어드민 {current_admin.id}가 파트너 데이터 내보내기 ({format})")
+        return export_result
+        
+    except Exception as e:
+        logger.error(f"파트너 데이터 내보내기 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="파트너 데이터 내보내기 중 오류가 발생했습니다."
+        )

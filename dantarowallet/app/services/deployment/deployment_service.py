@@ -24,9 +24,13 @@ class DeploymentService:
     def __init__(self, db: Session):
         self.db = db
     
-    async def create_partner_instance(self, partner: Partner) -> DeploymentResult:
+    async def create_partner_instance(self, partner_id: str, template_type: str = "standard") -> DeploymentResult:
         """파트너 인스턴스 생성"""
         try:
+            partner = self.db.query(Partner).filter(Partner.id == partner_id).first()
+            if not partner:
+                raise HTTPException(status_code=404, detail="Partner not found")
+                
             deployment_id = str(uuid.uuid4())
             
             # 배포 설정 준비
@@ -75,7 +79,7 @@ class DeploymentService:
             self.db.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to create partner instance: {str(e)}")
     
-    async def configure_partner_environment(self, partner_id: str) -> bool:
+    async def configure_partner_environment(self, partner_id: str, config_data: Dict[str, Any]) -> bool:
         """파트너 환경 설정"""
         try:
             partner = self.db.query(Partner).filter(Partner.id == partner_id).first()
@@ -730,3 +734,182 @@ class DeploymentService:
             health_data["issues"] = ["Service unavailable", "Database connection failed"]
         
         return health_data
+
+    async def remove_partner_deployment(self, partner_id: str) -> bool:
+        """파트너 배포 제거"""
+        try:
+            partner = self.db.query(Partner).filter(Partner.id == partner_id).first()
+            if not partner:
+                raise HTTPException(status_code=404, detail="Partner not found")
+            
+            # 배포 설정 제거
+            partner.deployment_config = None
+            partner.onboarding_status = "removed"
+            
+            self.db.commit()
+            
+            return True
+            
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to remove deployment: {str(e)}")
+
+    async def get_available_templates(self) -> List[Dict[str, Any]]:
+        """사용 가능한 템플릿 목록 조회"""
+        try:
+            templates = [
+                {
+                    "id": "standard",
+                    "name": "Standard Template",
+                    "description": "기본 지갑 기능을 포함한 표준 템플릿",
+                    "features": ["deposit", "withdrawal", "balance", "transactions"],
+                    "version": "1.0.0",
+                    "category": "basic"
+                },
+                {
+                    "id": "premium",
+                    "name": "Premium Template",
+                    "description": "고급 분석 기능이 포함된 프리미엄 템플릿",
+                    "features": ["deposit", "withdrawal", "balance", "transactions", "analytics", "reports"],
+                    "version": "1.0.0",
+                    "category": "advanced"
+                },
+                {
+                    "id": "enterprise",
+                    "name": "Enterprise Template",
+                    "description": "기업용 전체 기능 템플릿",
+                    "features": ["deposit", "withdrawal", "balance", "transactions", "analytics", "reports", "api", "webhooks"],
+                    "version": "1.0.0",
+                    "category": "enterprise"
+                }
+            ]
+            
+            return templates
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get templates: {str(e)}")
+
+    async def create_template(self, template_data: Dict[str, Any], admin_id: str) -> Dict[str, Any]:
+        """새 템플릿 생성"""
+        try:
+            template = {
+                "id": str(uuid.uuid4()),
+                "name": template_data["name"],
+                "description": template_data.get("description", ""),
+                "features": template_data.get("features", []),
+                "version": template_data.get("version", "1.0.0"),
+                "category": template_data.get("category", "custom"),
+                "created_by": admin_id,
+                "created_at": datetime.utcnow().isoformat(),
+                "config": template_data.get("config", {})
+            }
+            
+            # 실제로는 템플릿 데이터베이스에 저장
+            return template
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to create template: {str(e)}")
+
+    async def get_all_deployments(self, status_filter: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        """전체 배포 현황 조회"""
+        try:
+            query = self.db.query(Partner).filter(Partner.deployment_config.isnot(None))
+            
+            if status_filter:
+                query = query.filter(Partner.onboarding_status == status_filter)
+            
+            partners = query.limit(limit).all()
+            
+            deployments = []
+            for partner in partners:
+                deployment = {
+                    "partner_id": partner.id,
+                    "partner_name": partner.name,
+                    "status": partner.onboarding_status or "pending",
+                    "deployment_config": partner.deployment_config,
+                    "created_at": partner.created_at.isoformat() if partner.created_at else None,
+                    "last_updated": partner.updated_at.isoformat() if partner.updated_at else None
+                }
+                deployments.append(deployment)
+            
+            return deployments
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get deployments: {str(e)}")
+
+    async def rollback_deployment(self, deployment_id: str, reason: str) -> bool:
+        """배포 롤백"""
+        try:
+            # deployment_id로 파트너 찾기
+            partner = self.db.query(Partner).filter(
+                Partner.deployment_config.contains({'deployment_id': deployment_id})
+            ).first()
+            
+            if not partner:
+                raise HTTPException(status_code=404, detail="Deployment not found")
+            
+            # 롤백 로직
+            partner.onboarding_status = "rollback"
+            
+            # 롤백 정보 저장
+            if partner.deployment_config:
+                partner.deployment_config["rollback"] = {
+                    "reason": reason,
+                    "rolled_back_at": datetime.utcnow().isoformat()
+                }
+            
+            self.db.commit()
+            
+            return True
+            
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to rollback deployment: {str(e)}")
+
+    async def get_deployment_status(self, partner_id: str) -> Dict[str, Any]:
+        """파트너 배포 상태 조회"""
+        try:
+            partner = self.db.query(Partner).filter(Partner.id == partner_id).first()
+            if not partner:
+                raise HTTPException(status_code=404, detail="Partner not found")
+            
+            status = {
+                "partner_id": partner.id,
+                "partner_name": partner.name,
+                "status": partner.onboarding_status or "pending",
+                "deployment_config": partner.deployment_config,
+                "progress": self._calculate_deployment_progress(partner),
+                "health": self._check_deployment_health(partner),
+                "last_updated": partner.updated_at.isoformat() if partner.updated_at else None
+            }
+            
+            return status
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get deployment status: {str(e)}")
+
+    def _calculate_deployment_progress(self, partner: Partner) -> Dict[str, Any]:
+        """배포 진행률 계산"""
+        total_steps = 6
+        completed_steps = 0
+        
+        if partner.deployment_config:
+            config = partner.deployment_config
+            if config.get("database_setup_completed"):
+                completed_steps += 1
+            if config.get("container_deployed"):
+                completed_steps += 1
+            if config.get("dns_configured"):
+                completed_steps += 1
+            if config.get("ssl_configured"):
+                completed_steps += 1
+            if config.get("data_initialized"):
+                completed_steps += 1
+            if config.get("health_check_passed"):
+                completed_steps += 1
+        
+        return {
+            "completed_steps": completed_steps,
+            "total_steps": total_steps,
+            "percentage": (completed_steps / total_steps) * 100
+        }
