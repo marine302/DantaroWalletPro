@@ -9,7 +9,7 @@ from sqlalchemy.engine import Connection
 sys.path.append(str(Path(__file__).parent.parent))
 
 # 간단한 DATABASE_URL 설정
-DATABASE_URL = "sqlite:///./test.db"
+DATABASE_URL = "sqlite:///./dev.db"
 
 # SQLAlchemy Base import
 from app.models.base import Base

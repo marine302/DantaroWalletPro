@@ -3,8 +3,7 @@
 """
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, UUID
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
 
@@ -16,8 +15,8 @@ class EnergyUsageHistory(Base):
     
     __tablename__ = "energy_usage_history"
     
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    partner_id = Column(PG_UUID(as_uuid=True), ForeignKey("partners.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    partner_id = Column(String(36), ForeignKey("partners.id"), nullable=False)
     transaction_type = Column(String(50), nullable=False)  # deposit, withdrawal, etc.
     energy_amount = Column(Integer, nullable=False)  # 사용된 에너지 양
     transaction_id = Column(String(100), nullable=True)  # 관련 거래 ID
@@ -38,5 +37,5 @@ class EnergyUsageHistory(Base):
             "energy_amount": self.energy_amount,
             "transaction_id": self.transaction_id,
             "description": self.description,
-            "created_at": self.created_at.isoformat() if self.created_at else None
+            "created_at": self.created_at.isoformat() if hasattr(self, 'created_at') and self.created_at is not None else None
         }

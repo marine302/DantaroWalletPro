@@ -1,12 +1,100 @@
 """에너지 관련 스키마"""
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
-# 에너지 풀 관련 스키마
+# 에너지 풀 생성 요청
+class CreateEnergyPoolRequest(BaseModel):
+    pool_name: str = Field(..., description="에너지 풀 이름")
+    owner_private_key: str = Field(..., description="소유자 프라이빗 키")
+    initial_trx_amount: Decimal = Field(..., description="초기 동결할 TRX 금액")
+
+class EnergyPoolResponse(BaseModel):
+    id: int
+    pool_name: str
+    owner_address: str
+    frozen_trx: Decimal
+    total_energy: int
+    available_energy: int
+    used_energy: int
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class EnergyPoolStatusResponse(BaseModel):
+    pool_id: int
+    status: str
+    total_energy: int
+    available_energy: int
+    used_energy: int
+    usage_percentage: float
+    frozen_trx: float
+    auto_refill: bool
+    last_checked: str
+    usage_trend: Dict  # 7일간 사용 추이
+    estimated_depletion: Optional[str]  # 예상 소진 시간
+    recommendations: List[str]  # 추천 조치사항
+
+class EnergyUsageLogResponse(BaseModel):
+    id: int
+    transaction_id: int
+    energy_consumed: int
+    transaction_type: str
+    user_id: int
+    energy_price: Decimal
+    actual_cost: Decimal
+    used_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class EnergyUsageStatsResponse(BaseModel):
+    period: Dict[str, str]
+    daily_usage: List[Dict]
+    by_type: List[Dict]
+    hourly_pattern: List[Dict]
+    summary: Dict
+
+class EnergySimulationRequest(BaseModel):
+    transaction_count: int
+    transaction_types: List[str]
+    time_period_hours: int = 24
+
+class EnergySimulationResponse(BaseModel):
+    total_energy_required: int
+    estimated_cost_trx: float
+    estimated_cost_usd: float
+    current_pool_capacity: float
+    can_handle: bool
+    shortage_amount: Optional[int]
+    recommendations: List[str]
+
+class AutoManagementSettings(BaseModel):
+    enabled: bool
+    refill_amount: Decimal = Field(..., ge=1000)
+    trigger_percentage: int = Field(..., ge=5, le=50)
+
+class EnergyPriceHistoryResponse(BaseModel):
+    id: int
+    trx_price_usd: Decimal
+    energy_price_trx: Decimal
+    energy_price_usd: Decimal
+    market_demand: str
+    network_congestion: int
+    recorded_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class MessageResponse(BaseModel):
+    message: str
+
+# 기존 에너지 관련 스키마 (하위 호환성)
 class EnergyPoolStatus(BaseModel):
-    """에너지 풀 상태 응답 (슈퍼 어드민용 확장)"""
+    """에너지 풀 상태 응답 (기존 호환성용)"""
     total_energy: int = Field(..., description="총 에너지량")
     available_energy: int = Field(..., description="사용 가능한 에너지")
     reserved_energy: int = Field(..., description="예약된 에너지")
@@ -18,64 +106,9 @@ class EnergyPoolStatus(BaseModel):
     partner_count: int = Field(0, description="활성 파트너 수")
     last_updated: datetime = Field(..., description="마지막 업데이트 시간")
 
-class EnergyRechargeRequest(BaseModel):
-    """에너지 충전 요청"""
-    amount: int = Field(..., gt=0, description="충전할 에너지량")
-    reason: Optional[str] = Field(None, description="충전 사유")
-
-# 에너지 거래 관련 스키마
-class EnergyTransaction(BaseModel):
-    """에너지 거래 내역"""
-    id: int
-    transaction_type: str = Field(..., description="거래 유형")
-    energy_amount: int = Field(..., description="사용된 에너지량")
-    transaction_id: Optional[str] = Field(None, description="연관된 거래 ID")
-    user_id: Optional[int] = Field(None, description="사용자 ID")
-    status: str = Field(..., description="상태")
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class EnergyUsageStats(BaseModel):
-    """에너지 사용 통계"""
-    total_used_today: int = Field(..., description="오늘 사용된 총 에너지")
-    average_per_transaction: float = Field(..., description="거래당 평균 에너지")
-    peak_hour_usage: int = Field(..., description="피크 시간 사용량")
-    transactions_count: int = Field(..., description="총 거래 수")
-
-# 에너지 대기열 관련 스키마
 class EnergyQueueCreate(BaseModel):
     """에너지 대기열 생성 요청"""
     transaction_type: str = Field(..., description="거래 유형")
-    amount: Decimal = Field(..., gt=0, description="거래 금액")
-    to_address: str = Field(..., description="목적지 주소")
-    estimated_energy: int = Field(..., gt=0, description="예상 에너지 소모량")
-    priority: int = Field(1, ge=1, le=10, description="우선순위")
-
-class EnergyQueue(BaseModel):
-    """에너지 대기열 응답"""
-    id: int
-    user_id: int
-    transaction_type: str
-    amount: Decimal
-    to_address: Optional[str]
-    estimated_energy: int
-    priority: int
-    status: str
-    estimated_wait_time: Optional[int] = Field(None, description="예상 대기 시간(분)")
-    queue_position: Optional[int] = Field(None, description="대기열 순서")
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class QueueStatus(BaseModel):
-    """대기열 상태 응답"""
-    queue_position: int = Field(..., description="현재 대기열 순서")
-    estimated_wait_time: int = Field(..., description="예상 대기 시간(분)")
-    total_queue_size: int = Field(..., description="전체 대기열 크기")
-    current_energy_status: EnergyPoolStatus
 
 # 에너지 알림 관련 스키마
 class EnergyAlert(BaseModel):

@@ -67,7 +67,7 @@ async def get_price_monitor(db: AsyncSession = Depends(get_db)) -> EnergyPriceMo
     return EnergyPriceMonitor(db, redis_client)
 
 
-@router.get("/status", response_model=EnergyPoolStatusResponse)
+@router.get("/admin/energy/status", response_model=EnergyPoolStatusResponse)
 async def get_energy_pool_status(
     pool_id: int = Query(1, description="에너지 풀 ID"),
     current_admin: User = Depends(get_current_admin_user),
@@ -104,7 +104,7 @@ async def get_energy_pool_status(
         raise HTTPException(status_code=500, detail="에너지 풀 상태 조회 실패")
 
 
-@router.post("/create-pool", response_model=EnergyPoolResponse)
+@router.post("/admin/energy/create-pool", response_model=EnergyPoolResponse)
 async def create_energy_pool(
     pool_data: CreateEnergyPoolRequest,
     current_admin: User = Depends(get_current_admin_user),
@@ -128,7 +128,7 @@ async def create_energy_pool(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/usage-stats", response_model=EnergyUsageStatsResponse)
+@router.get("/admin/energy/usage-stats", response_model=EnergyUsageStatsResponse)
 async def get_energy_usage_statistics(
     pool_id: int = Query(1),
     start_date: Optional[datetime] = None,
@@ -150,7 +150,7 @@ async def get_energy_usage_statistics(
         raise HTTPException(status_code=500, detail="에너지 사용 통계 조회 실패")
 
 
-@router.get("/usage-logs", response_model=List[EnergyUsageLogResponse])
+@router.get("/admin/energy/usage-logs", response_model=List[EnergyUsageLogResponse])
 async def get_energy_usage_logs(
     pool_id: int = Query(1),
     limit: int = Query(100, le=1000),
@@ -184,7 +184,7 @@ async def get_energy_usage_logs(
         raise HTTPException(status_code=500, detail="에너지 사용 로그 조회 실패")
 
 
-@router.post("/simulate-usage", response_model=EnergySimulationResponse)
+@router.post("/admin/energy/simulate-usage", response_model=EnergySimulationResponse)
 async def simulate_energy_usage(
     simulation_data: EnergySimulationRequest,
     current_admin: User = Depends(get_current_admin_user),
@@ -204,7 +204,7 @@ async def simulate_energy_usage(
         raise HTTPException(status_code=500, detail="에너지 시뮬레이션 실패")
 
 
-@router.put("/auto-manage", response_model=MessageResponse)
+@router.put("/admin/energy/auto-manage", response_model=MessageResponse)
 async def update_auto_management_settings(
     pool_id: int,
     settings: AutoManagementSettings,
@@ -242,7 +242,7 @@ async def update_auto_management_settings(
         raise HTTPException(status_code=500, detail="자동 관리 설정 업데이트 실패")
 
 
-@router.get("/price-history", response_model=List[EnergyPriceHistoryResponse])
+@router.get("/admin/energy/price-history", response_model=List[EnergyPriceHistoryResponse])
 async def get_energy_price_history(
     days: int = Query(7, le=30),
     current_admin: User = Depends(get_current_admin_user),
@@ -269,7 +269,7 @@ async def get_energy_price_history(
         raise HTTPException(status_code=500, detail="에너지 가격 히스토리 조회 실패")
 
 
-@router.get("/cost-estimate")
+@router.get("/admin/energy/cost-estimate")
 async def get_energy_cost_estimate(
     transaction_type: str = Query("transfer", description="거래 유형"),
     token_type: str = Query("TRC20", description="토큰 유형"),
@@ -289,7 +289,7 @@ async def get_energy_cost_estimate(
         raise HTTPException(status_code=500, detail="에너지 비용 추정 실패")
 
 
-@router.post("/update-prices")
+@router.post("/admin/energy/update-prices")
 async def update_energy_prices(
     current_admin: User = Depends(get_current_admin_user),
     price_monitor: EnergyPriceMonitor = Depends(get_price_monitor)
@@ -307,7 +307,7 @@ async def update_energy_prices(
         raise HTTPException(status_code=500, detail="에너지 가격 업데이트 실패")
 
 
-@router.get("/network-status")
+@router.get("/admin/energy/network-status")
 async def get_network_status(
     current_admin: User = Depends(get_current_admin_user),
     energy_service: EnergyPoolManager = Depends(get_energy_pool_manager)
@@ -331,7 +331,7 @@ async def get_network_status(
         raise HTTPException(status_code=500, detail="네트워크 상태 조회 실패")
 
 
-@router.get("/efficiency-report")
+@router.get("/admin/energy/efficiency-report")
 async def get_efficiency_report(
     pool_id: int = Query(1),
     days: int = Query(30, le=90),
@@ -348,7 +348,7 @@ async def get_efficiency_report(
         raise HTTPException(status_code=500, detail="효율성 리포트 조회 실패")
 
 
-@router.get("/top-consumers")
+@router.get("/admin/energy/top-consumers")
 async def get_top_energy_consumers(
     pool_id: int = Query(1),
     days: int = Query(7, le=30),
