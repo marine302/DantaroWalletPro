@@ -48,6 +48,7 @@ class Deposit(BaseModel):
     min_confirmations = Column(Integer, nullable=False, default=19)  # TRON 권장 확인 수
 
     # 처리 상태
+    status = Column(String(20), nullable=False, default=DepositStatus.PENDING, comment="입금 상태")
     is_processed = Column(Boolean, nullable=False, default=False)
     processed_at = Column(String, nullable=True)
 

@@ -304,10 +304,10 @@ class DeploymentService:
 - [ ] 🔄 임포트 오류 수정 (EnergyUsageHistory 모델 누락)
 
 #### Phase 3: 데이터베이스 확장 및 마이그레이션 (2일)
-- [ ] 🔄 새 테이블 설계 및 생성 (진행 중)
-- [ ] Alembic 마이그레이션 작성 및 실행
-- [ ] 기존 데이터 무결성 검증
-- [ ] 성능 최적화 (인덱스 등)
+- [x] 새 테이블 설계 및 생성 - ✅ energy_usage_history, fee_config_history, system_metrics 테이블 생성
+- [x] Alembic 마이그레이션 작성 및 실행 - ✅ 마이그레이션 2b6ff5b2e63f 생성 및 적용 
+- [x] 기존 데이터 무결성 검증 - ✅ 기존 테이블과 새 테이블 호환성 확인
+- [x] 성능 최적화 (인덱스 등) - ✅ 기본 인덱스 적용
 
 #### Phase 4: 프론트엔드 (1주)
 - [ ] React/Next.js 프로젝트 설정
