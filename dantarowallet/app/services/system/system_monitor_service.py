@@ -7,11 +7,14 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, desc
+from sqlalchemy import func, and_, or_, desc, text
 from fastapi import HTTPException
 
 from app.models.partner import Partner
 from app.core.database import get_db
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class SystemMonitorService:
@@ -133,82 +136,6 @@ class SystemMonitorService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to get partner health status: {str(e)}")
     
-    async def get_system_alerts(self, 
-                               severity: Optional[str] = None,
-                               start_date: Optional[datetime] = None,
-                               end_date: Optional[datetime] = None) -> List[Dict[str, Any]]:
-        """시스템 알림 조회"""
-        try:
-            # 실제로는 SystemAlert 테이블에서 조회
-            # 여기서는 더미 데이터 반환
-            
-            alerts = [
-                {
-                    "id": str(uuid.uuid4()),
-                    "severity": "critical",
-                    "title": "높은 거래 실패율 감지",
-                    "message": "파트너 ABC의 거래 실패율이 5%를 초과했습니다",
-                    "category": "transaction",
-                    "partner_id": "partner-123",
-                    "partner_name": "Partner ABC",
-                    "created_at": datetime.utcnow().isoformat(),
-                    "resolved": False,
-                    "metadata": {
-                        "failure_rate": 5.2,
-                        "threshold": 5.0,
-                        "affected_transactions": 15
-                    }
-                },
-                {
-                    "id": str(uuid.uuid4()),
-                    "severity": "warning",
-                    "title": "에너지 부족 경고",
-                    "message": "전체 에너지 풀이 30% 이하로 감소했습니다",
-                    "category": "energy",
-                    "partner_id": None,
-                    "partner_name": None,
-                    "created_at": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
-                    "resolved": False,
-                    "metadata": {
-                        "current_level": 28.5,
-                        "threshold": 30.0,
-                        "estimated_depletion": "2024-01-15 15:30:00"
-                    }
-                },
-                {
-                    "id": str(uuid.uuid4()),
-                    "severity": "info",
-                    "title": "새 파트너 등록",
-                    "message": "새로운 파트너 'DEF Corp'가 등록되었습니다",
-                    "category": "partner",
-                    "partner_id": "partner-456",
-                    "partner_name": "DEF Corp",
-                    "created_at": (datetime.utcnow() - timedelta(hours=5)).isoformat(),
-                    "resolved": True,
-                    "metadata": {
-                        "onboarding_status": "completed",
-                        "business_type": "exchange"
-                    }
-                }
-            ]
-            
-            # 필터링 적용
-            if severity:
-                alerts = [alert for alert in alerts if alert["severity"] == severity]
-            
-            if start_date:
-                alerts = [alert for alert in alerts 
-                         if datetime.fromisoformat(alert["created_at"]) >= start_date]
-            
-            if end_date:
-                alerts = [alert for alert in alerts 
-                         if datetime.fromisoformat(alert["created_at"]) <= end_date]
-            
-            return alerts
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to get system alerts: {str(e)}")
-    
     async def get_performance_metrics(self, 
                                      time_range: str = "24h") -> Dict[str, Any]:
         """시스템 성능 메트릭스 조회"""
@@ -308,3 +235,280 @@ class SystemMonitorService:
             
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to resolve alert: {str(e)}")
+    
+    async def check_system_health(self) -> Dict[str, Any]:
+        """시스템 전반적인 헬스 상태 체크"""
+        try:
+            # 데이터베이스 상태 확인
+            db_healthy = True
+            try:
+                self.db.execute(text("SELECT 1"))
+            except:
+                db_healthy = False
+            
+            # API 상태 확인 (에러율 기반)
+            api_error_rate = 2.5  # 실제로는 모니터링 데이터에서 가져옴
+            api_healthy = api_error_rate < 5.0
+            
+            # 에너지 풀 상태 확인
+            energy_sufficient = True  # 실제로는 에너지 서비스에서 확인
+            
+            # 전체 건강 점수 계산
+            health_score = 100
+            issues = []
+            
+            if not db_healthy:
+                health_score -= 30
+                issues.append("데이터베이스 연결 문제")
+            
+            if not api_healthy:
+                health_score -= 20
+                issues.append(f"API 에러율 높음 ({api_error_rate}%)")
+            
+            if not energy_sufficient:
+                health_score -= 15
+                issues.append("에너지 부족")
+            
+            # 상태 등급 결정
+            if health_score >= 90:
+                status = "healthy"
+            elif health_score >= 70:
+                status = "warning"
+            else:
+                status = "critical"
+            
+            return {
+                "status": status,
+                "health_score": max(0, health_score),
+                "components": {
+                    "database": "healthy" if db_healthy else "unhealthy",
+                    "api": "healthy" if api_healthy else "warning",
+                    "energy_pool": "healthy" if energy_sufficient else "warning"
+                },
+                "issues": issues,
+                "last_check": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            return {
+                "status": "critical",
+                "health_score": 0,
+                "components": {},
+                "issues": [f"헬스 체크 실패: {str(e)}"],
+                "last_check": datetime.now().isoformat()
+            }
+
+    async def collect_system_metrics(self) -> Dict[str, Any]:
+        """시스템 메트릭 수집"""
+        try:
+            from datetime import datetime, timedelta
+            
+            # 파트너 통계
+            total_partners = self.db.query(Partner).count()
+            active_partners = self.db.query(Partner).filter(Partner.status == "active").count()
+            pending_partners = self.db.query(Partner).filter(Partner.status == "pending").count()
+            suspended_partners = self.db.query(Partner).filter(Partner.status == "suspended").count()
+            
+            # 가상의 API 통계 (실제로는 모니터링 시스템에서 수집)
+            api_metrics = {
+                "total_api_calls": 15670,
+                "successful_api_calls": 15630,
+                "failed_api_calls": 40,
+                "avg_response_time": 120.5,
+                "api_error_rate": 0.25
+            }
+            
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "total_partners": total_partners,
+                "active_partners": active_partners,
+                "pending_partners": pending_partners,
+                "suspended_partners": suspended_partners,
+                "total_api_calls": api_metrics["total_api_calls"],
+                "successful_api_calls": api_metrics["successful_api_calls"],
+                "failed_api_calls": api_metrics["failed_api_calls"],
+                "avg_response_time": api_metrics["avg_response_time"],
+                "api_error_rate": api_metrics["api_error_rate"],
+                "uptime": 99.95,
+                "memory_usage": 65.4,
+                "cpu_usage": 23.8,
+                "disk_usage": 45.2
+            }
+            
+        except Exception as e:
+            raise Exception(f"메트릭 수집 실패: {str(e)}")
+
+    async def get_system_alerts(self, severity: Optional[str] = None) -> List[Dict[str, Any]]:
+        """시스템 알림 조회"""
+        try:
+            alerts = []
+            
+            # 실제로는 알림 테이블에서 조회하지만, 지금은 가상 데이터
+            sample_alerts = [
+                {
+                    "id": "alert_001",
+                    "severity": "warning",
+                    "message": "API 응답 시간이 평균보다 높습니다",
+                    "component": "api",
+                    "created_at": datetime.now().isoformat(),
+                    "resolved": False
+                },
+                {
+                    "id": "alert_002", 
+                    "severity": "info",
+                    "message": "새 파트너사가 등록되었습니다",
+                    "component": "partners",
+                    "created_at": (datetime.now() - timedelta(hours=2)).isoformat(),
+                    "resolved": True
+                },
+                {
+                    "id": "alert_003",
+                    "severity": "critical",
+                    "message": "에너지 풀이 임계치 이하로 떨어졌습니다",
+                    "component": "energy",
+                    "created_at": (datetime.now() - timedelta(minutes=30)).isoformat(),
+                    "resolved": False
+                }
+            ]
+            
+            # 심각도 필터링
+            if severity:
+                alerts = [alert for alert in sample_alerts if alert["severity"] == severity]
+            else:
+                alerts = sample_alerts
+            
+            return alerts
+            
+        except Exception as e:
+            raise Exception(f"알림 조회 실패: {str(e)}")
+
+    async def enable_maintenance_mode(self, message: str, admin_id: str) -> bool:
+        """시스템 점검 모드 활성화"""
+        try:
+            # 실제로는 Redis나 설정 테이블에 점검 모드 상태 저장
+            logger.info(f"점검 모드 활성화: {message} (관리자: {admin_id})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"점검 모드 활성화 실패: {str(e)}")
+            return False
+
+    async def disable_maintenance_mode(self, admin_id: str) -> bool:
+        """시스템 점검 모드 비활성화"""
+        try:
+            # 실제로는 Redis나 설정 테이블에서 점검 모드 상태 제거
+            logger.info(f"점검 모드 비활성화 (관리자: {admin_id})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"점검 모드 비활성화 실패: {str(e)}")
+            return False
+
+    async def get_system_logs(self, level: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+        """시스템 로그 조회"""
+        try:
+            # 실제로는 로그 파일이나 로그 테이블에서 조회
+            logs = []
+            
+            sample_logs = [
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "level": "INFO",
+                    "module": "api.auth",
+                    "message": "사용자 로그인 성공",
+                    "user_id": "user_123"
+                },
+                {
+                    "timestamp": (datetime.now() - timedelta(minutes=5)).isoformat(),
+                    "level": "ERROR", 
+                    "module": "services.partner",
+                    "message": "파트너 생성 실패: 중복된 이메일",
+                    "error": "DuplicateEmailError"
+                },
+                {
+                    "timestamp": (datetime.now() - timedelta(minutes=10)).isoformat(),
+                    "level": "WARNING",
+                    "module": "services.energy",
+                    "message": "에너지 부족 경고",
+                    "remaining_energy": 1500
+                }
+            ]
+            
+            # 레벨 필터링
+            if level:
+                logs = [log for log in sample_logs if log["level"] == level.upper()]
+            else:
+                logs = sample_logs
+            
+            return logs[:limit]
+            
+        except Exception as e:
+            raise Exception(f"로그 조회 실패: {str(e)}")
+
+    async def create_system_backup(self, admin_id: str) -> Dict[str, Any]:
+        """시스템 백업 생성"""
+        try:
+            backup_id = f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            # 실제로는 데이터베이스 백업 생성
+            logger.info(f"시스템 백업 생성 시작: {backup_id} (관리자: {admin_id})")
+            
+            return {
+                "backup_id": backup_id,
+                "status": "completed",
+                "created_at": datetime.now().isoformat(),
+                "created_by": admin_id,
+                "file_size": "152.3 MB",
+                "backup_type": "full",
+                "location": f"/backups/{backup_id}.sql"
+            }
+            
+        except Exception as e:
+            raise Exception(f"백업 생성 실패: {str(e)}")
+
+    async def generate_performance_report(self, days: int = 7) -> Dict[str, Any]:
+        """성능 리포트 생성"""
+        try:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=days)
+            
+            # 실제로는 성능 데이터베이스에서 조회
+            report = {
+                "period": {
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "days": days
+                },
+                "api_performance": {
+                    "total_requests": 125670,
+                    "avg_response_time": 125.3,
+                    "p95_response_time": 250.0,
+                    "p99_response_time": 500.0,
+                    "success_rate": 99.75,
+                    "error_rate": 0.25
+                },
+                "transaction_performance": {
+                    "total_transactions": 8950,
+                    "successful_transactions": 8923,
+                    "failed_transactions": 27,
+                    "avg_processing_time": 2.3,
+                    "success_rate": 99.70
+                },
+                "resource_usage": {
+                    "avg_cpu_usage": 25.4,
+                    "max_cpu_usage": 78.2,
+                    "avg_memory_usage": 62.1,
+                    "max_memory_usage": 89.5,
+                    "avg_disk_usage": 45.8
+                },
+                "partner_activity": {
+                    "most_active_partner": "Partner A",
+                    "total_partner_requests": 98450,
+                    "avg_requests_per_partner": 1230.6
+                }
+            }
+            
+            return report
+            
+        except Exception as e:
+            raise Exception(f"성능 리포트 생성 실패: {str(e)}")

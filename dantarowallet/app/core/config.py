@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     
     # .env 파일에서 사용되는 추가 필드들
-    SYNC_DATABASE_URL: str = "sqlite:///./test.db"
+    SYNC_DATABASE_URL: str = "sqlite:///./dev.db"
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "DantaroWallet"
     VERSION: str = "1.0.0"
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     # Database Configuration
-    DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"  # 개발용 기본값
+    DATABASE_URL: str = "sqlite+aiosqlite:///./dev.db"  # 개발용 기본값
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 0
 
@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     TRON_NODE_URL: str = "https://api.nileex.io"  # Testnet default
     TRON_SCAN_URL: str = "https://nile.tronscan.org"
     TRON_DEFAULT_FEE_LIMIT: int = 100000000  # 100 TRX default
+    
+    # TRON Monitoring Configuration
+    BLOCKS_TO_CHECK_ON_START: int = 10
+    BLOCK_CONFIRMATION_COUNT: int = 19
+    DEPOSIT_CHECK_INTERVAL: int = 30  # seconds
 
     # TRON Token Contract Addresses
     @property
