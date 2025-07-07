@@ -290,9 +290,9 @@ class DeploymentService:
 - [x] `PartnerService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
 - [x] `EnergyPoolService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료 
 - [x] `SuperAdminFeeService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
+- [x] `SystemMonitorService` 기본 구현 - ✅ 완료
+- [x] `DeploymentService` 기본 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
 - [ ] 🔄 SQLAlchemy 타입 오류 수정 (진행 중)
-- [ ] `SystemMonitorService` 기본 구현
-- [ ] `DeploymentService` 기본 구현
 
 #### Phase 2: API 엔드포인트 (3일)
 - [ ] 파트너 관리 API 완성
