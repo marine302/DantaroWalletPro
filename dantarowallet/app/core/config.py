@@ -48,6 +48,18 @@ class Settings(BaseSettings):
 
     # TRON Network Configuration
     TRON_NETWORK: str = "nile"  # nile for testnet, mainnet for production
+    TRON_API_KEY: str = ""  # TronGrid API Key
+    TRON_FULL_NODE_URL: str = "https://nile.trongrid.io"
+    TRON_SOLIDITY_NODE_URL: str = "https://nile.trongrid.io"
+    TRON_EVENT_SERVER_URL: str = "https://nile.trongrid.io"
+    
+    # External Wallet Configuration
+    EXTERNAL_WALLET_SIGNATURE_EXPIRY: int = 300  # 5 minutes
+    EXTERNAL_WALLET_CONNECTION_TIMEOUT: int = 30  # seconds
+    
+    # TronLink Configuration
+    TRONLINK_CONNECT_MESSAGE: str = "Connect to DantaroWallet"
+    TRONLINK_VERIFY_DOMAIN: str = "dantarowallet.com"
     TRON_API_KEY: str = ""
     TRON_NODE_URL: str = "https://api.nileex.io"  # Testnet default
     TRON_SCAN_URL: str = "https://nile.tronscan.org"

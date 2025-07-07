@@ -19,6 +19,7 @@ from app.api.v1.endpoints import (
     wallet,
     withdrawal,
 )
+from app.api.v1.endpoints.partner import tronlink
 
 # 추후 추가 예정
 # from app.api.v1.endpoints import users, transactions
@@ -29,6 +30,7 @@ api_router.include_router(balance.router, prefix="/balance", tags=["balance"])
 api_router.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
 api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
+api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
 # api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # 임시 비활성화
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]

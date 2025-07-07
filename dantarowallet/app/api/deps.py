@@ -143,3 +143,24 @@ async def get_optional_current_user(
         return await get_current_user(credentials, db)
     except AuthenticationError:
         return None
+
+
+async def get_current_partner(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
+) -> "Partner":
+    """
+    현재 인증된 파트너 반환
+    """
+    from app.models.partner import Partner
+
+    # 임시로 기본 파트너 반환 (실제로는 JWT 토큰에서 파트너 정보 추출)
+    # TODO: JWT 토큰에서 파트너 ID 추출하여 실제 파트너 반환
+    query = select(Partner).where(Partner.id == 1)
+    result = await db.execute(query)
+    partner = result.scalar_one_or_none()
+
+    if not partner:
+        raise AuthenticationError("파트너를 찾을 수 없습니다")
+
+    return partner

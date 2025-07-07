@@ -61,3 +61,6 @@ class Partner(Base):
     deployments = relationship("PartnerDeployment", back_populates="partner", cascade="all, delete-orphan")
     monitoring_data = relationship("SystemMonitoring", back_populates="partner", cascade="all, delete-orphan")
     alerts = relationship("SystemAlert", back_populates="partner", cascade="all, delete-orphan")
+    
+    # 외부 지갑 관계 (TronLink 연동)
+    wallets = relationship("PartnerWallet", back_populates="partner", cascade="all, delete-orphan")

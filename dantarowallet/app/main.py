@@ -20,8 +20,9 @@ from app.services.deposit_monitoring_service import deposit_monitor
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 # 로깅 설정
 logger = setup_logging()
@@ -155,6 +156,15 @@ app.include_router(auth_pages_router, prefix="/auth", tags=["auth-pages"])
 from app.api.v1.web_dashboard import router as web_dashboard_router
 
 app.include_router(web_dashboard_router, prefix="/dashboard", tags=["web-dashboard"])
+
+# TronLink 연동 페이지 라우터 등록
+templates = Jinja2Templates(directory="templates")
+
+
+@app.get("/tronlink", response_class=HTMLResponse, tags=["tronlink"])
+async def tronlink_page(request: Request):
+    """TronLink 연동 페이지"""
+    return templates.TemplateResponse("tronlink.html", {"request": request})
 
 # 정적 파일 마운트 (CSS, JS, 이미지 등)
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app", "static")

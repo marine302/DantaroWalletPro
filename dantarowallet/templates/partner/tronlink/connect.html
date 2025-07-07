@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TronLink 지갑 연동 - DantaroWallet</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .wallet-status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .wallet-info {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .wallet-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+            word-break: break-all;
+            font-size: 0.8rem;
+        }
+        
+        .balance-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .balance-item {
+            text-align: center;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .balance-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin: 1rem 0;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦎 TronLink 연동</h1>
+            <p>TronLink 지갑을 연결하여 USDT 거래를 시작하세요</p>
+        </div>
+        
+        <div id="wallet-status" class="wallet-status status-disconnected">
+            <strong>지갑이 연결되지 않음</strong>
+            <p>TronLink를 설치하고 지갑을 연결해주세요</p>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        <div class="loading" id="loading">
+            <span class="spinner"></span>
+            처리 중...
+        </div>
+        
+        <button id="connect-btn" class="btn btn-primary" onclick="connectWallet()">
+            TronLink 연결하기
+        </button>
+        
+        <button id="disconnect-btn" class="btn btn-danger" onclick="disconnectWallet()" style="display: none;">
+            지갑 연결 해제
+        </button>
+        
+        <div id="wallet-info" class="wallet-info" style="display: none;">
+            <h3>연결된 지갑</h3>
+            <div id="wallet-address" class="wallet-address"></div>
+            
+            <div class="balance-info">
+                <div class="balance-item">
+                    <div id="trx-balance" class="balance-amount">0.00</div>
+                    <div class="balance-label">TRX</div>
+                </div>
+                <div class="balance-item">
+                    <div id="usdt-balance" class="balance-amount">0.00</div>
+                    <div class="balance-label">USDT</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="refreshBalance()" style="margin-top: 1rem;">
+                잔액 새로고침
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentWallet = null;
+        let currentWalletId = null;
+        
+        // 페이지 로드시 상태 확인
+        window.onload = function() {
+            checkTronLinkInstallation();
+            loadWalletStatus();
+        };
+        
+        function checkTronLinkInstallation() {
+            if (typeof window.tronWeb === 'undefined') {
+                showError('TronLink가 설치되지 않았습니다. 브라우저 확장프로그램을 설치해주세요.');
+                document.getElementById('connect-btn').disabled = true;
+                return false;
+            }
+            return true;
+        }
+        
+        async function connectWallet() {
+            if (!checkTronLinkInstallation()) return;
+            
+            showLoading(true);
+            hideMessages();
+            
+            try {
+                // TronLink 지갑 주소 가져오기
+                const tronWeb = window.tronWeb;
+                if (!tronWeb.ready) {
+                    throw new Error('TronLink가 잠겨있습니다. 지갑을 잠금해제해주세요.');
+                }
+                
+                const address = tronWeb.defaultAddress.base58;
+                if (!address) {
+                    throw new Error('지갑 주소를 가져올 수 없습니다.');
+                }
+                
+                // 서명을 위한 메시지 생성
+                const timestamp = Date.now();
+                const message = `DantaroWallet 지갑 연결 인증\n시간: ${new Date(timestamp).toISOString()}`;
+                
+                // 메시지 서명
+                const signature = await tronWeb.trx.sign(message);
+                
+                // 서버에 연결 요청
+                const response = await axios.post('/api/v1/tronlink/connect', {
+                    wallet_address: address,
+                    signature: signature,
+                    message: message
+                });
+                
+                currentWallet = address;
+                currentWalletId = response.data.wallet_id;
+                
+                showSuccess(response.data.message);
+                updateWalletStatus(true);
+                await loadWalletBalance();
+                
+            } catch (error) {
+                console.error('연결 오류:', error);
+                showError(error.response?.data?.detail || error.message || '지갑 연결에 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function disconnectWallet() {
+            if (!currentWalletId) return;
+            
+            showLoading(true);
+            hideMessages();
+            
+            try {
+                await axios.post('/api/v1/tronlink/disconnect', {
+                    wallet_id: currentWalletId
+                });
+                
+                currentWallet = null;
+                currentWalletId = null;
+                
+                showSuccess('지갑 연결이 해제되었습니다.');
+                updateWalletStatus(false);
+                
+            } catch (error) {
+                console.error('연결 해제 오류:', error);
+                showError(error.response?.data?.detail || '연결 해제에 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function loadWalletStatus() {
+            try {
+                const response = await axios.get('/api/v1/tronlink/status');
+                const status = response.data;
+                
+                if (status.is_connected && status.wallet_count > 0) {
+                    const walletsResponse = await axios.get('/api/v1/tronlink/wallets');
+                    const wallets = walletsResponse.data.wallets;
+                    
+                    if (wallets.length > 0) {
+                        const wallet = wallets[0];
+                        currentWallet = wallet.address;
+                        currentWalletId = wallet.id;
+                        updateWalletStatus(true);
+                        updateWalletInfo(wallet);
+                    }
+                }
+            } catch (error) {
+                console.error('상태 로드 오류:', error);
+            }
+        }
+        
+        async function loadWalletBalance() {
+            if (!currentWallet) return;
+            
+            try {
+                const response = await axios.get(`/api/v1/tronlink/wallet/${currentWallet}/balance`);
+                const balance = response.data;
+                
+                document.getElementById('trx-balance').textContent = balance.trx_balance.toFixed(2);
+                document.getElementById('usdt-balance').textContent = balance.usdt_balance.toFixed(2);
+                
+            } catch (error) {
+                console.error('잔액 로드 오류:', error);
+                showError('잔액 정보를 가져올 수 없습니다.');
+            }
+        }
+        
+        async function refreshBalance() {
+            showLoading(true);
+            await loadWalletBalance();
+            showLoading(false);
+            showSuccess('잔액이 업데이트되었습니다.');
+        }
+        
+        function updateWalletStatus(connected) {
+            const statusDiv = document.getElementById('wallet-status');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const walletInfo = document.getElementById('wallet-info');
+            
+            if (connected) {
+                statusDiv.className = 'wallet-status status-connected';
+                statusDiv.innerHTML = '<strong>지갑 연결됨</strong><p>TronLink 지갑이 성공적으로 연결되었습니다</p>';
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'block';
+                walletInfo.style.display = 'block';
+            } else {
+                statusDiv.className = 'wallet-status status-disconnected';
+                statusDiv.innerHTML = '<strong>지갑이 연결되지 않음</strong><p>TronLink를 설치하고 지갑을 연결해주세요</p>';
+                connectBtn.style.display = 'block';
+                disconnectBtn.style.display = 'none';
+                walletInfo.style.display = 'none';
+            }
+        }
+        
+        function updateWalletInfo(wallet) {
+            document.getElementById('wallet-address').textContent = wallet.address;
+            document.getElementById('trx-balance').textContent = wallet.balance.trx_balance.toFixed(2);
+            document.getElementById('usdt-balance').textContent = wallet.balance.usdt_balance.toFixed(2);
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+        
+        function hideMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

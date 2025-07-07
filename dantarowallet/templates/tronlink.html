@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TronLink 지갑 연동</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/tronweb@latest/dist/TronWeb.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-8">TronLink 지갑 연동</h1>
+            
+            <!-- 연결 상태 -->
+            <div id="connectionStatus" class="mb-8 p-4 rounded-lg hidden">
+                <div class="flex items-center">
+                    <div id="statusIcon" class="w-4 h-4 rounded-full mr-3"></div>
+                    <span id="statusText" class="font-medium"></span>
+                </div>
+            </div>
+            
+            <!-- TronLink 연결 버튼 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4">지갑 연결</h2>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="connectBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors">
+                        TronLink 연결
+                    </button>
+                    <button id="disconnectBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors hidden">
+                        연결 해제
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 연결된 지갑 정보 -->
+            <div id="walletInfo" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+                <h2 class="text-xl font-semibold mb-4">지갑 정보</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">지갑 주소</h3>
+                        <p id="walletAddress" class="text-sm font-mono break-all"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">TRX 잔액</h3>
+                        <p id="trxBalance" class="text-lg font-semibold"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">USDT 잔액</h3>
+                        <p id="usdtBalance" class="text-lg font-semibold"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">에너지</h3>
+                        <p id="energyAmount" class="text-lg font-semibold"></p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex gap-4">
+                    <button id="refreshBalance" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
+                        잔액 새로고침
+                    </button>
+                    <button id="viewTransactions" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">
+                        거래 내역 보기
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 거래 내역 -->
+            <div id="transactionHistory" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h2 class="text-xl font-semibold mb-4">거래 내역</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2">시간</th>
+                                <th class="text-left py-2">유형</th>
+                                <th class="text-left py-2">금액</th>
+                                <th class="text-left py-2">상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionList">
+                            <!-- 거래 내역이 여기에 표시됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 에러 메시지 -->
+            <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden">
+                <span id="errorText"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TronLinkIntegration {
+            constructor() {
+                this.tronWeb = null;
+                this.walletAddress = null;
+                this.apiBase = '/api/v1/tronlink';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.checkTronLink();
+            }
+
+            bindEvents() {
+                document.getElementById('connectBtn').addEventListener('click', () => this.connectWallet());
+                document.getElementById('disconnectBtn').addEventListener('click', () => this.disconnectWallet());
+                document.getElementById('refreshBalance').addEventListener('click', () => this.loadWalletInfo());
+                document.getElementById('viewTransactions').addEventListener('click', () => this.loadTransactions());
+            }
+
+            async checkTronLink() {
+                if (typeof window.tronWeb !== 'undefined') {
+                    this.tronWeb = window.tronWeb;
+                    if (this.tronWeb.ready) {
+                        this.walletAddress = this.tronWeb.defaultAddress.base58;
+                        this.updateUI('connected');
+                        await this.loadWalletInfo();
+                    }
+                } else {
+                    this.showError('TronLink가 설치되어 있지 않습니다. TronLink를 설치해주세요.');
+                }
+            }
+
+            async connectWallet() {
+                try {
+                    if (!this.tronWeb) {
+                        throw new Error('TronLink가 감지되지 않습니다');
+                    }
+
+                    // TronLink 연결 요청
+                    await this.tronWeb.request({ method: 'tron_requestAccounts' });
+                    
+                    this.walletAddress = this.tronWeb.defaultAddress.base58;
+                    
+                    // 서명 생성
+                    const message = `Connect wallet ${this.walletAddress} to partner`;
+                    const signature = await this.tronWeb.trx.sign(this.tronWeb.toHex(message));
+                    
+                    // 서버에 연결 요청
+                    const response = await fetch(`${this.apiBase}/connect`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            wallet_address: this.walletAddress,
+                            signature: signature,
+                            message: message
+                        })
+                    });
+
+                    if (response.ok) {
+                        this.updateUI('connected');
+                        await this.loadWalletInfo();
+                        this.showSuccess('지갑이 성공적으로 연결되었습니다!');
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.detail || '연결에 실패했습니다');
+                    }
+                } catch (error) {
+                    this.showError(`연결 실패: ${error.message}`);
+                }
+            }
+
+            async disconnectWallet() {
+                try {
+                    const response = await fetch(`${this.apiBase}/disconnect/${this.walletAddress}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        this.walletAddress = null;
+                        this.updateUI('disconnected');
+                        this.showSuccess('지갑 연결이 해제되었습니다.');
+                    }
+                } catch (error) {
+                    this.showError(`연결 해제 실패: ${error.message}`);
+                }
+            }
+
+            async loadWalletInfo() {
+                if (!this.walletAddress) return;
+
+                try {
+                    const response = await fetch(`${this.apiBase}/balance/${this.walletAddress}`);
+                    if (response.ok) {
+                        const balance = await response.json();
+                        this.displayWalletInfo(balance);
+                    }
+                } catch (error) {
+                    this.showError(`잔액 조회 실패: ${error.message}`);
+                }
+            }
+
+            async loadTransactions() {
+                if (!this.walletAddress) return;
+
+                try {
+                    const response = await fetch(`${this.apiBase}/transactions/${this.walletAddress}`);
+                    if (response.ok) {
+                        const transactions = await response.json();
+                        this.displayTransactions(transactions);
+                    }
+                } catch (error) {
+                    this.showError(`거래 내역 조회 실패: ${error.message}`);
+                }
+            }
+
+            updateUI(status) {
+                const statusDiv = document.getElementById('connectionStatus');
+                const statusIcon = document.getElementById('statusIcon');
+                const statusText = document.getElementById('statusText');
+                const connectBtn = document.getElementById('connectBtn');
+                const disconnectBtn = document.getElementById('disconnectBtn');
+                const walletInfo = document.getElementById('walletInfo');
+
+                statusDiv.classList.remove('hidden');
+
+                if (status === 'connected') {
+                    statusIcon.className = 'w-4 h-4 rounded-full mr-3 bg-green-500';
+                    statusText.textContent = '지갑이 연결되었습니다';
+                    statusDiv.className = 'mb-8 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700';
+                    connectBtn.classList.add('hidden');
+                    disconnectBtn.classList.remove('hidden');
+                    walletInfo.classList.remove('hidden');
+                } else {
+                    statusIcon.className = 'w-4 h-4 rounded-full mr-3 bg-red-500';
+                    statusText.textContent = '지갑이 연결되지 않았습니다';
+                    statusDiv.className = 'mb-8 p-4 rounded-lg bg-red-100 border border-red-400 text-red-700';
+                    connectBtn.classList.remove('hidden');
+                    disconnectBtn.classList.add('hidden');
+                    walletInfo.classList.add('hidden');
+                }
+            }
+
+            displayWalletInfo(balance) {
+                document.getElementById('walletAddress').textContent = this.walletAddress;
+                document.getElementById('trxBalance').textContent = `${balance.trx_balance} TRX`;
+                document.getElementById('usdtBalance').textContent = `${balance.usdt_balance} USDT`;
+                document.getElementById('energyAmount').textContent = `${balance.energy || 0}`;
+            }
+
+            displayTransactions(transactions) {
+                const transactionList = document.getElementById('transactionList');
+                const transactionHistory = document.getElementById('transactionHistory');
+                
+                transactionList.innerHTML = '';
+                
+                if (transactions.length === 0) {
+                    transactionList.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">거래 내역이 없습니다</td></tr>';
+                } else {
+                    transactions.forEach(tx => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b';
+                        row.innerHTML = `
+                            <td class="py-2">${new Date(tx.timestamp).toLocaleDateString()}</td>
+                            <td class="py-2">${tx.transaction_type}</td>
+                            <td class="py-2">${tx.amount} ${tx.token_type}</td>
+                            <td class="py-2">
+                                <span class="px-2 py-1 rounded text-xs ${tx.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${tx.status}
+                                </span>
+                            </td>
+                        `;
+                        transactionList.appendChild(row);
+                    });
+                }
+                
+                transactionHistory.classList.remove('hidden');
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                const errorText = document.getElementById('errorText');
+                errorText.textContent = message;
+                errorDiv.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 5000);
+            }
+
+            showSuccess(message) {
+                // 성공 메시지 표시 (간단한 alert로 대체)
+                alert(message);
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new TronLinkIntegration();
+        });
+    </script>
+</body>
+</html>
