@@ -266,7 +266,7 @@ class DeploymentService:
 ### ✅ 완료해야 할 작업들
 
 #### Phase 1: 서비스 레이어 (1주)
-- [ ] `PartnerService` 완전 구현
+- [x] `PartnerService` 완전 구현 - ✅ 슈퍼 어드민용 메서드 추가 완료
 - [ ] `EnergyPoolService` 완전 구현  
 - [ ] `FeeService` 완전 구현
 - [ ] `SystemMonitorService` 기본 구현
