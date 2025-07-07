@@ -303,8 +303,8 @@ class DeploymentService:
 - [x] 배포 관리 API 구현 - ✅ `/admin/deployment-management` 엔드포인트 구현 완료
 - [ ] 🔄 임포트 오류 수정 (EnergyUsageHistory 모델 누락)
 
-#### Phase 3: 데이터베이스 (2일)
-- [ ] 새 테이블 설계 및 생성
+#### Phase 3: 데이터베이스 확장 및 마이그레이션 (2일)
+- [ ] 🔄 새 테이블 설계 및 생성 (진행 중)
 - [ ] Alembic 마이그레이션 작성 및 실행
 - [ ] 기존 데이터 무결성 검증
 - [ ] 성능 최적화 (인덱스 등)
