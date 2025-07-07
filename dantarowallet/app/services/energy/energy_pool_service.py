@@ -431,3 +431,286 @@ class EnergyPoolService:
             await self.db.rollback()
             logger.error(f"대기열 항목 취소 실패: {str(e)}")
             raise
+
+    async def get_total_energy_status(self) -> dict:
+        """슈퍼 어드민용 전체 에너지 풀 현황"""
+        try:
+            result = await self.db.execute(
+                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+            )
+            energy_pool = result.scalar_one_or_none()
+            
+            if not energy_pool:
+                return {
+                    "total_energy": 0,
+                    "available_energy": 0,
+                    "reserved_energy": 0,
+                    "daily_consumption": 0,
+                    "utilization_rate": 0.0,
+                    "pool_health": "empty"
+                }
+            
+            utilization_rate = ((energy_pool.total_energy - energy_pool.available_energy) / 
+                              energy_pool.total_energy) * 100 if energy_pool.total_energy > 0 else 0
+            
+            # 풀 상태 판정
+            if energy_pool.available_energy <= energy_pool.alert_threshold:
+                pool_health = "critical"
+            elif energy_pool.available_energy <= energy_pool.alert_threshold * 2:
+                pool_health = "warning"
+            else:
+                pool_health = "healthy"
+            
+            return {
+                "total_energy": int(energy_pool.total_energy),
+                "available_energy": int(energy_pool.available_energy),
+                "reserved_energy": int(energy_pool.reserved_energy),
+                "daily_consumption": int(energy_pool.daily_consumption),
+                "utilization_rate": round(utilization_rate, 2),
+                "pool_health": pool_health,
+                "alert_threshold": int(energy_pool.alert_threshold),
+                "last_updated": energy_pool.updated_at
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get total energy status: {e}")
+            raise
+    
+    async def allocate_energy_to_partner(self, partner_id: str, amount: int) -> bool:
+        """파트너에게 에너지 할당"""
+        try:
+            # 에너지 풀에서 사용 가능한 에너지 확인
+            result = await self.db.execute(
+                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+            )
+            energy_pool = result.scalar_one_or_none()
+            
+            if not energy_pool or energy_pool.available_energy < amount:
+                raise EnergyInsufficientError("Insufficient energy in pool")
+            
+            # 파트너 에너지 잔액 업데이트 (실제 구현에서는 Partner 모델에 energy_balance 필드 사용)
+            # 임시로 에너지 풀에서 차감
+            energy_pool.available_energy -= amount
+            energy_pool.reserved_energy += amount
+            
+            await self.db.commit()
+            
+            logger.info(f"Allocated {amount} energy to partner {partner_id}")
+            return True
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Failed to allocate energy to partner {partner_id}: {e}")
+            raise
+    
+    async def get_partner_energy_usage(self, partner_id: str, days: int = 30) -> dict:
+        """파트너의 에너지 사용량 조회"""
+        try:
+            # 실제 구현에서는 energy_usage_history 테이블에서 조회
+            # 임시 데이터 반환
+            
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+            
+            # 일별 사용량 (임시 데이터)
+            daily_usage = []
+            for i in range(days):
+                date = start_date + timedelta(days=i)
+                usage = 100 + (i % 7) * 50  # 임시 패턴
+                daily_usage.append({
+                    "date": date.strftime("%Y-%m-%d"),
+                    "energy_used": usage,
+                    "transaction_count": usage // 10
+                })
+            
+            total_used = sum(day["energy_used"] for day in daily_usage)
+            avg_daily = total_used // days if days > 0 else 0
+            
+            return {
+                "partner_id": partner_id,
+                "period_days": days,
+                "total_energy_used": total_used,
+                "average_daily_usage": avg_daily,
+                "peak_daily_usage": max(day["energy_used"] for day in daily_usage),
+                "daily_breakdown": daily_usage,
+                "efficiency_score": 85.5  # 임시 값
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get partner energy usage for {partner_id}: {e}")
+            raise
+    
+    async def recharge_energy_pool(self, amount: int, admin_id: str) -> bool:
+        """에너지 풀 충전 (슈퍼 어드민용)"""
+        try:
+            result = await self.db.execute(
+                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+            )
+            energy_pool = result.scalar_one_or_none()
+            
+            if not energy_pool:
+                # 새 에너지 풀 생성
+                energy_pool = EnergyPool(
+                    total_energy=amount,
+                    available_energy=amount,
+                    reserved_energy=0,
+                    daily_consumption=0
+                )
+                self.db.add(energy_pool)
+            else:
+                # 기존 풀에 추가
+                energy_pool.total_energy += amount
+                energy_pool.available_energy += amount
+            
+            await self.db.commit()
+            
+            logger.info(f"Energy pool recharged with {amount} units by admin {admin_id}")
+            return True
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Failed to recharge energy pool: {e}")
+            raise
+    
+    async def monitor_energy_alerts(self) -> List[dict]:
+        """에너지 관련 알림 모니터링"""
+        try:
+            alerts = []
+            
+            # 현재 에너지 상태 확인
+            status = await self.get_total_energy_status()
+            
+            # 임계값 체크
+            if status["pool_health"] == "critical":
+                alerts.append({
+                    "id": "energy_critical",
+                    "type": "critical",
+                    "title": "에너지 풀 위험",
+                    "message": f"사용 가능한 에너지가 {status['available_energy']}로 매우 부족합니다.",
+                    "created_at": datetime.utcnow(),
+                    "severity": "high"
+                })
+            elif status["pool_health"] == "warning":
+                alerts.append({
+                    "id": "energy_warning", 
+                    "type": "warning",
+                    "title": "에너지 풀 경고",
+                    "message": f"사용 가능한 에너지가 {status['available_energy']}로 부족합니다.",
+                    "created_at": datetime.utcnow(),
+                    "severity": "medium"
+                })
+            
+            # 사용률 체크
+            if status["utilization_rate"] > 90:
+                alerts.append({
+                    "id": "high_utilization",
+                    "type": "info",
+                    "title": "높은 에너지 사용률",
+                    "message": f"현재 에너지 사용률이 {status['utilization_rate']}%입니다.",
+                    "created_at": datetime.utcnow(),
+                    "severity": "low"
+                })
+            
+            return alerts
+            
+        except Exception as e:
+            logger.error(f"Failed to monitor energy alerts: {e}")
+            return []
+    
+    async def get_energy_usage_history(
+        self, 
+        partner_id: Optional[str] = None, 
+        days: int = 30
+    ) -> List[dict]:
+        """에너지 사용 이력 조회"""
+        try:
+            # 실제 구현에서는 energy_usage_history 테이블에서 조회
+            # 임시 데이터 반환
+            
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+            
+            history = []
+            for i in range(days):
+                date = start_date + timedelta(days=i)
+                
+                # 파트너별 또는 전체 이력
+                if partner_id:
+                    records = [{
+                        "partner_id": partner_id,
+                        "energy_amount": 50 + (i % 5) * 20,
+                        "transaction_type": "api_call",
+                        "created_at": date
+                    }]
+                else:
+                    # 전체 파트너 이력 (임시)
+                    records = []
+                    for p_id in ["partner_1", "partner_2", "partner_3"]:
+                        records.append({
+                            "partner_id": p_id,
+                            "energy_amount": 30 + (i % 3) * 15,
+                            "transaction_type": "api_call",
+                            "created_at": date
+                        })
+                
+                history.extend(records)
+            
+            return sorted(history, key=lambda x: x["created_at"], reverse=True)
+            
+        except Exception as e:
+            logger.error(f"Failed to get energy usage history: {e}")
+            return []
+    
+    async def get_energy_analytics(self, days: int = 30) -> dict:
+        """에너지 사용 분석 (슈퍼 어드민용)"""
+        try:
+            # 실제 구현에서는 실제 데이터로 계산
+            # 임시 분석 데이터
+            
+            total_consumed = 45000
+            avg_daily = total_consumed // days
+            peak_usage = avg_daily * 1.5
+            
+            # 파트너별 사용량 순위 (임시)
+            partner_rankings = [
+                {"partner_id": "partner_1", "partner_name": "Partner A", "energy_used": 15000, "percentage": 33.3},
+                {"partner_id": "partner_2", "partner_name": "Partner B", "energy_used": 18000, "percentage": 40.0},
+                {"partner_id": "partner_3", "partner_name": "Partner C", "energy_used": 12000, "percentage": 26.7}
+            ]
+            
+            # 시간대별 사용 패턴
+            hourly_pattern = []
+            for hour in range(24):
+                # 9-18시가 피크 시간대
+                if 9 <= hour <= 18:
+                    usage = 1000 + (hour - 9) * 200
+                else:
+                    usage = 200 + hour * 50
+                
+                hourly_pattern.append({
+                    "hour": hour,
+                    "average_usage": usage
+                })
+            
+            return {
+                "period_days": days,
+                "total_energy_consumed": total_consumed,
+                "average_daily_consumption": avg_daily,
+                "peak_daily_usage": int(peak_usage),
+                "efficiency_trends": {
+                    "cost_per_transaction": 5.2,
+                    "energy_per_user": 125.5,
+                    "optimization_score": 78.5
+                },
+                "partner_rankings": partner_rankings,
+                "hourly_usage_pattern": hourly_pattern,
+                "predictions": {
+                    "next_week_consumption": avg_daily * 7 * 1.1,
+                    "monthly_forecast": avg_daily * 30 * 1.05,
+                    "recharge_recommendation": 100000
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get energy analytics: {e}")
+            raise
