@@ -21,7 +21,7 @@ class SystemMetrics(Base):
     metric_value = Column(DECIMAL(10, 4), nullable=False)  # 메트릭 값
     metric_unit = Column(String(20), nullable=True)  # %, MB, count, etc.
     partner_id = Column(PG_UUID(as_uuid=True), nullable=True)  # 파트너별 메트릭인 경우
-    metadata = Column(JSON, nullable=True)  # 추가 메타데이터
+    extra_data = Column(JSON, nullable=True)  # 추가 메타데이터
     recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):
@@ -34,6 +34,6 @@ class SystemMetrics(Base):
             "metric_value": float(self.metric_value) if self.metric_value else None,
             "metric_unit": self.metric_unit,
             "partner_id": str(self.partner_id) if self.partner_id else None,
-            "metadata": self.metadata,
+            "extra_data": self.extra_data,
             "recorded_at": self.recorded_at.isoformat()
         }
