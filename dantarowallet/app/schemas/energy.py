@@ -1,28 +1,179 @@
-"""에너지 관련 스키마"""
-from typing import Optional, List, Dict
+"""에너지 관련 스키마 - Doc #25 업데이트"""
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
-# 에너지 풀 생성 요청
+# Doc #25: 파트너별 에너지 풀 고급 관리 스키마
+
+class EnergyPoolResponse(BaseModel):
+    """에너지 풀 상태 응답 (Doc #25)"""
+    partner_id: int
+    wallet_address: str
+    status: str
+    total_energy: int
+    available_energy: int
+    used_energy: int
+    energy_percentage: float
+    total_bandwidth: int
+    available_bandwidth: int
+    frozen_trx_total: float
+    frozen_trx_energy: float
+    frozen_trx_bandwidth: float
+    daily_average_usage: float
+    peak_usage_hour: Optional[int]
+    depletion_estimated_at: Optional[datetime]
+    last_checked_at: Optional[datetime]
+    warning_threshold: int
+    critical_threshold: int
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyAlertResponse(BaseModel):
+    """에너지 알림 응답 (Doc #25)"""
+    id: int
+    type: str
+    severity: str
+    title: str
+    message: str
+    energy_percentage: Optional[int]
+    available_energy: Optional[int]
+    estimated_hours_remaining: Optional[int]
+    sent_at: datetime
+    acknowledged: bool
+    acknowledged_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyUsageLogResponse(BaseModel):
+    """에너지 사용 로그 응답 (Doc #25)"""
+    id: int
+    transaction_type: str
+    transaction_hash: Optional[str]
+    energy_consumed: int
+    bandwidth_consumed: int
+    energy_unit_price: Optional[float]
+    total_cost: Optional[float]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyMonitoringResponse(BaseModel):
+    """에너지 모니터링 응답 (Doc #25)"""
+    success: bool
+    data: Dict[str, Any] = Field(description="모니터링 데이터")
+    timestamp: datetime = Field(description="조회 시간")
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyAnalyticsResponse(BaseModel):
+    """에너지 분석 응답 (Doc #25)"""
+    success: bool
+    analytics: Dict[str, Any] = Field(description="분석 데이터")
+    generated_at: datetime = Field(description="생성 시간")
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyAlertListResponse(BaseModel):
+    """에너지 알림 목록 응답 (Doc #25)"""
+    success: bool
+    alerts: List[Dict[str, Any]] = Field(description="알림 목록")
+    total_count: int = Field(description="총 알림 수")
+
+    class Config:
+        from_attributes = True
+
+
+class GlobalEnergyAnalyticsResponse(BaseModel):
+    """전체 에너지 분석 응답 (Doc #25)"""
+    success: bool
+    global_analytics: Dict[str, Any] = Field(description="전체 분석 데이터")
+    generated_at: datetime = Field(description="생성 시간")
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyDashboardResponse(BaseModel):
+    """에너지 대시보드 응답 (Doc #25)"""
+    success: bool
+    energy_pool: Dict[str, Any] = Field(description="에너지 풀 정보")
+    recent_alerts: List[Dict[str, Any]] = Field(description="최근 알림 목록")
+    usage_statistics: Dict[str, Any] = Field(description="사용 통계")
+
+    class Config:
+        from_attributes = True
+
+
+class TrendAnalysis(BaseModel):
+    """트렌드 분석 (Doc #25)"""
+    trend: str = Field(description="트렌드 방향: increasing, decreasing, stable")
+    change_percentage: float = Field(description="변화율 (%)")
+    first_period_avg: float = Field(description="첫 번째 기간 평균")
+    second_period_avg: float = Field(description="두 번째 기간 평균")
+
+
+class UsagePatterns(BaseModel):
+    """사용 패턴 (Doc #25)"""
+    daily_usage: Dict[str, Any] = Field(description="일별 사용 패턴")
+    hourly_usage: Dict[str, Any] = Field(description="시간별 사용 패턴")
+    trend_analysis: TrendAnalysis = Field(description="트렌드 분석")
+
+
+class EnergyPatternAnalysisResponse(BaseModel):
+    """에너지 패턴 분석 응답 (Doc #25)"""
+    success: bool
+    partner_id: int
+    analysis_period: str
+    patterns: UsagePatterns
+
+    class Config:
+        from_attributes = True
+
+
+class EnergyThresholdUpdateRequest(BaseModel):
+    """에너지 임계값 업데이트 요청 (Doc #25)"""
+    warning_threshold: int = Field(ge=1, le=99, description="경고 임계값 (1-99%)")
+    critical_threshold: int = Field(ge=1, le=99, description="위험 임계값 (1-99%)")
+
+    class Config:
+        validate_assignment = True
+
+
+class EnergyOverviewResponse(BaseModel):
+    """에너지 전체 현황 응답 (Doc #25)"""
+    success: bool
+    overview: Dict[str, Any] = Field(description="전체 현황")
+
+    class Config:
+        from_attributes = True
+
+
+class AlertAcknowledgeResponse(BaseModel):
+    """알림 확인 응답 (Doc #25)"""
+    success: bool
+    message: str
+
+    class Config:
+        from_attributes = True
+
+
+# 기존 에너지 풀 스키마 (하위 호환성 유지)
 class CreateEnergyPoolRequest(BaseModel):
     pool_name: str = Field(..., description="에너지 풀 이름")
     owner_private_key: str = Field(..., description="소유자 프라이빗 키")
     initial_trx_amount: Decimal = Field(..., description="초기 동결할 TRX 금액")
 
-class EnergyPoolResponse(BaseModel):
-    id: int
-    pool_name: str
-    owner_address: str
-    frozen_trx: Decimal
-    total_energy: int
-    available_energy: int
-    used_energy: int
-    status: str
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 class EnergyPoolStatusResponse(BaseModel):
     pool_id: int
@@ -37,16 +188,6 @@ class EnergyPoolStatusResponse(BaseModel):
     usage_trend: Dict  # 7일간 사용 추이
     estimated_depletion: Optional[str]  # 예상 소진 시간
     recommendations: List[str]  # 추천 조치사항
-
-class EnergyUsageLogResponse(BaseModel):
-    id: int
-    transaction_id: int
-    energy_consumed: int
-    transaction_type: str
-    user_id: int
-    energy_price: Decimal
-    actual_cost: Decimal
-    used_at: datetime
     
     class Config:
         from_attributes = True

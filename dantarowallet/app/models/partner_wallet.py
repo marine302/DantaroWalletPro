@@ -61,6 +61,23 @@ class PartnerWallet(Base):
     # 활성화 상태
     is_active = Column(Boolean, default=True, comment="활성화 상태")
     
+    # TronLink 연동 전용 필드들
+    tronlink_version = Column(String(20), comment="TronLink 버전")
+    browser_fingerprint = Column(String(128), comment="브라우저 지문")
+    session_token = Column(String(128), comment="세션 토큰")
+    verification_signature = Column(String(500), comment="지갑 인증 서명")
+    verification_message = Column(String(200), comment="인증용 메시지")
+    
+    # 연결 통계
+    total_sessions = Column(Integer, default=0, comment="총 세션 수")
+    successful_transactions = Column(Integer, default=0, comment="성공한 트랜잭션 수")
+    failed_transactions = Column(Integer, default=0, comment="실패한 트랜잭션 수")
+    
+    # 보안 설정
+    require_confirmation = Column(Boolean, default=True, comment="트랜잭션 확인 필수")
+    auto_sign_enabled = Column(Boolean, default=False, comment="자동 서명 활성화")
+    security_level = Column(String(20), default="standard", comment="보안 레벨")
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

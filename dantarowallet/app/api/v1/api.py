@@ -14,7 +14,7 @@ from app.api.v1.endpoints import (
     auth,
     balance,
     deposit,
-    # energy,  # 임시 비활성화 - doc-24 구현으로 대체됨
+    energy,  # Doc #25: 에너지 풀 고급 관리 시스템
     transaction_analytics,
     wallet,
     withdrawal,
@@ -31,7 +31,7 @@ api_router.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
 api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
 api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
-# api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # 임시 비활성화
+api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )
