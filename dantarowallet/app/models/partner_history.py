@@ -92,7 +92,7 @@ class PartnerEnergyUsageHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
     
     # 관계
-    partner = relationship("Partner", back_populates="energy_usage_history")
+    partner = relationship("Partner", back_populates="partner_energy_usage_history")
     allocation = relationship("PartnerEnergyAllocation", back_populates="usage_history")
 
 
@@ -138,7 +138,7 @@ class PartnerFeeConfigHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
     
     # 관계
-    partner = relationship("Partner", back_populates="fee_config_history")
+    partner = relationship("Partner", back_populates="partner_fee_config_history")
     fee_config = relationship("FeeConfig", back_populates="partner_history")
 
 
