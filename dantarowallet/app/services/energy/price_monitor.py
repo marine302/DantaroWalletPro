@@ -4,7 +4,7 @@
 import httpx
 import json
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc

@@ -6,19 +6,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc, func
 from sqlalchemy.orm import selectinload
 
-from app.models.energy_pool import EnergyPool
+from app.models.energy_pool import EnergyPoolModel, EnergyPoolStatus, EnergyUsageLog, EnergyPriceHistory
 from app.models.user import User
 from app.schemas.energy import (
-    EnergyPoolStatus, EnergyRechargeRequest, EnergyUsageStats,
-    EnergyQueueCreate, QueueStatus, CreateEnergyAlert, EnergyAlert,
-    EmergencyWithdrawalCreate, EmergencyWithdrawalResponse
+    CreateEnergyPoolRequest,
+    EnergyPoolResponse,
+    EnergyPoolStatusResponse,
+    EnergyUsageStatsResponse,
+    EnergyUsageLogResponse,
+    EnergySimulationRequest,
+    EnergySimulationResponse,
+    AutoManagementSettings,
+    EnergyPriceHistoryResponse,
+    MessageResponse
 )
 from app.core.exceptions import EnergyInsufficientError, ValidationError
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
-class EnergyPoolService:
+class EnergyPoolModelService:
     """에너지 풀 관리 서비스"""
     
     def __init__(self, db: AsyncSession):
@@ -29,13 +36,13 @@ class EnergyPoolService:
         try:
             # 에너지 풀 정보 조회
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
             if not energy_pool:
                 # 기본 에너지 풀 생성
-                energy_pool = EnergyPool(
+                energy_pool = EnergyPoolModel(
                     total_energy=1000000,
                     available_energy=1000000,
                     reserved_energy=0,
@@ -70,7 +77,7 @@ class EnergyPoolService:
         try:
             # 현재 에너지 풀 조회
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
@@ -79,11 +86,11 @@ class EnergyPoolService:
             
             # 에너지 소모 처리
             await self.db.execute(
-                update(EnergyPool)
-                .where(EnergyPool.id == energy_pool.id)
+                update(EnergyPoolModel)
+                .where(EnergyPoolModel.id == energy_pool.id)
                 .values(
-                    available_energy=EnergyPool.available_energy - amount,
-                    daily_consumption=EnergyPool.daily_consumption + amount,
+                    available_energy=EnergyPoolModel.available_energy - amount,
+                    daily_consumption=EnergyPoolModel.daily_consumption + amount,
                     updated_at=func.now()
                 )
             )
@@ -116,7 +123,7 @@ class EnergyPoolService:
         try:
             # 현재 에너지 풀 조회
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
@@ -125,11 +132,11 @@ class EnergyPoolService:
             
             # 에너지 충전 처리
             await self.db.execute(
-                update(EnergyPool)
-                .where(EnergyPool.id == energy_pool.id)
+                update(EnergyPoolModel)
+                .where(EnergyPoolModel.id == energy_pool.id)
                 .values(
-                    total_energy=EnergyPool.total_energy + request.amount,
-                    available_energy=EnergyPool.available_energy + request.amount,
+                    total_energy=EnergyPoolModel.total_energy + request.amount,
+                    available_energy=EnergyPoolModel.available_energy + request.amount,
                     last_recharge_at=func.now(),
                     is_emergency_mode=False,
                     updated_at=func.now()
@@ -436,7 +443,7 @@ class EnergyPoolService:
         """슈퍼 어드민용 전체 에너지 풀 현황"""
         try:
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
@@ -481,7 +488,7 @@ class EnergyPoolService:
         try:
             # 에너지 풀에서 사용 가능한 에너지 확인
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
@@ -544,13 +551,13 @@ class EnergyPoolService:
         """에너지 풀 충전 (슈퍼 어드민용)"""
         try:
             result = await self.db.execute(
-                select(EnergyPool).order_by(desc(EnergyPool.id)).limit(1)
+                select(EnergyPoolModel).order_by(desc(EnergyPoolModel.id)).limit(1)
             )
             energy_pool = result.scalar_one_or_none()
             
             if not energy_pool:
                 # 새 에너지 풀 생성
-                energy_pool = EnergyPool(
+                energy_pool = EnergyPoolModel(
                     total_energy=amount,
                     available_energy=amount,
                     reserved_energy=0,
