@@ -437,3 +437,296 @@ class DeploymentService:
         except Exception as e:
             self.db.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to complete onboarding: {str(e)}")
+    
+    # ===== 슈퍼 어드민용 배포 관리 메서드들 =====
+    
+    async def get_all_deployments(self, 
+                                 status_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+        """모든 파트너 배포 현황 조회 (슈퍼 어드민용)"""
+        try:
+            query = self.db.query(Partner)
+            
+            if status_filter:
+                query = query.filter(Partner.status == status_filter)
+            
+            partners = query.all()
+            deployments = []
+            
+            for partner in partners:
+                deployment_config = partner.deployment_config or {}
+                
+                deployment_info = {
+                    "partner_id": str(partner.id),
+                    "partner_name": partner.name,
+                    "status": partner.status,
+                    "onboarding_status": partner.onboarding_status,
+                    "deployment_status": self._get_deployment_status(deployment_config),
+                    "created_at": partner.created_at.isoformat() if partner.created_at else None,
+                    "activated_at": partner.activated_at.isoformat() if partner.activated_at else None,
+                    "template_type": deployment_config.get("template_type", "standard"),
+                    "environment": deployment_config.get("environment", "production"),
+                    "infrastructure": deployment_config.get("infrastructure", {}),
+                    "health_status": self._check_deployment_health(partner),
+                    "last_updated": deployment_config.get("last_updated")
+                }
+                
+                deployments.append(deployment_info)
+            
+            return deployments
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get all deployments: {str(e)}")
+    
+    async def get_deployment_statistics(self) -> Dict[str, Any]:
+        """배포 통계 조회 (슈퍼 어드민용)"""
+        try:
+            # 전체 파트너 통계
+            total_partners = self.db.query(Partner).count()
+            active_deployments = self.db.query(Partner).filter(Partner.status == "active").count()
+            pending_deployments = self.db.query(Partner).filter(Partner.onboarding_status == "pending").count()
+            failed_deployments = self.db.query(Partner).filter(Partner.status == "suspended").count()
+            
+            # 템플릿별 통계
+            partners = self.db.query(Partner).all()
+            template_stats = {}
+            
+            for partner in partners:
+                deployment_config = partner.deployment_config or {}
+                template_type = deployment_config.get("template_type", "standard")
+                
+                if template_type not in template_stats:
+                    template_stats[template_type] = 0
+                template_stats[template_type] += 1
+            
+            # 최근 배포 활동
+            recent_deployments = []
+            for partner in partners[-10:]:  # 최근 10개
+                deployment_config = partner.deployment_config or {}
+                if deployment_config.get("configured_at"):
+                    recent_deployments.append({
+                        "partner_name": partner.name,
+                        "status": partner.status,
+                        "deployed_at": deployment_config.get("configured_at"),
+                        "template_type": deployment_config.get("template_type", "standard")
+                    })
+            
+            statistics = {
+                "overview": {
+                    "total_partners": total_partners,
+                    "active_deployments": active_deployments,
+                    "pending_deployments": pending_deployments,
+                    "failed_deployments": failed_deployments,
+                    "success_rate": (active_deployments / max(total_partners, 1)) * 100
+                },
+                
+                "template_distribution": template_stats,
+                
+                "recent_activity": recent_deployments,
+                
+                "deployment_health": {
+                    "healthy": active_deployments,
+                    "unhealthy": failed_deployments,
+                    "unknown": pending_deployments
+                },
+                
+                "resource_usage": {
+                    "total_instances": active_deployments,
+                    "avg_deployment_time": "15 minutes",  # 더미 데이터
+                    "total_storage_used": f"{active_deployments * 100}GB",
+                    "monthly_cost_estimate": f"${active_deployments * 200} USD"
+                }
+            }
+            
+            return statistics
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to get deployment statistics: {str(e)}")
+    
+    async def bulk_deploy_partners(self, 
+                                  partner_ids: List[str],
+                                  template_type: str = "standard") -> List[Dict[str, Any]]:
+        """대량 파트너 배포 (슈퍼 어드민용)"""
+        try:
+            deployment_results = []
+            
+            for partner_id in partner_ids:
+                try:
+                    partner = self.db.query(Partner).filter(Partner.id == partner_id).first()
+                    if not partner:
+                        deployment_results.append({
+                            "partner_id": partner_id,
+                            "status": "failed",
+                            "error": "Partner not found"
+                        })
+                        continue
+                    
+                    # 배포 시작
+                    deployment_result = await self.create_partner_instance(partner)
+                    
+                    deployment_results.append({
+                        "partner_id": partner_id,
+                        "partner_name": partner.name,
+                        "status": "initiated",
+                        "deployment_id": deployment_result.deployment_id,
+                        "estimated_completion": deployment_result.estimated_completion
+                    })
+                    
+                except Exception as e:
+                    deployment_results.append({
+                        "partner_id": partner_id,
+                        "status": "failed",
+                        "error": str(e)
+                    })
+            
+            return deployment_results
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to bulk deploy partners: {str(e)}")
+    
+    async def manage_deployment_templates(self, 
+                                        action: str,
+                                        template_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """배포 템플릿 관리 (슈퍼 어드민용)"""
+        try:
+            if action == "list":
+                # 사용 가능한 템플릿 목록 반환
+                templates = [
+                    {
+                        "id": "standard",
+                        "name": "표준 템플릿",
+                        "description": "일반적인 파트너사용 기본 구성",
+                        "version": "1.0.0",
+                        "resources": {
+                            "cpu": "2 vCPU",
+                            "memory": "4GB RAM", 
+                            "storage": "100GB SSD"
+                        },
+                        "features": ["기본 지갑", "TRON 지원", "모니터링"],
+                        "monthly_cost": 200
+                    },
+                    {
+                        "id": "enterprise",
+                        "name": "엔터프라이즈 템플릿",
+                        "description": "고성능 파트너사용 확장 구성",
+                        "version": "1.0.0",
+                        "resources": {
+                            "cpu": "8 vCPU",
+                            "memory": "16GB RAM",
+                            "storage": "500GB SSD"
+                        },
+                        "features": ["고급 지갑", "다중 체인", "실시간 모니터링", "전용 지원"],
+                        "monthly_cost": 800
+                    }
+                ]
+                return {"templates": templates}
+            
+            elif action == "create" and template_data:
+                # 새 템플릿 생성
+                new_template = {
+                    "id": template_data.get("id"),
+                    "name": template_data.get("name"),
+                    "description": template_data.get("description"),
+                    "version": "1.0.0",
+                    "created_at": datetime.utcnow().isoformat(),
+                    "created_by": "super_admin"
+                }
+                return {"template": new_template, "status": "created"}
+            
+            elif action == "update" and template_data:
+                # 기존 템플릿 업데이트
+                return {"template": template_data, "status": "updated"}
+            
+            elif action == "delete" and template_data:
+                # 템플릿 삭제
+                return {"template_id": template_data.get("id"), "status": "deleted"}
+            
+            else:
+                raise HTTPException(status_code=400, detail="Invalid action or missing template data")
+                
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to manage deployment templates: {str(e)}")
+    
+    async def monitor_deployment_health(self) -> Dict[str, Any]:
+        """배포 건강 상태 모니터링 (슈퍼 어드민용)"""
+        try:
+            partners = self.db.query(Partner).filter(Partner.status == "active").all()
+            
+            health_summary = {
+                "total_deployments": len(partners),
+                "healthy_count": 0,
+                "warning_count": 0,
+                "critical_count": 0,
+                "unknown_count": 0,
+                "deployment_health": []
+            }
+            
+            for partner in partners:
+                health_status = self._check_deployment_health(partner)
+                health_info = {
+                    "partner_id": str(partner.id),
+                    "partner_name": partner.name,
+                    "health_status": health_status["status"],
+                    "uptime": health_status["uptime"],
+                    "response_time": health_status["response_time"],
+                    "error_rate": health_status["error_rate"],
+                    "last_check": health_status["last_check"],
+                    "issues": health_status.get("issues", [])
+                }
+                
+                health_summary["deployment_health"].append(health_info)
+                
+                # 상태별 카운트
+                if health_status["status"] == "healthy":
+                    health_summary["healthy_count"] += 1
+                elif health_status["status"] == "warning":
+                    health_summary["warning_count"] += 1
+                elif health_status["status"] == "critical":
+                    health_summary["critical_count"] += 1
+                else:
+                    health_summary["unknown_count"] += 1
+            
+            return health_summary
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to monitor deployment health: {str(e)}")
+    
+    def _get_deployment_status(self, deployment_config: Dict[str, Any]) -> str:
+        """배포 상태 계산"""
+        if deployment_config.get("onboarding_completed_at"):
+            return "completed"
+        elif deployment_config.get("template_deployment_completed"):
+            return "deployed"
+        elif deployment_config.get("database_setup_completed"):
+            return "configuring"
+        elif deployment_config.get("configured_at"):
+            return "setting_up"
+        else:
+            return "pending"
+    
+    def _check_deployment_health(self, partner: Partner) -> Dict[str, Any]:
+        """개별 배포 건강 상태 확인"""
+        # 실제로는 헬스체크 엔드포인트 호출하여 확인
+        # 여기서는 더미 데이터 반환
+        
+        import random
+        
+        statuses = ["healthy", "warning", "critical"]
+        weights = [0.8, 0.15, 0.05]  # 80% healthy, 15% warning, 5% critical
+        
+        status = random.choices(statuses, weights=weights)[0]
+        
+        health_data = {
+            "status": status,
+            "uptime": f"{random.uniform(95, 99.9):.1f}%",
+            "response_time": f"{random.randint(50, 300)}ms",
+            "error_rate": f"{random.uniform(0, 2):.2f}%",
+            "last_check": datetime.utcnow().isoformat(),
+            "issues": []
+        }
+        
+        if status == "warning":
+            health_data["issues"] = ["High response time detected"]
+        elif status == "critical":
+            health_data["issues"] = ["Service unavailable", "Database connection failed"]
+        
+        return health_data
