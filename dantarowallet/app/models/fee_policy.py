@@ -186,9 +186,9 @@ class UserTier(Base):
     partner = relationship("Partner", back_populates="user_tiers")
 
 
-class FeeCalculationLog(Base):
-    """수수료 계산 로그"""
-    __tablename__ = "partner_fee_calculation_logs"
+class PartnerPolicyCalculationLog(Base):
+    """파트너 정책 수수료 계산 로그"""
+    __tablename__ = "partner_policy_calculation_logs"
     
     id = Column(Integer, primary_key=True, index=True)
     partner_id = Column(String(36), ForeignKey("partners.id"), nullable=False)

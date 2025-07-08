@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from app.models.fee_policy import (
     PartnerFeePolicy, FeeTier, PartnerWithdrawalPolicy,
-    PartnerEnergyPolicy, UserTier, FeeCalculationLog,
+    PartnerEnergyPolicy, UserTier, PartnerPolicyCalculationLog,
     FeeType, WithdrawalPolicy, EnergyPolicy
 )
 from app.models.partner import Partner
@@ -18,7 +18,7 @@ from app.schemas.fee_policy import (
     PartnerFeePolicyCreate, PartnerFeePolicyUpdate, PartnerFeePolicyResponse,
     FeeTierCreate, FeeTierResponse,
     FeeCalculationRequest, FeeCalculationResponse,
-    FeeCalculationLogResponse
+    PartnerPolicyCalculationLogResponse
 )
 from app.core.exceptions import ValidationError, NotFoundError
 from app.core.logger import get_logger
@@ -478,7 +478,7 @@ class PartnerFeePolicyService:
     ):
         """수수료 계산 로그 생성"""
         try:
-            log = FeeCalculationLog(
+            log = PartnerPolicyCalculationLog(
                 partner_id=partner_id,
                 user_id=user_id,
                 calculation_type=calculation_type,
@@ -505,26 +505,26 @@ class PartnerFeePolicyService:
         offset: int = 0,
         user_id: Optional[int] = None,
         calculation_type: Optional[str] = None
-    ) -> List[FeeCalculationLogResponse]:
+    ) -> List[PartnerPolicyCalculationLogResponse]:
         """수수료 계산 로그 조회"""
-        query = select(FeeCalculationLog).where(
-            FeeCalculationLog.partner_id == partner_id
+        query = select(PartnerPolicyCalculationLog).where(
+            PartnerPolicyCalculationLog.partner_id == partner_id
         )
         
         if user_id:
-            query = query.where(FeeCalculationLog.user_id == user_id)
+            query = query.where(PartnerPolicyCalculationLog.user_id == user_id)
         
         if calculation_type:
-            query = query.where(FeeCalculationLog.calculation_type == calculation_type)
+            query = query.where(PartnerPolicyCalculationLog.calculation_type == calculation_type)
         
-        query = query.order_by(desc(FeeCalculationLog.calculated_at))
+        query = query.order_by(desc(PartnerPolicyCalculationLog.calculated_at))
         query = query.offset(offset).limit(limit)
         
         result = await self.db.execute(query)
         logs = result.scalars().all()
         
         return [
-            FeeCalculationLogResponse(
+            PartnerPolicyCalculationLogResponse(
                 id=log.id,
                 partner_id=log.partner_id,
                 user_id=log.user_id,

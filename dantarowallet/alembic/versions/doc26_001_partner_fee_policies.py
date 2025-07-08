@@ -132,8 +132,8 @@ def upgrade():
     op.create_index(op.f('ix_user_tiers_id'), 'user_tiers', ['id'], unique=False)
     op.create_index('ix_user_tiers_partner_level', 'user_tiers', ['partner_id', 'tier_level'], unique=False)
     
-    # Create partner_fee_calculation_logs table
-    op.create_table('partner_fee_calculation_logs',
+    # Create partner_policy_calculation_logs table
+    op.create_table('partner_policy_calculation_logs',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('partner_id', sa.String(length=36), nullable=False),
         sa.Column('transaction_id', sa.String(length=100), nullable=True),
@@ -150,19 +150,19 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         comment='수수료 계산 로그'
     )
-    op.create_index(op.f('ix_partner_fee_calculation_logs_id'), 'partner_fee_calculation_logs', ['id'], unique=False)
-    op.create_index('ix_partner_fee_calculation_logs_partner_date', 'partner_fee_calculation_logs', ['partner_id', 'created_at'], unique=False)
-    op.create_index('ix_partner_fee_calculation_logs_transaction', 'partner_fee_calculation_logs', ['transaction_id'], unique=False)
+    op.create_index(op.f('ix_partner_policy_calculation_logs_id'), 'partner_policy_calculation_logs', ['id'], unique=False)
+    op.create_index('ix_partner_policy_calculation_logs_partner_date', 'partner_policy_calculation_logs', ['partner_id', 'created_at'], unique=False)
+    op.create_index('ix_partner_policy_calculation_logs_transaction', 'partner_policy_calculation_logs', ['transaction_id'], unique=False)
 
 
 def downgrade():
     """Drop partner fee and policy tables"""
     
     # Drop tables in reverse order
-    op.drop_index('ix_partner_fee_calculation_logs_transaction', table_name='partner_fee_calculation_logs')
-    op.drop_index('ix_partner_fee_calculation_logs_partner_date', table_name='partner_fee_calculation_logs')
-    op.drop_index(op.f('ix_partner_fee_calculation_logs_id'), table_name='partner_fee_calculation_logs')
-    op.drop_table('partner_fee_calculation_logs')
+    op.drop_index('ix_partner_policy_calculation_logs_transaction', table_name='partner_policy_calculation_logs')
+    op.drop_index('ix_partner_policy_calculation_logs_partner_date', table_name='partner_policy_calculation_logs')
+    op.drop_index(op.f('ix_partner_policy_calculation_logs_id'), table_name='partner_policy_calculation_logs')
+    op.drop_table('partner_policy_calculation_logs')
     
     op.drop_index('ix_user_tiers_partner_level', table_name='user_tiers')
     op.drop_index(op.f('ix_user_tiers_id'), table_name='user_tiers')

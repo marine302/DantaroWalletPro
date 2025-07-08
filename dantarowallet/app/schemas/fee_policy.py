@@ -314,8 +314,8 @@ class FeeCalculationResponse(BaseModel):
     metadata: Dict[str, Any] = {}
 
 
-class FeeCalculationLogResponse(BaseModel):
-    """수수료 계산 로그 응답"""
+class PartnerPolicyCalculationLogResponse(BaseModel):
+    """파트너 정책 수수료 계산 로그 응답"""
     id: int
     partner_id: str
     user_id: Optional[int]

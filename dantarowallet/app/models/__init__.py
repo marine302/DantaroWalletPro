@@ -14,7 +14,7 @@ from app.models.fee_policy import (
     PartnerWithdrawalPolicy, 
     PartnerEnergyPolicy, 
     UserTier, 
-    FeeCalculationLog,
+    PartnerPolicyCalculationLog,
     FeeType,
     WithdrawalPolicy,
     EnergyPolicy
@@ -63,7 +63,7 @@ __all__ = [
     "PartnerWithdrawalPolicy",
     "PartnerEnergyPolicy",
     "UserTier",
-    "FeeCalculationLog",
+    "PartnerPolicyCalculationLog",
     "FeeType",
     "WithdrawalPolicy",
     "EnergyPolicy",

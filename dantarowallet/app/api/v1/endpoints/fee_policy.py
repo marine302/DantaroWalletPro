@@ -12,7 +12,7 @@ from app.schemas.fee_policy import (
     PartnerFeePolicyCreate, PartnerFeePolicyUpdate, PartnerFeePolicyResponse,
     FeeTierCreate, FeeTierResponse,
     FeeCalculationRequest, FeeCalculationResponse,
-    FeeCalculationLogResponse,
+    PartnerPolicyCalculationLogResponse,
     
     # 출금 정책 스키마
     PartnerWithdrawalPolicyCreate, PartnerWithdrawalPolicyUpdate, PartnerWithdrawalPolicyResponse,
@@ -151,7 +151,7 @@ async def calculate_fee(
     )
 
 
-@router.get("/partners/{partner_id}/calculation-logs", response_model=List[FeeCalculationLogResponse])
+@router.get("/partners/{partner_id}/calculation-logs", response_model=List[PartnerPolicyCalculationLogResponse])
 async def get_calculation_logs(
     partner_id: str,
     limit: int = Query(100, ge=1, le=1000),

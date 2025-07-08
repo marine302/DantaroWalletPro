@@ -71,7 +71,20 @@
 - ✅ `partner_withdrawal_policies` 테이블 생성
 - ✅ `partner_energy_policies` 테이블 생성
 - ✅ `user_tiers` 테이블 생성
-- ✅ `partner_fee_calculation_logs` 테이블 생성
+- ✅ `fee_calculation_logs` 테이블 생성 (partner_fee_calculation_logs로 수정 예정)
+
+#### 시스템 통합 테스트
+- ✅ 서비스 인스턴스화 성공
+- ✅ 스키마 검증 성공
+- ✅ 기본 컴포넌트 모두 정상 작동
+- ✅ API 엔드포인트 21개 정상 등록
+- ✅ 카테고리별 API 분류 확인:
+  - Policy Management: 16개 엔드포인트
+  - Fee Tiers: 2개 엔드포인트  
+  - Calculation: 2개 엔드포인트
+  - Withdrawal Policy: 4개 엔드포인트
+  - Energy Policy: 4개 엔드포인트
+  - User Tiers: 5개 엔드포인트
 
 ### 🔧 구현된 주요 기능
 
