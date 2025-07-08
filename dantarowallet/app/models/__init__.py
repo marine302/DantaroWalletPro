@@ -8,6 +8,17 @@ from app.models.deposit import Deposit
 from app.models.energy_pool import EnergyPoolModel, EnergyUsageLog, EnergyPriceHistory
 from app.models.energy_usage_history import EnergyUsageHistory
 from app.models.partner import Partner
+from app.models.fee_policy import (
+    PartnerFeePolicy, 
+    FeeTier, 
+    PartnerWithdrawalPolicy, 
+    PartnerEnergyPolicy, 
+    UserTier, 
+    FeeCalculationLog,
+    FeeType,
+    WithdrawalPolicy,
+    EnergyPolicy
+)
 from app.models.transaction import (
     Transaction,
     TransactionDirection,
@@ -46,4 +57,14 @@ __all__ = [
     "EnergyPriceHistory",
     "EnergyUsageHistory",
     "Partner",
+    # Doc-26: 수수료 및 정책 모델
+    "PartnerFeePolicy",
+    "FeeTier", 
+    "PartnerWithdrawalPolicy",
+    "PartnerEnergyPolicy",
+    "UserTier",
+    "FeeCalculationLog",
+    "FeeType",
+    "WithdrawalPolicy",
+    "EnergyPolicy",
 ]

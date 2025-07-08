@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     balance,
     deposit,
     energy,  # Doc #25: 에너지 풀 고급 관리 시스템
+    fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
     transaction_analytics,
     wallet,
     withdrawal,
@@ -32,6 +33,7 @@ api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
 api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
 api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리
+api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )

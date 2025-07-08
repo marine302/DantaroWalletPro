@@ -64,3 +64,10 @@ class Partner(Base):
     
     # 외부 지갑 관계 (TronLink 연동)
     wallets = relationship("PartnerWallet", back_populates="partner", cascade="all, delete-orphan")
+    
+    # Doc-26: 수수료 및 정책 관계
+    fee_policy = relationship("PartnerFeePolicy", back_populates="partner", uselist=False, cascade="all, delete-orphan")
+    withdrawal_policy = relationship("PartnerWithdrawalPolicy", back_populates="partner", uselist=False, cascade="all, delete-orphan")
+    energy_policy = relationship("PartnerEnergyPolicy", back_populates="partner", uselist=False, cascade="all, delete-orphan")
+    user_tiers = relationship("UserTier", back_populates="partner", cascade="all, delete-orphan")
+    fee_logs = relationship("FeeCalculationLog", back_populates="partner", cascade="all, delete-orphan")
