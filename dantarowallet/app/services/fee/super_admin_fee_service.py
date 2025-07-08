@@ -18,6 +18,58 @@ from app.schemas.fee import (
 )
 from app.core.database import get_db
 
+# 헬퍼 함수들
+def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:
+    """SQLAlchemy 객체에서 안전하게 속성을 가져옵니다."""
+    if obj is None:
+        return default
+    try:
+        value = getattr(obj, attr, default)
+        # SQLAlchemy Column 타입인지 확인
+        if hasattr(value, '__class__') and 'Column' in str(value.__class__):
+            return default
+        return value
+    except (AttributeError, TypeError):
+        return default
+
+def safe_decimal(value: Any, default: Decimal = Decimal('0')) -> Decimal:
+    """안전하게 Decimal로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        if isinstance(value, Decimal):
+            return value
+        return Decimal(str(value))
+    except (ValueError, TypeError):
+        return default
+
+def safe_float(value: Any, default: float = 0.0) -> float:
+    """안전하게 float로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+def safe_str(value: Any, default: str = '') -> str:
+    """안전하게 str로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        return str(value)
+    except (ValueError, TypeError):
+        return default
+
+def safe_bool(value: Any, default: bool = False) -> bool:
+    """안전하게 bool로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        return bool(value)
+    except (ValueError, TypeError):
+        return default
+
 
 class SuperAdminFeeService:
     """본사 슈퍼 어드민용 수수료 & 매출 관리 서비스"""
@@ -66,19 +118,19 @@ class SuperAdminFeeService:
             self.db.refresh(new_config)
             
             return FeeConfigResponse(
-                id=str(new_config.id),
-                partner_id=str(new_config.partner_id),
-                transaction_type=new_config.transaction_type,
-                base_fee=new_config.base_fee,
-                percentage_fee=new_config.percentage_fee,
-                minimum_fee=new_config.min_fee,  # 모델의 필드명은 min_fee
-                maximum_fee=new_config.max_fee,  # 모델의 필드명은 max_fee
+                id=safe_str(safe_get_attr(new_config, 'id')),
+                partner_id=safe_str(safe_get_attr(new_config, 'partner_id')),
+                transaction_type=safe_str(safe_get_attr(new_config, 'transaction_type')),
+                base_fee=safe_decimal(safe_get_attr(new_config, 'base_fee')),
+                percentage_fee=safe_decimal(safe_get_attr(new_config, 'percentage_fee')),
+                minimum_fee=safe_decimal(safe_get_attr(new_config, 'min_fee')),  # 모델의 필드명은 min_fee
+                maximum_fee=safe_decimal(safe_get_attr(new_config, 'max_fee')),  # 모델의 필드명은 max_fee
                 tier_config={},  # 모델에 tier_config가 없으므로 빈 dict
                 volume_discounts={},  # 모델에 volume_discounts가 없으므로 빈 dict
                 time_based_pricing={},  # 모델에 time_based_pricing가 없으므로 빈 dict
-                is_active=new_config.is_active,
-                created_at=new_config.created_at,
-                updated_at=new_config.updated_at
+                is_active=safe_bool(safe_get_attr(new_config, 'is_active')),
+                created_at=safe_get_attr(new_config, 'created_at') or datetime.utcnow(),
+                updated_at=safe_get_attr(new_config, 'updated_at')
             )
             
         except Exception as e:
@@ -165,22 +217,22 @@ class SuperAdminFeeService:
             total_volume = Decimal("0.00")
             
             # 수수료 통계 (임시 계산)
-            avg_fee_rate = partner.commission_rate
+            avg_fee_rate = safe_get_attr(partner, 'commission_rate', Decimal('0'))
             total_fees_collected = Decimal("0.00")
             
             return RevenueStats(
                 partner_id=partner_id,
-                partner_name=partner.name,
+                partner_name=safe_str(safe_get_attr(partner, 'name')),
                 daily_revenue=daily_revenue,
                 monthly_revenue=monthly_revenue,
                 total_revenue=total_revenue,
                 total_transactions=total_transactions,
                 total_volume=total_volume,
-                avg_fee_rate=float(avg_fee_rate),
+                avg_fee_rate=safe_float(avg_fee_rate),
                 total_fees_collected=total_fees_collected,
                 growth_rate=0.0,  # 성장률 계산
                 last_transaction=None,  # 마지막 거래 시간
-                status=partner.status
+                status=safe_str(safe_get_attr(partner, 'status'))
             )
             
         except Exception as e:
@@ -290,7 +342,7 @@ class SuperAdminFeeService:
             return Settlement(
                 settlement_id=settlement_id,
                 partner_id=partner_id,
-                partner_name=partner.name,
+                partner_name=safe_str(safe_get_attr(partner, 'name')),
                 period=period,
                 start_date=start_date,
                 end_date=end_date,
@@ -314,19 +366,19 @@ class SuperAdminFeeService:
             
             return [
                 FeeConfigResponse(
-                    id=config.id,
-                    partner_id=config.partner_id,
-                    transaction_type=config.transaction_type,
-                    base_fee=config.base_fee,
-                    percentage_fee=config.percentage_fee,
-                    minimum_fee=config.minimum_fee,
-                    maximum_fee=config.maximum_fee,
-                    tier_config=config.tier_config,
-                    volume_discounts=config.volume_discounts,
-                    time_based_pricing=config.time_based_pricing,
-                    is_active=config.is_active,
-                    created_at=config.created_at,
-                    updated_at=config.updated_at
+                    id=safe_str(safe_get_attr(config, 'id')),
+                    partner_id=safe_str(safe_get_attr(config, 'partner_id')),
+                    transaction_type=safe_str(safe_get_attr(config, 'transaction_type')),
+                    base_fee=safe_decimal(safe_get_attr(config, 'base_fee')),
+                    percentage_fee=safe_decimal(safe_get_attr(config, 'percentage_fee')),
+                    minimum_fee=safe_decimal(safe_get_attr(config, 'minimum_fee')),
+                    maximum_fee=safe_decimal(safe_get_attr(config, 'maximum_fee')),
+                    tier_config=safe_get_attr(config, 'tier_config', {}),
+                    volume_discounts=safe_get_attr(config, 'volume_discounts', {}),
+                    time_based_pricing=safe_get_attr(config, 'time_based_pricing', {}),
+                    is_active=safe_bool(safe_get_attr(config, 'is_active')),
+                    created_at=safe_get_attr(config, 'created_at') or datetime.utcnow(),
+                    updated_at=safe_get_attr(config, 'updated_at')
                 ) for config in configs
             ]
             
@@ -346,11 +398,17 @@ class SuperAdminFeeService:
                     partner_id = update.get("partner_id")
                     config_data = update.get("config", {})
                     
-                    result = await self.set_partner_fee_config(partner_id, config_data)
-                    results["success"].append({
-                        "partner_id": partner_id,
-                        "config_id": result.id
-                    })
+                    if partner_id:  # partner_id가 유효한 경우에만 실행
+                        result = await self.set_partner_fee_config(str(partner_id), config_data)
+                        results["success"].append({
+                            "partner_id": partner_id,
+                            "config_id": result.id
+                        })
+                    else:
+                        results["errors"].append({
+                            "partner_id": partner_id,
+                            "error": "Invalid partner_id"
+                        })
                     
                 except Exception as e:
                     results["failed"].append({
@@ -458,13 +516,14 @@ class SuperAdminFeeService:
                 raise HTTPException(status_code=404, detail="Partner not found")
             
             # 동적 가격 규칙 설정 (partner.settings에 저장)
-            current_settings = partner.settings or {}
-            current_settings["dynamic_pricing"] = {
+            current_settings = safe_get_attr(partner, 'settings') or {}
+            dynamic_pricing_config = {
                 "enabled": pricing_rules.get("enabled", False),
                 "rules": pricing_rules.get("rules", []),
                 "updated_at": datetime.utcnow().isoformat(),
                 "updated_by": "super_admin"
             }
+            current_settings["dynamic_pricing"] = dynamic_pricing_config
             
             # 파트너 설정 업데이트
             # partner.settings = current_settings  # 실제로는 이렇게 업데이트
@@ -473,7 +532,7 @@ class SuperAdminFeeService:
                 "partner_id": partner_id,
                 "dynamic_pricing_enabled": pricing_rules.get("enabled", False),
                 "rules_count": len(pricing_rules.get("rules", [])),
-                "configuration": current_settings["dynamic_pricing"],
+                "configuration": dynamic_pricing_config,
                 "status": "configured"
             }
             

@@ -1,8 +1,8 @@
 """파트너사 수수료 및 정책 관리 서비스 - Doc #26"""
 import json
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Tuple
 from decimal import Decimal
-from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc, func, and_, or_
 from sqlalchemy.orm import selectinload, joinedload
@@ -24,6 +24,93 @@ from app.core.exceptions import ValidationError, NotFoundError
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:
+    """SQLAlchemy 모델 속성을 안전하게 가져오는 헬퍼 함수"""
+    if obj is None:
+        return default
+    
+    value = getattr(obj, attr, default)
+    
+    # SQLAlchemy Column 타입인 경우 실제 값 추출
+    if hasattr(value, 'value'):
+        return value.value
+    elif hasattr(value, '__getitem__') and hasattr(value, 'keys'):
+        # dict-like object
+        return value
+    else:
+        return value
+
+
+def safe_decimal(value: Any, default: Decimal = Decimal('0')) -> Decimal:
+    """안전한 Decimal 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return Decimal(str(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_int(value: Any, default: int = 0) -> int:
+    """안전한 int 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_str(value: Any, default: str = '') -> str:
+    """안전한 str 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return str(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_datetime(value: Any, default: Optional[datetime] = None) -> datetime:
+    """안전한 datetime 변환"""
+    if value is None:
+        return default or datetime.utcnow()
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    if isinstance(value, datetime):
+        return value
+    
+    return default or datetime.utcnow()
+
+
+def safe_bool(value: Any, default: bool = False) -> bool:
+    """안전한 bool 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return bool(value)
+    except (TypeError, ValueError):
+        return default
 
 
 class PartnerFeePolicyService:
@@ -129,10 +216,10 @@ class PartnerFeePolicyService:
             
             # 기존 값 저장 (로깅용)
             old_values = {
-                "fee_type": policy.fee_type,
-                "base_fee_rate": str(policy.base_fee_rate),
-                "min_fee_amount": str(policy.min_fee_amount),
-                "max_fee_amount": str(policy.max_fee_amount) if policy.max_fee_amount else None
+                "fee_type": safe_str(policy.fee_type),
+                "base_fee_rate": safe_str(policy.base_fee_rate),
+                "min_fee_amount": safe_str(policy.min_fee_amount),
+                "max_fee_amount": safe_str(policy.max_fee_amount) if safe_get_attr(policy, 'max_fee_amount') else None
             }
             
             # 업데이트 적용
@@ -140,7 +227,14 @@ class PartnerFeePolicyService:
             for field, value in update_dict.items():
                 setattr(policy, field, value)
             
-            policy.updated_at = datetime.utcnow()
+            # 수동으로 updated_at 설정
+            current_time = datetime.utcnow()
+            query = (
+                update(PartnerFeePolicy)
+                .where(PartnerFeePolicy.id == policy.id)
+                .values(updated_at=current_time)
+            )
+            await self.db.execute(query)
             await self.db.commit()
             await self.db.refresh(policy)
             
@@ -188,7 +282,15 @@ class PartnerFeePolicyService:
             await self.db.refresh(tier)
             
             logger.info(f"구간별 수수료 생성: {partner_id} -> {tier.id}")
-            return FeeTierResponse(**tier_data.dict(), id=tier.id)
+            return FeeTierResponse(
+                id=safe_int(tier.id),
+                fee_policy_id=safe_int(policy.id),
+                min_amount=safe_decimal(tier.min_amount),
+                max_amount=safe_decimal(tier.max_amount) if safe_get_attr(tier, 'max_amount') else None,
+                fee_rate=safe_decimal(tier.fee_rate),
+                fixed_fee=safe_decimal(tier.fixed_fee),
+                created_at=safe_datetime(tier.created_at)
+            )
             
         except Exception as e:
             await self.db.rollback()
@@ -208,11 +310,13 @@ class PartnerFeePolicyService:
         
         return [
             FeeTierResponse(
-                id=tier.id,
-                min_amount=tier.min_amount,
-                max_amount=tier.max_amount,
-                fee_rate=tier.fee_rate,
-                fixed_fee=tier.fixed_fee
+                id=safe_int(tier.id),
+                fee_policy_id=safe_int(policy.id),
+                min_amount=safe_decimal(tier.min_amount),
+                max_amount=safe_decimal(tier.max_amount) if safe_get_attr(tier, 'max_amount') else None,
+                fee_rate=safe_decimal(tier.fee_rate),
+                fixed_fee=safe_decimal(tier.fixed_fee),
+                created_at=safe_datetime(tier.created_at)
             )
             for tier in tiers
         ]
@@ -268,36 +372,40 @@ class PartnerFeePolicyService:
         
         # 거래 유형별 기본 수수료율 선택
         if transaction_type == "withdrawal":
-            base_rate = policy.withdrawal_fee_rate
+            base_rate = safe_decimal(policy.withdrawal_fee_rate)
         elif transaction_type == "internal_transfer":
-            base_rate = policy.internal_transfer_fee_rate
+            base_rate = safe_decimal(policy.internal_transfer_fee_rate)
         else:
-            base_rate = policy.base_fee_rate
+            base_rate = safe_decimal(policy.base_fee_rate)
         
         # 수수료 유형별 계산
-        if policy.fee_type == FeeType.FLAT:
+        fee_type = safe_get_attr(policy, 'fee_type')
+        if fee_type == FeeType.FLAT:
             calculated_fee = await self._calculate_flat_fee(policy, base_amount, base_rate)
-        elif policy.fee_type == FeeType.PERCENTAGE:
+        elif fee_type == FeeType.PERCENTAGE:
             calculated_fee = await self._calculate_percentage_fee(policy, base_amount, base_rate)
-        elif policy.fee_type == FeeType.TIERED:
+        elif fee_type == FeeType.TIERED:
             calculated_fee = await self._calculate_tiered_fee(policy, base_amount)
-        elif policy.fee_type == FeeType.DYNAMIC:
+        elif fee_type == FeeType.DYNAMIC:
             calculated_fee = await self._calculate_dynamic_fee(policy, request)
         else:
-            raise ValidationError(f"지원하지 않는 수수료 유형: {policy.fee_type}")
+            raise ValidationError(f"지원하지 않는 수수료 유형: {fee_type}")
         
         # 사용자 등급 할인 적용
-        if user_tier and user_tier.discount_rate > 0:
-            discount_amount = calculated_fee * user_tier.discount_rate
+        if user_tier and safe_decimal(user_tier.discount_rate) > 0:
+            discount_amount = calculated_fee * safe_decimal(user_tier.discount_rate)
             calculated_fee = max(calculated_fee - discount_amount, Decimal('0'))
         else:
             discount_amount = Decimal('0')
         
         # 최소/최대 수수료 적용
-        if policy.min_fee_amount and calculated_fee < policy.min_fee_amount:
-            calculated_fee = policy.min_fee_amount
+        min_fee = safe_decimal(policy.min_fee_amount)
+        max_fee = safe_decimal(policy.max_fee_amount)
         
-        if policy.max_fee_amount and calculated_fee > policy.max_fee_amount:
+        if min_fee and calculated_fee < min_fee:
+            calculated_fee = min_fee
+        
+        if max_fee and calculated_fee > max_fee:
             calculated_fee = policy.max_fee_amount
         
         return {
@@ -351,15 +459,19 @@ class PartnerFeePolicyService:
         
         if not tier:
             # 해당 구간이 없으면 기본 비율 사용
-            return amount * policy.base_fee_rate
+            base_rate = safe_decimal(policy.base_fee_rate)
+            return amount * base_rate
         
-        return tier.fixed_fee + (amount * tier.fee_rate)
+        fixed_fee = safe_decimal(tier.fixed_fee)
+        rate_fee = safe_decimal(tier.fee_rate)
+        return fixed_fee + (amount * rate_fee)
     
     async def _calculate_dynamic_fee(
         self, policy: PartnerFeePolicy, request: FeeCalculationRequest
     ) -> Decimal:
         """동적 수수료 계산 (시간대, 네트워크 상황 등 고려)"""
-        base_fee = request.amount * policy.base_fee_rate
+        base_rate = safe_decimal(policy.base_fee_rate)
+        base_fee = request.amount * base_rate
         
         # 시간대별 조정 (예: 피크 시간 할증)
         current_hour = datetime.utcnow().hour
@@ -451,20 +563,21 @@ class PartnerFeePolicyService:
     async def _format_policy_response(self, policy: PartnerFeePolicy) -> PartnerFeePolicyResponse:
         """정책 응답 포맷팅"""
         return PartnerFeePolicyResponse(
-            id=policy.id,
-            partner_id=policy.partner_id,
-            fee_type=policy.fee_type,
-            base_fee_rate=policy.base_fee_rate,
-            min_fee_amount=policy.min_fee_amount,
-            max_fee_amount=policy.max_fee_amount,
-            withdrawal_fee_rate=policy.withdrawal_fee_rate,
-            internal_transfer_fee_rate=policy.internal_transfer_fee_rate,
-            vip_discount_rate=policy.vip_discount_rate,
-            bulk_discount_threshold=policy.bulk_discount_threshold,
-            bulk_discount_rate=policy.bulk_discount_rate,
-            is_active=policy.is_active,
-            created_at=policy.created_at,
-            updated_at=policy.updated_at
+            id=safe_int(policy.id),
+            partner_id=safe_str(policy.partner_id),
+            fee_type=safe_get_attr(policy, 'fee_type'),
+            base_fee_rate=safe_decimal(policy.base_fee_rate),
+            min_fee_amount=safe_decimal(policy.min_fee_amount),
+            max_fee_amount=safe_decimal(policy.max_fee_amount) if safe_get_attr(policy, 'max_fee_amount') else None,
+            withdrawal_fee_rate=safe_decimal(policy.withdrawal_fee_rate),
+            internal_transfer_fee_rate=safe_decimal(policy.internal_transfer_fee_rate),
+            vip_discount_rates=safe_get_attr(policy, 'vip_discount_rates', {}),
+            promotion_active=safe_bool(policy.promotion_active),
+            promotion_fee_rate=safe_decimal(policy.promotion_fee_rate) if safe_get_attr(policy, 'promotion_fee_rate') else None,
+            promotion_end_date=safe_get_attr(policy, 'promotion_end_date'),
+            platform_share_rate=safe_decimal(policy.platform_share_rate),
+            created_at=safe_get_attr(policy, 'created_at'),
+            updated_at=safe_get_attr(policy, 'updated_at')
         )
     
     async def _create_calculation_log(
@@ -525,14 +638,14 @@ class PartnerFeePolicyService:
         
         return [
             PartnerPolicyCalculationLogResponse(
-                id=log.id,
-                partner_id=log.partner_id,
-                user_id=log.user_id,
-                calculation_type=log.calculation_type,
-                request_data=log.request_data,
-                result_data=log.result_data,
-                calculated_at=log.calculated_at,
-                admin_id=log.admin_id
+                id=safe_int(log.id),
+                partner_id=safe_str(log.partner_id),
+                user_id=safe_int(log.user_id) if safe_get_attr(log, 'user_id') else None,
+                calculation_type=safe_str(log.calculation_type),
+                request_data=safe_get_attr(log, 'request_data', {}),
+                result_data=safe_get_attr(log, 'result_data', {}),
+                calculated_at=safe_get_attr(log, 'calculated_at'),
+                admin_id=safe_int(log.admin_id) if safe_get_attr(log, 'admin_id') else None
             )
             for log in logs
         ]

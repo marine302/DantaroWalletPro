@@ -58,10 +58,10 @@ async def get_dashboard_overview(
                 "is_sufficient": energy_status.is_sufficient
             },
             "revenue": {
-                "total_revenue": revenue_stats.total_revenue,
-                "daily_revenue": revenue_stats.daily_revenue,
-                "monthly_revenue": revenue_stats.monthly_revenue,
-                "growth_rate": revenue_stats.growth_rate
+                "total_revenue": revenue_stats.get("total_revenue", 0),
+                "daily_revenue": revenue_stats.get("daily_revenue", 0),
+                "monthly_revenue": revenue_stats.get("monthly_revenue", 0),
+                "growth_rate": revenue_stats.get("growth_rate", 0)
             },
             "partners": {
                 "total_partners": system_metrics.total_partners,
@@ -135,7 +135,8 @@ async def get_system_health(
         
         # 데이터베이스 상태
         try:
-            db.execute("SELECT 1")
+            from sqlalchemy.sql import text
+            result = db.execute(text("SELECT 1"))  # AsyncSession이므로 await 불필요
             components["database"] = "healthy"
         except:
             components["database"] = "unhealthy"

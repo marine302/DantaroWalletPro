@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-07-08T23:49:16.915135",
+  "master_wallet_id": 1,
+  "master_collection_address": "TV3v5w3XK76QVQt9gfUpE7QSFk7K5tsPeY",
+  "seed_phrase": "year fitness letter hurdle draw noodle dutch situate cube fly pioneer lucky",
+  "user_addresses": [
+    {
+      "index": 1,
+      "user_id": "test_user_001",
+      "address": "TJP1YtMgZobChGfVxtyJ5xqXQUwKASauCx"
+    },
+    {
+      "index": 2,
+      "user_id": "test_user_002",
+      "address": "TF4wcm1i4oKw7qR8oMqd1qfaJXR8H7ER5o"
+    },
+    {
+      "index": 3,
+      "user_id": "test_user_003",
+      "address": "TEWArL9bSsc4iW53Q8ZM4tbvwmD7TKAXxk"
+    },
+    {
+      "index": 4,
+      "user_id": "test_user_004",
+      "address": "TKr8hcKjZzkxNrqshV9wu9eAYuj9c2jBy8"
+    },
+    {
+      "index": 5,
+      "user_id": "test_user_005",
+      "address": "TQwnm8W43PBA3DA5WetqN4w31A1JFyoV97"
+    },
+    {
+      "index": 6,
+      "user_id": "test_user_006",
+      "address": "TBh2fzcMXtALevk8vhHj6n3mjSkaCkDQHj"
+    },
+    {
+      "index": 7,
+      "user_id": "test_user_007",
+      "address": "TQgH2zqchaCfw9rjkQeVHD89mPYX2m97n3"
+    },
+    {
+      "index": 8,
+      "user_id": "test_user_008",
+      "address": "TQ8SM8xu1NvZSYt1dGDH44EWVpErGFGnAk"
+    },
+    {
+      "index": 9,
+      "user_id": "test_user_009",
+      "address": "TKmEtszjVdBdcTF7wdK93eQzJLF4zVsWxi"
+    },
+    {
+      "index": 10,
+      "user_id": "test_user_010",
+      "address": "TFQ9JMMLui3wjER1DDZDQMqBtHpr2yxdVr"
+    }
+  ]
+}

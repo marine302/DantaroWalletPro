@@ -22,9 +22,15 @@ class TronWalletManager(TronNetworkService):
             private_key = PrivateKey.random()
             public_key = private_key.public_key
             
-            # 주소 생성
+            # 주소 생성 - None 체크 추가
+            if public_key is None:
+                raise ValueError("Public key generation failed")
+                
             address = public_key.to_base58check_address()
             hex_address = public_key.to_hex_address()
+            
+            if not address or not hex_address:
+                raise ValueError("Address generation failed")
             
             wallet_info = {
                 "address": address,

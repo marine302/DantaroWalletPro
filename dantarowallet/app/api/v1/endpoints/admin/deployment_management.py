@@ -99,7 +99,7 @@ async def deploy_partner_templates(
     """파트너 템플릿 배포"""
     try:
         deployment_service = DeploymentService(db)
-        status_result = await deployment_service.deploy_partner_templates(partner_id, template_list)
+        status_result = await deployment_service.deploy_partner_templates(partner_id)
         
         logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 템플릿 배포")
         return status_result
@@ -189,7 +189,7 @@ async def create_template(
     """새 템플릿 생성"""
     try:
         deployment_service = DeploymentService(db)
-        template = await deployment_service.create_template(template_data, current_admin.id)
+        template = await deployment_service.create_template(template_data, str(current_admin.id))
         
         logger.info(f"관리자 {current_admin.id}가 새 템플릿 생성: {template['name']}")
         return template
@@ -234,7 +234,7 @@ async def rollback_deployment(
     """배포 롤백"""
     try:
         deployment_service = DeploymentService(db)
-        success = await deployment_service.rollback_deployment(deployment_id, current_admin.id)
+        success = await deployment_service.rollback_deployment(deployment_id, f"Rollback by admin {current_admin.id}")
         
         if success:
             logger.info(f"관리자 {current_admin.id}가 배포 {deployment_id} 롤백")

@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-07-08T18:38:46.081275",
+  "master_wallet_id": 1,
+  "master_collection_address": "TAjGrq1zVHq8dHQGBnpV8odW33H1QZZ22H",
+  "seed_phrase": "example host damage donor frog side surprise raccoon exact blame auction power",
+  "user_addresses": [
+    {
+      "index": 1,
+      "user_id": "test_user_001",
+      "address": "TCtngvMGpGKdttL44pR4xp1NG3urjBCyzj"
+    },
+    {
+      "index": 2,
+      "user_id": "test_user_002",
+      "address": "TDvtx6ZgExocUPxht3sctGvjCj6gDfZ844"
+    },
+    {
+      "index": 3,
+      "user_id": "test_user_003",
+      "address": "TS1ZRcrPnzLporL9641fFpj8PUPH7eoReM"
+    },
+    {
+      "index": 4,
+      "user_id": "test_user_004",
+      "address": "TLacpipkBT136j6E9XxPMYfT3nXAsvNtyB"
+    },
+    {
+      "index": 5,
+      "user_id": "test_user_005",
+      "address": "TKhGe5XMAJ6brzzbWVBHGb3N2WdbcU7gRg"
+    },
+    {
+      "index": 6,
+      "user_id": "test_user_006",
+      "address": "TYsjs4zHVS7b5rvKZQffQza4rpS4TBgMS6"
+    },
+    {
+      "index": 7,
+      "user_id": "test_user_007",
+      "address": "TDPzABE8McBEDfnfUJ7sFfXNSNhurQCcmM"
+    },
+    {
+      "index": 8,
+      "user_id": "test_user_008",
+      "address": "TVzhia4Zv15mdFuRn3cGhukgXV2DGrv2XH"
+    },
+    {
+      "index": 9,
+      "user_id": "test_user_009",
+      "address": "TMwG46fyeMiAPH2t8VhjmRfm1ujKR9S1Xg"
+    },
+    {
+      "index": 10,
+      "user_id": "test_user_010",
+      "address": "TDR6Kaf3wMtgNQHdyD9p8NoD3xPm8LYW1a"
+    }
+  ]
+}

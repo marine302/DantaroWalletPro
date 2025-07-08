@@ -19,7 +19,7 @@ class SystemMonitoring(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), comment="측정 시각")
     
     # 관계
-    partner = relationship("Partner", back_populates="monitoring_data")
+    partner = relationship("Partner")
 
 
 class SystemAlert(Base):
@@ -40,7 +40,7 @@ class SystemAlert(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
     
     # 관계
-    partner = relationship("Partner", back_populates="alerts")
+    partner = relationship("Partner")
 
 
 class SuperAdminUser(Base):

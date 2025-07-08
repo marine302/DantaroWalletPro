@@ -68,7 +68,6 @@ class PartnerEnergyAllocation(Base):
     
     # 관계
     partner = relationship("Partner", back_populates="energy_allocations")
-    energy_pool = relationship("EnergyPool", back_populates="partner_allocations")
     usage_history = relationship("PartnerEnergyUsageHistory", back_populates="allocation", cascade="all, delete-orphan")
 
 

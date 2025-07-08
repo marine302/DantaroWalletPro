@@ -8,6 +8,16 @@ from app.models.deposit import Deposit
 from app.models.energy_pool import EnergyPoolModel, EnergyUsageLog, EnergyPriceHistory
 from app.models.energy_usage_history import EnergyUsageHistory
 from app.models.partner import Partner
+from app.models.partner_history import (
+    PartnerApiUsage,
+    PartnerDailyStatistics,
+    PartnerEnergyAllocation,
+    PartnerEnergyUsageHistory,
+    PartnerFeeRevenue,
+    PartnerFeeConfigHistory,
+    PartnerOnboardingStep,
+    PartnerDeployment
+)
 from app.models.fee_policy import (
     PartnerFeePolicy, 
     FeeTier, 
@@ -19,6 +29,7 @@ from app.models.fee_policy import (
     WithdrawalPolicy,
     EnergyPolicy
 )
+from app.models.fee_config import FeeCalculationLog
 from app.models.transaction import (
     Transaction,
     TransactionDirection,
@@ -34,6 +45,14 @@ from app.models.transaction_analytics import (
 from app.models.user import User
 from app.models.wallet import Wallet
 from app.models.withdrawal import Withdrawal, WithdrawalPriority, WithdrawalStatus
+from app.models.partner_wallet import PartnerWallet, WalletType, WalletPurpose, TransactionStatus
+from app.models.sweep import (
+    HDWalletMaster,
+    UserDepositAddress, 
+    SweepConfiguration,
+    SweepLog,
+    SweepQueue
+)
 
 __all__ = [
     "BaseModel",
@@ -57,6 +76,15 @@ __all__ = [
     "EnergyPriceHistory",
     "EnergyUsageHistory",
     "Partner",
+    # Partner History 모델
+    "PartnerApiUsage",
+    "PartnerDailyStatistics",
+    "PartnerEnergyAllocation",
+    "PartnerEnergyUsageHistory",
+    "PartnerFeeRevenue",
+    "PartnerFeeConfigHistory",
+    "PartnerOnboardingStep",
+    "PartnerDeployment",
     # Doc-26: 수수료 및 정책 모델
     "PartnerFeePolicy",
     "FeeTier", 
@@ -67,4 +95,16 @@ __all__ = [
     "FeeType",
     "WithdrawalPolicy",
     "EnergyPolicy",
+    "FeeCalculationLog",
+    # Partner Wallet 모델
+    "PartnerWallet",
+    "WalletType",
+    "WalletPurpose", 
+    "TransactionStatus",
+    # Doc-27: Sweep 자동화 모델
+    "HDWalletMaster",
+    "UserDepositAddress", 
+    "SweepConfiguration",
+    "SweepLog",
+    "SweepQueue",
 ]

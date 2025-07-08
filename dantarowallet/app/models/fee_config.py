@@ -60,7 +60,7 @@ class FeeCalculationLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     transaction_id = Column(String(255), comment="거래 ID")
     user_id = Column(Integer, comment="사용자 ID")
-    partner_id = Column(Integer, comment="파트너사 ID")
+    partner_id = Column(String(36), ForeignKey("partners.id"), comment="파트너사 ID")
     transaction_type = Column(String(50), nullable=False, comment="거래 유형")
     transaction_amount = Column(Numeric(18, 8), nullable=False, comment="거래 금액")
     base_fee = Column(Numeric(18, 8), nullable=False, comment="기본 수수료")
@@ -71,6 +71,9 @@ class FeeCalculationLog(Base):
     applied_rules = Column(Text, comment="적용된 동적 규칙 (JSON)")
     calculation_details = Column(Text, comment="계산 세부사항 (JSON)")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # 관계
+    partner = relationship("Partner", back_populates="fee_calculation_logs")
 
 
 class FeeRevenueStats(Base):

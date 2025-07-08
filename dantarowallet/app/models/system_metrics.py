@@ -28,12 +28,42 @@ class SystemMetrics(Base):
         return f"<SystemMetrics(id={self.id}, type={self.metric_type}, value={self.metric_value})>"
     
     def to_dict(self):
+        # 헬퍼 함수 정의
+        def safe_get_attr(obj, attr, default=None):
+            """SQLAlchemy 객체에서 안전하게 속성을 가져옵니다."""
+            try:
+                value = getattr(obj, attr, default)
+                # SQLAlchemy Column 타입인지 확인
+                if hasattr(value, '__class__') and 'Column' in str(value.__class__):
+                    return default
+                return value
+            except (AttributeError, TypeError):
+                return default
+        
+        def safe_float(value, default=0.0):
+            """안전하게 float로 변환합니다."""
+            try:
+                if value is None:
+                    return None
+                return float(value)
+            except (ValueError, TypeError):
+                return default
+        
+        metric_value = safe_get_attr(self, 'metric_value')
+        partner_id = safe_get_attr(self, 'partner_id')
+        
+        recorded_at = safe_get_attr(self, 'recorded_at')
+        if recorded_at and hasattr(recorded_at, 'isoformat'):
+            recorded_at_str = recorded_at.isoformat()
+        else:
+            recorded_at_str = datetime.utcnow().isoformat()
+        
         return {
-            "id": str(self.id),
-            "metric_type": self.metric_type,
-            "metric_value": float(self.metric_value) if self.metric_value else None,
-            "metric_unit": self.metric_unit,
-            "partner_id": str(self.partner_id) if self.partner_id else None,
-            "extra_data": self.extra_data,
-            "recorded_at": self.recorded_at.isoformat()
+            "id": str(safe_get_attr(self, 'id', '')),
+            "metric_type": safe_get_attr(self, 'metric_type', ''),
+            "metric_value": safe_float(metric_value) if metric_value is not None else None,
+            "metric_unit": safe_get_attr(self, 'metric_unit'),
+            "partner_id": str(partner_id) if partner_id is not None else None,
+            "extra_data": safe_get_attr(self, 'extra_data'),
+            "recorded_at": recorded_at_str
         }

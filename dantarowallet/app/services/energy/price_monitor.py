@@ -4,7 +4,7 @@
 import httpx
 import json
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
@@ -13,6 +13,29 @@ from app.models.energy_pool import EnergyPriceHistory
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
+
+# 헬퍼 함수들
+def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:
+    """SQLAlchemy 객체에서 안전하게 속성을 가져옵니다."""
+    if obj is None:
+        return default
+    try:
+        value = getattr(obj, attr, default)
+        # SQLAlchemy Column 타입인지 확인
+        if hasattr(value, '__class__') and 'Column' in str(value.__class__):
+            return default
+        return value
+    except (AttributeError, TypeError):
+        return default
+
+def safe_float(value: Any, default: float = 0.0) -> float:
+    """안전하게 float로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (ValueError, TypeError):
+        return default
 
 
 class EnergyPriceMonitor:
@@ -204,12 +227,12 @@ class EnergyPriceMonitor:
 
             return [
                 {
-                    "recorded_at": record.recorded_at.isoformat(),
-                    "trx_price_usd": float(record.trx_price_usd),
-                    "energy_price_trx": float(record.energy_price_trx),
-                    "energy_price_usd": float(record.energy_price_usd),
-                    "market_demand": record.market_demand,
-                    "network_congestion": record.network_congestion
+                    "recorded_at": safe_get_attr(record, 'recorded_at', datetime.utcnow()).isoformat(),
+                    "trx_price_usd": safe_float(safe_get_attr(record, 'trx_price_usd', 0)),
+                    "energy_price_trx": safe_float(safe_get_attr(record, 'energy_price_trx', 0)),
+                    "energy_price_usd": safe_float(safe_get_attr(record, 'energy_price_usd', 0)),
+                    "market_demand": safe_get_attr(record, 'market_demand', 'unknown'),
+                    "network_congestion": safe_get_attr(record, 'network_congestion', 0)
                 }
                 for record in history
             ]

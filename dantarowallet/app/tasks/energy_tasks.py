@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db_session
+from app.core.database import get_sync_db
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -51,7 +51,9 @@ async def cleanup_old_data():
     logger.info("오래된 데이터 정리 시작")
     
     try:
-        async with get_db_session() as db:
+        # 임시로 동기 세션 사용
+        db = next(get_sync_db())
+        try:
             # 90일 이전의 사용 로그 정리
             cutoff_date = datetime.utcnow() - timedelta(days=90)
             
@@ -63,10 +65,13 @@ async def cleanup_old_data():
                 EnergyUsageLog.used_at < cutoff_date
             )
             
-            result = await db.execute(delete_query)
-            await db.commit()
+            result = db.execute(delete_query)
+            db.commit()
             
             logger.info(f"오래된 에너지 로그 {result.rowcount}개 삭제 완료")
+            
+        finally:
+            db.close()
             
     except Exception as e:
         logger.error(f"오래된 데이터 정리 실패: {str(e)}")

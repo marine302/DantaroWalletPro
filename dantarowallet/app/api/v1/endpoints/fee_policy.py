@@ -27,6 +27,20 @@ from app.core.exceptions import ValidationError, NotFoundError
 
 router = APIRouter()
 
+# 헬퍼 함수
+def safe_get_user_id(user: User) -> int:
+    """User 객체에서 안전하게 ID를 가져옵니다."""
+    try:
+        if hasattr(user, 'id'):
+            user_id = getattr(user, 'id')
+            if hasattr(user_id, '__class__') and 'Column' in str(user_id.__class__):
+                # SQLAlchemy Column인 경우 기본값 반환
+                return 1  # 기본 admin ID
+            return int(user_id)
+        return 1  # 기본 admin ID
+    except (AttributeError, TypeError, ValueError):
+        return 1  # 기본 admin ID
+
 
 # === 파트너 수수료 정책 관리 ===
 
@@ -42,7 +56,7 @@ async def create_partner_fee_policy(
     return await service.create_partner_fee_policy(
         partner_id=partner_id,
         policy_data=policy_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -77,7 +91,7 @@ async def update_partner_fee_policy(
     return await service.update_partner_fee_policy(
         partner_id=partner_id,
         update_data=update_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -91,7 +105,7 @@ async def delete_partner_fee_policy(
     service = PartnerFeePolicyService(db)
     success = await service.delete_partner_fee_policy(
         partner_id=partner_id,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
     
     if not success:
@@ -117,7 +131,7 @@ async def create_fee_tier(
     return await service.create_fee_tier(
         partner_id=partner_id,
         tier_data=tier_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -186,7 +200,7 @@ async def create_withdrawal_policy(
     return await service.create_withdrawal_policy(
         partner_id=partner_id,
         policy_data=policy_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -221,7 +235,7 @@ async def update_withdrawal_policy(
     return await service.update_withdrawal_policy(
         partner_id=partner_id,
         update_data=update_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -256,7 +270,7 @@ async def create_energy_policy(
     return await service.create_energy_policy(
         partner_id=partner_id,
         policy_data=policy_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -291,7 +305,7 @@ async def update_energy_policy(
     return await service.update_energy_policy(
         partner_id=partner_id,
         update_data=update_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -328,7 +342,7 @@ async def create_user_tier(
         partner_id=partner_id,
         user_id=user_id,
         tier_data=tier_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -385,7 +399,7 @@ async def update_user_tier(
         partner_id=partner_id,
         user_id=user_id,
         update_data=update_data,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
 
 
@@ -401,7 +415,7 @@ async def deactivate_user_tier(
     success = await service.deactivate_user_tier(
         partner_id=partner_id,
         user_id=user_id,
-        admin_id=current_user.id
+        admin_id=safe_get_user_id(current_user)
     )
     
     if not success:

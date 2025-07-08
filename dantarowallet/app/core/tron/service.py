@@ -163,6 +163,8 @@ class TronService:
     
     async def get_energy_info(self, address: Optional[str] = None) -> Dict[str, Any]:
         """계정의 에너지 정보 조회"""
+        if address is None:
+            raise ValueError("주소가 필요합니다")
         return await self._energy_service.get_energy_info(address)
     
     async def get_energy_price(self) -> Dict[str, Any]:

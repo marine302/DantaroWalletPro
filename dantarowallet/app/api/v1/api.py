@@ -16,6 +16,7 @@ from app.api.v1.endpoints import (
     deposit,
     energy,  # Doc #25: 에너지 풀 고급 관리 시스템
     fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
+    sweep,  # Doc #27: 입금 Sweep 자동화 시스템
     transaction_analytics,
     wallet,
     withdrawal,
@@ -34,6 +35,7 @@ api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withd
 api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
 api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리
 api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
+api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Doc #27: 입금 Sweep 자동화 시스템
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )

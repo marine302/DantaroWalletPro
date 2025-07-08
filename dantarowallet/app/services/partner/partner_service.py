@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, and_, or_, update
 from fastapi import HTTPException
 
 from app.models.partner import Partner
@@ -18,6 +18,40 @@ from app.schemas.partner import (
     PartnerStats, ApiKeyResponse
 )
 from app.core.database import get_db
+
+# 헬퍼 함수
+def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:
+    """SQLAlchemy 객체에서 안전하게 속성을 가져옵니다."""
+    if obj is None:
+        return default
+    try:
+        value = getattr(obj, attr, default)
+        # SQLAlchemy Column 타입인지 확인
+        if hasattr(value, '__class__') and 'Column' in str(value.__class__):
+            return default
+        return value
+    except (AttributeError, TypeError):
+        return default
+
+def safe_decimal(value: Any, default: Decimal = Decimal('0')) -> Decimal:
+    """안전하게 Decimal로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        if isinstance(value, Decimal):
+            return value
+        return Decimal(str(value))
+    except (ValueError, TypeError):
+        return default
+
+def safe_float(value: Any, default: float = 0.0) -> float:
+    """안전하게 float로 변환합니다."""
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (ValueError, TypeError):
+        return default
 
 
 class PartnerService:
@@ -277,13 +311,13 @@ class PartnerService:
             for partner in partners:
                 partner_data = {
                     "id": str(partner.id),
-                    "name": partner.name,
-                    "domain": partner.domain,
-                    "contact_email": partner.contact_email,
-                    "status": partner.status,
-                    "commission_rate": float(partner.commission_rate) if partner.commission_rate else 0.0,
-                    "created_at": partner.created_at.isoformat() if partner.created_at else None,
-                    "updated_at": partner.updated_at.isoformat() if partner.updated_at else None
+                    "name": safe_get_attr(partner, 'name', ''),
+                    "domain": safe_get_attr(partner, 'domain', ''),
+                    "contact_email": safe_get_attr(partner, 'contact_email', ''),
+                    "status": safe_get_attr(partner, 'status', 'pending'),
+                    "commission_rate": safe_float(safe_get_attr(partner, 'commission_rate'), 0.0),
+                    "created_at": safe_get_attr(partner, 'created_at').isoformat() if safe_get_attr(partner, 'created_at') else None,
+                    "updated_at": safe_get_attr(partner, 'updated_at').isoformat() if safe_get_attr(partner, 'updated_at') else None
                 }
                 
                 # 통계 데이터 추가
@@ -316,10 +350,10 @@ class PartnerService:
                 total_volume=Decimal("0.00"),  # transaction 테이블에서 계산
                 total_fees=Decimal("0.00"),  # fee 테이블에서 계산
                 energy_used=0,  # energy_usage_history에서 계산
-                energy_remaining=partner.energy_balance or 0,
+                energy_remaining=int(safe_decimal(safe_get_attr(partner, 'energy_balance', 0))),
                 success_rate=100.0,  # transaction 성공률 계산
-                last_active=partner.last_activity_at,
-                status=partner.status
+                last_active=safe_get_attr(partner, 'last_activity_at'),
+                status=safe_get_attr(partner, 'status', 'pending')
             )
             
             return stats
@@ -339,14 +373,21 @@ class PartnerService:
             )
         
         try:
-            partner.status = status
-            partner.updated_at = datetime.utcnow()
+            # 기존 partner 객체를 새로 고침하여 최신 상태로 가져오기
+            self.db.refresh(partner)
+            partner_id = safe_get_attr(partner, 'id')
             
-            # 상태별 추가 처리
-            if status == "active":
-                partner.activated_at = datetime.utcnow()
-            elif status == "suspended":
-                partner.suspended_at = datetime.utcnow()
+            # SQLAlchemy update 사용하여 안전하게 업데이트
+            self.db.execute(
+                update(Partner)
+                .where(Partner.id == partner_id)
+                .values(
+                    status=status,
+                    updated_at=datetime.utcnow(),
+                    activated_at=datetime.utcnow() if status == "active" else None,
+                    suspended_at=datetime.utcnow() if status == "suspended" else None
+                )
+            )
             
             self.db.commit()
             self.db.refresh(partner)

@@ -37,7 +37,7 @@ class FeeTierCreate(BaseModel):
     min_amount: Decimal = Field(..., ge=0, description="최소 금액")
     max_amount: Optional[Decimal] = Field(None, ge=0, description="최대 금액 (None=무제한)")
     fee_rate: Decimal = Field(..., ge=0, le=1, description="수수료율 (0-1)")
-    fixed_fee: Decimal = Field(default=0, ge=0, description="고정 수수료")
+    fixed_fee: Decimal = Field(default=Decimal("0"), ge=0, description="고정 수수료")
 
     @validator('max_amount')
     def validate_max_amount(cls, v, values):
@@ -59,16 +59,16 @@ class FeeTierResponse(FeeTierCreate):
 class PartnerFeePolicyCreate(BaseModel):
     """파트너 수수료 정책 생성 요청"""
     fee_type: FeeTypeEnum = Field(default=FeeTypeEnum.PERCENTAGE, description="수수료 유형")
-    base_fee_rate: Decimal = Field(default=0.001, ge=0, le=1, description="기본 수수료율")
-    min_fee_amount: Decimal = Field(default=0.1, ge=0, description="최소 수수료")
+    base_fee_rate: Decimal = Field(default=Decimal("0.001"), ge=0, le=1, description="기본 수수료율")
+    min_fee_amount: Decimal = Field(default=Decimal("0.1"), ge=0, description="최소 수수료")
     max_fee_amount: Optional[Decimal] = Field(None, ge=0, description="최대 수수료")
-    withdrawal_fee_rate: Decimal = Field(default=0.001, ge=0, le=1, description="출금 수수료율")
-    internal_transfer_fee_rate: Decimal = Field(default=0, ge=0, le=1, description="내부 이체 수수료율")
+    withdrawal_fee_rate: Decimal = Field(default=Decimal("0.001"), ge=0, le=1, description="출금 수수료율")
+    internal_transfer_fee_rate: Decimal = Field(default=Decimal("0"), ge=0, le=1, description="내부 이체 수수료율")
     vip_discount_rates: Optional[Dict[str, float]] = Field(None, description="VIP 등급별 할인율")
     promotion_active: bool = Field(default=False, description="프로모션 활성화")
     promotion_fee_rate: Optional[Decimal] = Field(None, ge=0, le=1, description="프로모션 수수료율")
     promotion_end_date: Optional[datetime] = Field(None, description="프로모션 종료일")
-    platform_share_rate: Decimal = Field(default=0.3, ge=0, le=1, description="플랫폼 수수료 분배율")
+    platform_share_rate: Decimal = Field(default=Decimal("0.3"), ge=0, le=1, description="플랫폼 수수료 분배율")
     fee_tiers: Optional[List[FeeTierCreate]] = Field(None, description="구간별 수수료 (TIERED 타입인 경우)")
 
 
@@ -124,15 +124,15 @@ class PartnerWithdrawalPolicyCreate(BaseModel):
     """파트너 출금 정책 생성 요청"""
     policy_type: WithdrawalPolicyEnum = Field(default=WithdrawalPolicyEnum.HYBRID, description="출금 정책")
     realtime_enabled: bool = Field(default=True, description="실시간 출금 활성화")
-    realtime_max_amount: Decimal = Field(default=1000, ge=0, description="실시간 최대 금액")
+    realtime_max_amount: Decimal = Field(default=Decimal("1000"), ge=0, description="실시간 최대 금액")
     auto_approve_enabled: bool = Field(default=False, description="자동 승인 활성화")
-    auto_approve_max_amount: Decimal = Field(default=100, ge=0, description="자동 승인 최대 금액")
+    auto_approve_max_amount: Decimal = Field(default=Decimal("100"), ge=0, description="자동 승인 최대 금액")
     batch_enabled: bool = Field(default=True, description="일괄 출금 활성화")
     batch_schedule: Optional[BatchScheduleConfig] = Field(None, description="일괄 처리 스케줄")
-    batch_min_amount: Decimal = Field(default=10, ge=0, description="일괄 처리 최소 금액")
-    daily_limit_per_user: Decimal = Field(default=10000, ge=0, description="사용자별 일일 한도")
-    daily_limit_total: Decimal = Field(default=1000000, ge=0, description="전체 일일 한도")
-    single_transaction_limit: Decimal = Field(default=5000, ge=0, description="단일 거래 한도")
+    batch_min_amount: Decimal = Field(default=Decimal("10"), ge=0, description="일괄 처리 최소 금액")
+    daily_limit_per_user: Decimal = Field(default=Decimal("10000"), ge=0, description="사용자별 일일 한도")
+    daily_limit_total: Decimal = Field(default=Decimal("1000000"), ge=0, description="전체 일일 한도")
+    single_transaction_limit: Decimal = Field(default=Decimal("5000"), ge=0, description="단일 거래 한도")
     whitelist_required: bool = Field(default=False, description="화이트리스트 필수")
     whitelist_addresses: Optional[List[str]] = Field(None, description="화이트리스트 주소 목록")
     require_2fa: bool = Field(default=True, description="2FA 필수")
@@ -162,21 +162,15 @@ class PartnerWithdrawalPolicyResponse(BaseModel):
     """파트너 출금 정책 응답"""
     id: int
     partner_id: str
-    policy_type: WithdrawalPolicyEnum
-    realtime_enabled: bool
-    realtime_max_amount: Decimal
-    auto_approve_enabled: bool
-    auto_approve_max_amount: Decimal
-    batch_enabled: bool
-    batch_schedule: Optional[Dict[str, Any]]
-    batch_min_amount: Decimal
-    daily_limit_per_user: Decimal
-    daily_limit_total: Decimal
-    single_transaction_limit: Decimal
-    whitelist_required: bool
-    whitelist_addresses: Optional[List[str]]
-    require_2fa: bool
-    confirmation_blocks: int
+    processing_policy: WithdrawalPolicyEnum
+    min_amount: Optional[Decimal] = None
+    max_amount: Optional[Decimal] = None
+    daily_limit: Optional[Decimal] = None
+    allowed_hours: Optional[List[int]] = None
+    batch_delay_minutes: Optional[int] = None
+    auto_approval_threshold: Optional[Decimal] = None
+    require_admin_approval: bool = True
+    is_active: bool = True
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -197,8 +191,8 @@ class PartnerEnergyPolicyCreate(BaseModel):
     """파트너 에너지 정책 생성 요청"""
     default_policy: EnergyPolicyEnum = Field(default=EnergyPolicyEnum.WAIT_QUEUE, description="기본 대응 정책")
     trx_payment_enabled: bool = Field(default=True, description="TRX 결제 활성화")
-    trx_payment_markup: Decimal = Field(default=0.1, ge=0, le=1, description="TRX 결제 마크업")
-    trx_payment_max_fee: Decimal = Field(default=20, ge=0, description="최대 TRX 수수료")
+    trx_payment_markup: Decimal = Field(default=Decimal("0.1"), ge=0, le=1, description="TRX 결제 마크업")
+    trx_payment_max_fee: Decimal = Field(default=Decimal("20"), ge=0, description="최대 TRX 수수료")
     queue_enabled: bool = Field(default=True, description="대기열 활성화")
     queue_max_wait_hours: int = Field(default=24, ge=1, description="최대 대기 시간")
     queue_notification_enabled: bool = Field(default=True, description="대기열 알림")
@@ -235,7 +229,7 @@ class PartnerEnergyPolicyResponse(BaseModel):
     queue_max_wait_hours: int
     queue_notification_enabled: bool
     priority_queue_enabled: bool
-    vip_priority_levels: Optional[List[Dict[str, Any]]]
+    vip_priority_levels: Optional[List[Dict[str, Any]]] = None
     energy_saving_enabled: bool
     energy_saving_threshold: int
     created_at: datetime
@@ -251,9 +245,9 @@ class UserTierCreate(BaseModel):
     """사용자 등급 생성 요청"""
     tier_name: str = Field(..., max_length=50, description="등급명")
     tier_level: int = Field(..., ge=1, description="등급 레벨")
-    min_volume: Decimal = Field(default=0, ge=0, description="최소 거래량")
-    fee_discount_rate: Decimal = Field(default=0, ge=0, le=1, description="수수료 할인율")
-    withdrawal_limit_multiplier: Decimal = Field(default=1.0, ge=0.1, description="출금 한도 배수")
+    min_volume: Decimal = Field(default=Decimal("0"), ge=0, description="최소 거래량")
+    fee_discount_rate: Decimal = Field(default=Decimal("0"), ge=0, le=1, description="수수료 할인율")
+    withdrawal_limit_multiplier: Decimal = Field(default=Decimal("1.0"), ge=0.1, description="출금 한도 배수")
     benefits: Optional[Dict[str, Any]] = Field(None, description="등급별 혜택")
     upgrade_conditions: Optional[Dict[str, Any]] = Field(None, description="승급 조건")
 

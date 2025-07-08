@@ -37,7 +37,7 @@ class PartnerWallet(Base):
     __tablename__ = "partner_wallets"
     
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(Integer, ForeignKey("partners.id"), nullable=False, comment="파트너사 ID")
+    partner_id = Column(String(36), ForeignKey("partners.id"), nullable=False, comment="파트너사 ID")
     wallet_type = Column(Enum(WalletType), nullable=False, comment="지갑 유형")
     wallet_address = Column(String(42), nullable=False, unique=True, comment="지갑 주소")
     wallet_name = Column(String(100), comment="지갑 별칭")

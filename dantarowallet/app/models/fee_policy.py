@@ -211,4 +211,4 @@ class PartnerPolicyCalculationLog(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # 관계 설정
-    partner = relationship("Partner", back_populates="fee_logs")
+    partner = relationship("Partner", back_populates="policy_calculation_logs")

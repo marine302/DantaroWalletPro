@@ -32,7 +32,7 @@ async def connect_tronlink_wallet(
     try:
         wallet_service = ExternalWalletService(db)
         wallet = await wallet_service.connect_external_wallet(
-            partner_id=current_partner.id,
+            partner_id=int(current_partner.id),
             wallet_type="TRONLINK",
             wallet_address=request.wallet_address,
             public_key=request.public_key,
@@ -57,7 +57,7 @@ async def get_connected_wallets(
     """연결된 TronLink 지갑 목록 조회"""
     try:
         wallet_service = ExternalWalletService(db)
-        wallets = await wallet_service.get_partner_wallets(current_partner.id)
+        wallets = await wallet_service.get_partner_wallets(int(current_partner.id))
         
         return [ExternalWalletResponse.model_validate(wallet) for wallet in wallets]
         
@@ -79,7 +79,7 @@ async def get_wallet_balance(
     try:
         wallet_service = ExternalWalletService(db)
         balance_info = await wallet_service.get_wallet_balance(
-            partner_id=current_partner.id,
+            partner_id=int(current_partner.id),
             wallet_address=wallet_address
         )
         
@@ -105,7 +105,7 @@ async def get_wallet_transactions(
     try:
         wallet_service = ExternalWalletService(db)
         transactions = await wallet_service.get_wallet_transactions(
-            partner_id=current_partner.id,
+            partner_id=int(current_partner.id),
             wallet_address=wallet_address,
             limit=limit,
             offset=offset
@@ -131,7 +131,7 @@ async def disconnect_wallet(
     try:
         wallet_service = ExternalWalletService(db)
         success = await wallet_service.disconnect_wallet(
-            partner_id=current_partner.id,
+            partner_id=int(current_partner.id),
             wallet_address=wallet_address
         )
         

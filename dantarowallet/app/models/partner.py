@@ -48,7 +48,7 @@ class Partner(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
     
-    # 관계 정의 (새로운 이력/통계 테이블들과의 관계)
+    # 관계 정의 (실제 존재하는 테이블들과의 관계)
     api_usage_logs = relationship("PartnerApiUsage", back_populates="partner", cascade="all, delete-orphan")
     daily_statistics = relationship("PartnerDailyStatistics", back_populates="partner", cascade="all, delete-orphan")
     energy_allocations = relationship("PartnerEnergyAllocation", back_populates="partner", cascade="all, delete-orphan")
@@ -56,11 +56,8 @@ class Partner(Base):
     energy_usage_history = relationship("EnergyUsageHistory", back_populates="partner", cascade="all, delete-orphan")
     fee_revenues = relationship("PartnerFeeRevenue", back_populates="partner", cascade="all, delete-orphan")
     partner_fee_config_history = relationship("PartnerFeeConfigHistory", back_populates="partner", cascade="all, delete-orphan")
-    fee_config_history = relationship("FeeConfigHistory", back_populates="partner", cascade="all, delete-orphan")
     onboarding_steps = relationship("PartnerOnboardingStep", back_populates="partner", cascade="all, delete-orphan")
     deployments = relationship("PartnerDeployment", back_populates="partner", cascade="all, delete-orphan")
-    monitoring_data = relationship("SystemMonitoring", back_populates="partner", cascade="all, delete-orphan")
-    alerts = relationship("SystemAlert", back_populates="partner", cascade="all, delete-orphan")
     
     # 외부 지갑 관계 (TronLink 연동)
     wallets = relationship("PartnerWallet", back_populates="partner", cascade="all, delete-orphan")
@@ -70,4 +67,5 @@ class Partner(Base):
     withdrawal_policy = relationship("PartnerWithdrawalPolicy", back_populates="partner", uselist=False, cascade="all, delete-orphan")
     energy_policy = relationship("PartnerEnergyPolicy", back_populates="partner", uselist=False, cascade="all, delete-orphan")
     user_tiers = relationship("UserTier", back_populates="partner", cascade="all, delete-orphan")
-    fee_logs = relationship("FeeCalculationLog", back_populates="partner", cascade="all, delete-orphan")
+    fee_calculation_logs = relationship("FeeCalculationLog", back_populates="partner", cascade="all, delete-orphan")
+    policy_calculation_logs = relationship("PartnerPolicyCalculationLog", back_populates="partner", cascade="all, delete-orphan")

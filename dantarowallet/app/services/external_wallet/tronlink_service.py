@@ -13,12 +13,34 @@ from sqlalchemy import select, update
 from tronpy import Tron
 from tronpy.keys import PrivateKey
 
-from app.models.partner_wallet import PartnerWallet, WalletProvider, WalletStatus
+from app.models.partner_wallet import PartnerWallet, WalletType, TransactionStatus
 from app.models.partner import Partner
 from app.core.logger import get_logger
 from app.core.exceptions import ValidationError, AuthenticationError
 
 logger = get_logger(__name__)
+
+
+def safe_get_attr(obj, attr, default=None):
+    """SQLAlchemy 컬럼 속성을 안전하게 가져오는 헬퍼 함수"""
+    if obj is None:
+        return default
+    value = getattr(obj, attr, default)
+    if value is not None and hasattr(value, 'value'):
+        return value.value
+    return value
+
+
+def safe_bool(value, default=False):
+    """안전한 bool 변환"""
+    if value is None:
+        return default
+    if hasattr(value, 'value'):
+        value = value.value
+    try:
+        return bool(value)
+    except (TypeError, ValueError):
+        return default
 
 
 class TronLinkService:
@@ -80,7 +102,7 @@ class TronLinkService:
         """지갑 연결 해제"""
         try:
             wallet = await self.db.get(PartnerWallet, wallet_id)
-            if not wallet or wallet.partner_id != partner_id:
+            if not wallet or safe_get_attr(wallet, 'partner_id') != partner_id:
                 raise ValidationError("지갑을 찾을 수 없습니다")
             
             # 상태 업데이트
@@ -88,7 +110,7 @@ class TronLinkService:
                 update(PartnerWallet)
                 .where(PartnerWallet.id == wallet_id)
                 .values(
-                    status=WalletStatus.DISCONNECTED,
+                    is_connected=False,
                     disconnected_at=datetime.utcnow()
                 )
             )
@@ -131,7 +153,7 @@ class TronLinkService:
         try:
             query = select(PartnerWallet).where(
                 PartnerWallet.partner_id == partner_id,
-                PartnerWallet.provider == WalletProvider.TRONLINK
+                PartnerWallet.provider == WalletType.TRONLINK
             ).order_by(PartnerWallet.created_at.desc())
             
             result = await self.db.execute(query)
@@ -142,14 +164,17 @@ class TronLinkService:
                 # 잔액 정보 조회
                 balance_info = await self.get_wallet_balance(wallet.address)
                 
+                last_connected = safe_get_attr(wallet, 'last_connected_at')
+                created_at = safe_get_attr(wallet, 'created_at')
+                
                 wallet_list.append({
-                    "id": wallet.id,
-                    "address": wallet.address,
-                    "status": wallet.status.value,
-                    "provider": wallet.provider.value,
+                    "id": safe_get_attr(wallet, 'id'),
+                    "address": safe_get_attr(wallet, 'wallet_address'),
+                    "wallet_type": safe_get_attr(wallet, 'wallet_type'),
+                    "is_connected": safe_get_attr(wallet, 'is_connected'),
                     "balance": balance_info,
-                    "last_connected_at": wallet.last_connected_at.isoformat() if wallet.last_connected_at else None,
-                    "created_at": wallet.created_at.isoformat()
+                    "last_connected_at": last_connected.isoformat() if last_connected else None,
+                    "created_at": created_at.isoformat() if created_at else None
                 })
             
             return wallet_list
@@ -185,7 +210,7 @@ class TronLinkService:
         query = select(PartnerWallet).where(
             PartnerWallet.partner_id == partner_id,
             PartnerWallet.address == address,
-            PartnerWallet.provider == WalletProvider.TRONLINK
+            PartnerWallet.provider == WalletType.TRONLINK
         )
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -195,8 +220,8 @@ class TronLinkService:
         wallet = PartnerWallet(
             partner_id=partner_id,
             address=address,
-            provider=WalletProvider.TRONLINK,
-            status=WalletStatus.CONNECTED,
+            wallet_type=WalletType.TRONLINK,
+            is_connected=True,
             last_connected_at=datetime.utcnow()
         )
         
@@ -213,7 +238,7 @@ class TronLinkService:
             update(PartnerWallet)
             .where(PartnerWallet.id == wallet.id)
             .values(
-                status=WalletStatus.CONNECTED,
+                is_connected=True,
                 last_connected_at=datetime.utcnow()
             )
         )

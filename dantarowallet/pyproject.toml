@@ -24,6 +24,8 @@ coincurve = "^18.0.0"
 python-dotenv = "^1.0.0"
 python-json-logger = "^2.0.7"
 aiosqlite = "^0.19.0"
+mnemonic = "^0.21"
+hdwallet = "^3.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

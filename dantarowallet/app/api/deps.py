@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.core.security import verify_token
 from app.models.user import User
+from app.models.partner import Partner
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
@@ -148,15 +149,13 @@ async def get_optional_current_user(
 async def get_current_partner(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db),
-) -> "Partner":
+) -> Partner:
     """
     현재 인증된 파트너 반환
     """
-    from app.models.partner import Partner
-
     # 임시로 기본 파트너 반환 (실제로는 JWT 토큰에서 파트너 정보 추출)
     # TODO: JWT 토큰에서 파트너 ID 추출하여 실제 파트너 반환
-    query = select(Partner).where(Partner.id == 1)
+    query = select(Partner).where(Partner.id == "test_partner_001")
     result = await db.execute(query)
     partner = result.scalar_one_or_none()
 
