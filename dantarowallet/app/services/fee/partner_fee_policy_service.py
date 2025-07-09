@@ -8,10 +8,11 @@ from sqlalchemy import select, update, desc, func, and_, or_
 from sqlalchemy.orm import selectinload, joinedload
 
 from app.models.fee_policy import (
-    PartnerFeePolicy, FeeTier, PartnerWithdrawalPolicy,
+    PartnerFeePolicy, FeeTier,
     PartnerEnergyPolicy, UserTier, PartnerPolicyCalculationLog,
     FeeType, WithdrawalPolicy, EnergyPolicy
 )
+from app.models.withdrawal_policy import PartnerWithdrawalPolicy
 from app.models.partner import Partner
 from app.models.user import User
 from app.schemas.fee_policy import (

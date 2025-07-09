@@ -10,9 +10,10 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy import Column, String, Integer, Numeric, Boolean, DateTime, Text, JSON
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey, Index
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-from app.models.base import BaseModel
+from app.models.base import BaseModel, Base
 
 
 class WithdrawalPolicyType(str, Enum):
@@ -46,9 +47,11 @@ class BatchExecutionDay(str, Enum):
     SUNDAY = "sunday"
 
 
-class PartnerWithdrawalPolicy(BaseModel):
+class PartnerWithdrawalPolicy(Base):
     """파트너사 출금 정책"""
+    __tablename__ = "partner_withdrawal_policies"
     
+    id = Column(Integer, primary_key=True, index=True)
     # 파트너 정보
     partner_id = Column(String(50), ForeignKey("partners.id"), nullable=False, unique=True)
     
@@ -98,6 +101,10 @@ class PartnerWithdrawalPolicy(BaseModel):
     notification_webhook_url = Column(String(500), nullable=True)
     notification_email = Column(String(255), nullable=True)
     
+    # 타임스탬프
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
     # 관계 설정
     partner = relationship("Partner", back_populates="withdrawal_policy")
     approval_rules = relationship("WithdrawalApprovalRule", back_populates="policy")
@@ -108,9 +115,11 @@ class PartnerWithdrawalPolicy(BaseModel):
         return f"<PartnerWithdrawalPolicy(partner_id={self.partner_id}, policy_type={self.policy_type})>"
 
 
-class WithdrawalApprovalRule(BaseModel):
+class WithdrawalApprovalRule(Base):
     """출금 승인 규칙"""
+    __tablename__ = "withdrawal_approval_rules"
     
+    id = Column(Integer, primary_key=True, index=True)
     # 정책 연결
     policy_id = Column(Integer, ForeignKey("partner_withdrawal_policies.id"), nullable=False)
     
@@ -135,6 +144,10 @@ class WithdrawalApprovalRule(BaseModel):
     conditions = Column(JSON, nullable=True)  # 복잡한 조건들
     extra_metadata = Column(JSON, nullable=True)  # 추가 메타데이터
     
+    # 타임스탬프
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
     # 관계 설정
     policy = relationship("PartnerWithdrawalPolicy", back_populates="approval_rules")
 
@@ -142,9 +155,11 @@ class WithdrawalApprovalRule(BaseModel):
         return f"<WithdrawalApprovalRule(rule_type={self.rule_type}, rule_name={self.rule_name})>"
 
 
-class WithdrawalWhitelist(BaseModel):
+class WithdrawalWhitelist(Base):
     """출금 화이트리스트"""
+    __tablename__ = "withdrawal_whitelists"
     
+    id = Column(Integer, primary_key=True, index=True)
     # 정책 연결
     policy_id = Column(Integer, ForeignKey("partner_withdrawal_policies.id"), nullable=False)
     
@@ -165,6 +180,10 @@ class WithdrawalWhitelist(BaseModel):
     total_withdrawn = Column(Numeric(precision=28, scale=8), nullable=False, default=0)
     withdrawal_count = Column(Integer, nullable=False, default=0)
     last_withdrawal_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # 타임스탬프
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # 관계 설정
     policy = relationship("PartnerWithdrawalPolicy", back_populates="whitelist_addresses")

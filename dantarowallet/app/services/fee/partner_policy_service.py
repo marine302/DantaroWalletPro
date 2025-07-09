@@ -7,9 +7,10 @@ from sqlalchemy import select, update, desc, func, and_
 from sqlalchemy.orm import selectinload
 
 from app.models.fee_policy import (
-    PartnerWithdrawalPolicy, PartnerEnergyPolicy, UserTier,
+    PartnerEnergyPolicy, UserTier,
     WithdrawalPolicy, EnergyPolicy
 )
+from app.models.withdrawal_policy import PartnerWithdrawalPolicy
 from app.models.partner import Partner
 from app.schemas.fee_policy import (
     PartnerWithdrawalPolicyCreate, PartnerWithdrawalPolicyUpdate, PartnerWithdrawalPolicyResponse,

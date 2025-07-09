@@ -21,7 +21,6 @@ from app.models.partner_history import (
 from app.models.fee_policy import (
     PartnerFeePolicy, 
     FeeTier, 
-    PartnerWithdrawalPolicy, 
     PartnerEnergyPolicy, 
     UserTier, 
     PartnerPolicyCalculationLog,
@@ -52,6 +51,11 @@ from app.models.sweep import (
     SweepConfiguration,
     SweepLog,
     SweepQueue
+)
+from app.models.withdrawal_policy import (
+    PartnerWithdrawalPolicy,
+    WithdrawalApprovalRule,
+    WithdrawalWhitelist
 )
 
 __all__ = [

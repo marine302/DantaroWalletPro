@@ -84,45 +84,7 @@ class FeeTier(Base):
     fee_policy = relationship("PartnerFeePolicy", back_populates="fee_tiers")
 
 
-class PartnerWithdrawalPolicy(Base):
-    """파트너사 출금 정책"""
-    __tablename__ = "partner_withdrawal_policies"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id"), nullable=False, unique=True)
-    
-    # 출금 방식
-    policy_type = Column(Enum(WithdrawalPolicy), default=WithdrawalPolicy.HYBRID, comment="출금 정책")
-    
-    # 실시간 출금 설정
-    realtime_enabled = Column(Boolean, default=True, comment="실시간 출금 활성화")
-    realtime_max_amount = Column(Numeric(18, 6), default=1000, comment="실시간 최대 금액")
-    auto_approve_enabled = Column(Boolean, default=False, comment="자동 승인 활성화")
-    auto_approve_max_amount = Column(Numeric(18, 6), default=100, comment="자동 승인 최대 금액")
-    
-    # 일괄 출금 설정
-    batch_enabled = Column(Boolean, default=True, comment="일괄 출금 활성화")
-    batch_schedule = Column(JSON, comment="일괄 처리 스케줄")
-    batch_min_amount = Column(Numeric(18, 6), default=10, comment="일괄 처리 최소 금액")
-    
-    # 출금 한도
-    daily_limit_per_user = Column(Numeric(18, 6), default=10000, comment="사용자별 일일 한도")
-    daily_limit_total = Column(Numeric(18, 6), default=1000000, comment="전체 일일 한도")
-    single_transaction_limit = Column(Numeric(18, 6), default=5000, comment="단일 거래 한도")
-    
-    # 화이트리스트
-    whitelist_required = Column(Boolean, default=False, comment="화이트리스트 필수")
-    whitelist_addresses = Column(JSON, comment="화이트리스트 주소 목록")
-    
-    # 보안 설정
-    require_2fa = Column(Boolean, default=True, comment="2FA 필수")
-    confirmation_blocks = Column(Integer, default=19, comment="확인 블록 수")
-    
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    # 관계 설정
-    partner = relationship("Partner", back_populates="withdrawal_policy")
+# PartnerWithdrawalPolicy는 withdrawal_policy.py에서 import하여 사용
 
 
 class PartnerEnergyPolicy(Base):
