@@ -63,14 +63,24 @@ class EnergyPoolModelService:
     async def recharge_energy(self, request: EnergyRechargeRequest) -> bool:
         """에너지를 충전합니다."""
         try:
-            await self._service.recharge_energy(request.amount, 1)  # 기본 user_id=1
+            # pool_manager를 직접 사용
+            from .energy_pool.pool_manager import EnergyPoolManager
+            pool_manager = EnergyPoolManager(self.db)
+            await pool_manager.recharge_energy(request.amount, 1)  # recharge_energy(amount, user_id)
             return True
         except Exception:
             return False
     
     async def add_to_queue(self, user_id: int, request: EnergyQueueCreate) -> int:
         """에너지 대기열에 추가합니다."""
-        return await self._service.add_to_queue(user_id, request.estimated_energy)
+        try:
+            # queue_manager를 직접 사용
+            from .energy_pool.queue_manager import EnergyQueueManager
+            queue_manager = EnergyQueueManager(self.db)
+            return await queue_manager.add_to_queue(user_id, request.estimated_energy)
+        except Exception as e:
+            logger.error(f"대기열 추가 실패: {e}")
+            return 0
     
     async def get_queue_status(self, user_id: int) -> Optional[QueueStatus]:
         """사용자의 대기열 상태를 조회합니다."""
@@ -105,10 +115,24 @@ class EnergyPoolModelService:
     
     async def get_usage_stats(self) -> EnergyUsageStats:
         """에너지 사용 통계를 조회합니다."""
-        from datetime import datetime, timedelta
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=30)
-        return await self._service.get_usage_stats(start_date, end_date)
+        try:
+            from datetime import datetime, timedelta
+            from .energy_pool.usage_analyzer import EnergyUsageAnalyzer
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=30)
+            # 직접 usage_analyzer 사용
+            usage_analyzer = EnergyUsageAnalyzer(self.db)
+            return await usage_analyzer.get_usage_stats(start_date, end_date)
+        except Exception as e:
+            logger.error(f"사용량 통계 조회 실패: {e}")
+            # 기본값 반환
+            return EnergyUsageStats(
+                daily_usage=0,
+                transaction_count=0,
+                efficiency_score=0.0,
+                peak_hour=0,
+                cost_breakdown={}
+            )
     
     async def emergency_withdrawal(self, user_id: int, withdrawal_data: EmergencyWithdrawalCreate) -> EmergencyWithdrawalResponse:
         """긴급 출금을 처리합니다."""
@@ -164,8 +188,15 @@ class EnergyPoolModelService:
         return await self._service.use_energy(amount, user_id, transaction_hash)
     
     async def recharge_energy_simple(self, amount: int, user_id: int) -> bool:
-        """에너지를 충전합니다 (단순 버전)."""
-        return await self._service.recharge_energy(amount, user_id)
+        """에너지를 충전합니다 (단순 버전).""" 
+        try:
+            # pool_manager를 직접 사용
+            from .energy_pool.pool_manager import EnergyPoolManager
+            pool_manager = EnergyPoolManager(self.db)
+            return await pool_manager.recharge_energy(amount, user_id)
+        except Exception as e:
+            logger.error(f"에너지 충전 실패: {e}")
+            return False
 
 
 # 하위 호환성을 위한 별칭
