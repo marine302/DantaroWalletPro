@@ -74,7 +74,7 @@ async def get_partner_wallets(
     try:
         tronlink_service = TronLinkService(db)
         
-        wallets = await tronlink_service.get_partner_wallets(str(current_partner.id))
+        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
         
         return PartnerWalletsResponse(
             wallets=[PartnerWalletInfo(**wallet) for wallet in wallets],
@@ -104,7 +104,7 @@ async def get_wallet_balance(
         tronlink_service = TronLinkService(db)
         
         # 지갑 소유권 확인
-        wallets = await tronlink_service.get_partner_wallets(str(current_partner.id))
+        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
         wallet_addresses = [w["address"] for w in wallets]
         
         if wallet_address not in wallet_addresses:
@@ -142,7 +142,7 @@ async def disconnect_wallet(
         tronlink_service = TronLinkService(db)
         
         success = await tronlink_service.disconnect_wallet(
-            partner_id=str(current_partner.id),
+            partner_id=current_partner.id,
             wallet_id=request.wallet_id
         )
         
@@ -180,7 +180,7 @@ async def get_tronlink_status(
     try:
         tronlink_service = TronLinkService(db)
         
-        wallets = await tronlink_service.get_partner_wallets(str(current_partner.id))
+        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
         
         # 연결된 지갑들의 총 잔액 계산
         total_trx = sum(w["balance"]["trx_balance"] for w in wallets)
@@ -270,3 +270,47 @@ async def get_all_tronlink_connections(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"조회에 실패했습니다: {str(e)}"
         )
+
+
+def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:
+    """SQLAlchemy 모델 속성을 안전하게 가져오는 헬퍼 함수"""
+    if obj is None:
+        return default
+    
+    value = getattr(obj, attr, default)
+    
+    # SQLAlchemy Column 타입인 경우 실제 값 추출
+    if hasattr(value, 'value'):
+        return value.value
+    elif hasattr(value, '__getitem__') and hasattr(value, 'keys'):
+        return value
+    else:
+        return value
+
+
+def safe_str(value: Any, default: str = '') -> str:
+    """안전한 str 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return str(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_int(value: Any, default: int = 0) -> int:
+    """안전한 int 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default

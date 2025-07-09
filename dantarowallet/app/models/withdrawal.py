@@ -73,6 +73,26 @@ class Withdrawal(BaseModel):
     approved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     processed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
+    # Doc #28: 파트너사 출금 정책 관련 필드 추가
+    partner_id = Column(String(50), ForeignKey("partners.id"), nullable=True, index=True)
+    batch_id = Column(String(36), nullable=True, index=True)  # 배치 처리 ID
+    auto_approved = Column(Boolean, nullable=False, default=False)  # 자동 승인 여부
+    risk_score = Column(Integer, nullable=True)  # 위험 점수
+    whitelist_verified = Column(Boolean, nullable=False, default=False)  # 화이트리스트 검증
+    policy_applied = Column(String(50), nullable=True)  # 적용된 정책 타입
+
+    # 트랜잭션 정보
+    tx_hash = Column(String(66), nullable=True, index=True)  # 트랜잭션 해시
+    block_number = Column(Integer, nullable=True)  # 블록 번호
+    gas_used = Column(Integer, nullable=True)  # 사용된 가스
+    energy_used = Column(Integer, nullable=True)  # 사용된 에너지
+
+    # 추가 메타데이터
+    metadata = Column(Text, nullable=True)  # JSON 형태의 추가 정보
+    rejection_reason = Column(String(500), nullable=True)  # 거부 사유
+    retry_count = Column(Integer, nullable=False, default=0)  # 재시도 횟수
+    notes = Column(Text, nullable=True)  # 관리자 노트
+
     def __repr__(self) -> str:
         return f"<Withdrawal(user_id={self.user_id}, to_address={self.to_address}, amount={self.amount}, status={self.status})>"
 
