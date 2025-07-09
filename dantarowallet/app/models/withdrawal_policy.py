@@ -133,7 +133,7 @@ class WithdrawalApprovalRule(BaseModel):
     
     # 추가 설정
     conditions = Column(JSON, nullable=True)  # 복잡한 조건들
-    metadata = Column(JSON, nullable=True)  # 추가 메타데이터
+    extra_metadata = Column(JSON, nullable=True)  # 추가 메타데이터
     
     # 관계 설정
     policy = relationship("PartnerWithdrawalPolicy", back_populates="approval_rules")
@@ -233,43 +233,6 @@ class WithdrawalRiskScore(BaseModel):
     
     def __repr__(self) -> str:
         return f"<WithdrawalRiskScore(withdrawal_id={self.withdrawal_id}, total_score={self.total_score})>"
-
-
-class WithdrawalBatch(BaseModel):
-    """출금 배치"""
-    
-    # 파트너 정보
-    partner_id = Column(String(50), ForeignKey("partners.id"), nullable=False, index=True)
-    
-    # 배치 정보
-    batch_type = Column(String(20), nullable=False, default="manual")  # manual, scheduled, auto
-    total_count = Column(Integer, nullable=False, default=0)
-    total_amount = Column(Numeric(precision=28, scale=8), nullable=False, default=0)
-    total_fee = Column(Numeric(precision=28, scale=8), nullable=False, default=0)
-    
-    # 스케줄 정보
-    scheduled_time = Column(DateTime(timezone=True), nullable=False)
-    started_at = Column(DateTime(timezone=True), nullable=True)
-    completed_at = Column(DateTime(timezone=True), nullable=True)
-    
-    # 상태 정보
-    status = Column(String(20), nullable=False, default="pending")  # pending, processing, completed, failed
-    
-    # 출금 ID들
-    withdrawal_ids = Column(Text, nullable=False)  # JSON 배열 문자열
-    
-    # 실행 결과
-    successful_count = Column(Integer, nullable=False, default=0)
-    failed_count = Column(Integer, nullable=False, default=0)
-    error_message = Column(Text, nullable=True)
-    
-    # 트랜잭션 정보
-    tx_hashes = Column(Text, nullable=True)  # JSON 배열 문자열
-    total_gas_used = Column(Integer, nullable=True)
-    total_energy_used = Column(Integer, nullable=True)
-    
-    def __repr__(self) -> str:
-        return f"<WithdrawalBatch(partner_id={self.partner_id}, total_count={self.total_count}, status={self.status})>"
 
 
 # 인덱스 설정

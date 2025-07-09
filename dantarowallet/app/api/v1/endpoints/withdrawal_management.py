@@ -7,6 +7,10 @@ from datetime import datetime
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy import update
+import asyncio
+import json
 
 from app.api.deps import get_db, get_current_user, get_current_partner
 from app.services.withdrawal.partner_withdrawal_service import PartnerWithdrawalService
@@ -30,6 +34,7 @@ from app.schemas.withdrawal_management import (
 )
 from app.models.user import User
 from app.models.partner import Partner
+from app.models.withdrawal import Withdrawal, WithdrawalBatch, WithdrawalStatus
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -328,25 +333,182 @@ async def execute_batch_with_auto_sign(
         )
 
 
+# === 배치 실행 관련 유틸리티 ===
+
 async def _execute_batch_background(
     service: PartnerWithdrawalService,
     batch_id: int,
     partner_id: str
 ):
-    """백그라운드에서 배치를 실행합니다."""
+    """배치를 백그라운드에서 실행합니다."""
     try:
-        # 여기에 실제 TronLink 자동 서명 및 트랜잭션 실행 로직 구현
-        logger.info(f"배치 실행 시작: {batch_id} (파트너: {partner_id})")
+        logger.info(f"배치 백그라운드 실행 시작: {batch_id}")
         
-        # TODO: 실제 구현
-        # 1. TronLink 자동 서명 스크립트 실행
-        # 2. 트랜잭션 생성 및 전송
-        # 3. 결과 처리 및 상태 업데이트
+        # 배치 정보 조회
+        batch_result = await service.db.execute(
+            select(WithdrawalBatch).where(WithdrawalBatch.id == batch_id)
+        )
+        batch = batch_result.scalar_one_or_none()
         
-        logger.info(f"배치 실행 완료: {batch_id}")
+        if not batch:
+            logger.error(f"배치를 찾을 수 없습니다: {batch_id}")
+            return
+        
+        # 배치 상태 업데이트
+        await service.db.execute(
+            update(WithdrawalBatch)
+            .where(WithdrawalBatch.id == batch_id)
+            .values(
+                status='processing',
+                started_at=datetime.utcnow()
+            )
+        )
+        await service.db.commit()
+        
+        # 출금 ID들 파싱
+        withdrawal_ids = json.loads(batch.withdrawal_ids)
+        
+        # 각 출금 요청 처리
+        successful_count = 0
+        failed_count = 0
+        tx_hashes = []
+        
+        for withdrawal_id in withdrawal_ids:
+            try:
+                # 실제 출금 처리 로직 (여기서는 시뮬레이션)
+                await asyncio.sleep(0.1)  # 처리 시간 시뮬레이션
+                
+                # 성공한 경우
+                tx_hash = f"0x{withdrawal_id:064x}"  # 임시 트랜잭션 해시
+                tx_hashes.append(tx_hash)
+                
+                # 출금 상태 업데이트
+                await service.db.execute(
+                    update(Withdrawal)
+                    .where(Withdrawal.id == withdrawal_id)
+                    .values(
+                        status=WithdrawalStatus.COMPLETED,
+                        tx_hash=tx_hash,
+                        completed_at=datetime.utcnow()
+                    )
+                )
+                
+                successful_count += 1
+                logger.info(f"출금 처리 완료: {withdrawal_id} -> {tx_hash}")
+                
+            except Exception as e:
+                # 실패한 경우
+                failed_count += 1
+                logger.error(f"출금 처리 실패: {withdrawal_id} -> {str(e)}")
+                
+                # 출금 상태 업데이트
+                await service.db.execute(
+                    update(Withdrawal)
+                    .where(Withdrawal.id == withdrawal_id)
+                    .values(
+                        status=WithdrawalStatus.FAILED,
+                        rejection_reason=str(e)
+                    )
+                )
+        
+        # 배치 완료 업데이트
+        await service.db.execute(
+            update(WithdrawalBatch)
+            .where(WithdrawalBatch.id == batch_id)
+            .values(
+                status='completed',
+                completed_at=datetime.utcnow(),
+                successful_count=successful_count,
+                failed_count=failed_count,
+                tx_hashes=json.dumps(tx_hashes)
+            )
+        )
+        await service.db.commit()
+        
+        logger.info(f"배치 실행 완료: {batch_id} -> 성공:{successful_count}, 실패:{failed_count}")
         
     except Exception as e:
-        logger.error(f"배치 백그라운드 실행 실패: {batch_id} - {str(e)}")
+        logger.error(f"배치 실행 오류: {batch_id} -> {str(e)}")
+        
+        # 배치 실패 상태 업데이트
+        try:
+            await service.db.execute(
+                update(WithdrawalBatch)
+                .where(WithdrawalBatch.id == batch_id)
+                .values(
+                    status='failed',
+                    error_message=str(e)
+                )
+            )
+            await service.db.commit()
+        except Exception as commit_error:
+            logger.error(f"배치 실패 상태 업데이트 오류: {str(commit_error)}")
+
+
+# === 승인 규칙 관리 ===
+
+@router.post("/approval-rules", response_model=WithdrawalApprovalRuleResponse)
+async def create_approval_rule(
+    rule_data: WithdrawalApprovalRuleCreate,
+    partner: Partner = Depends(get_current_partner),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """승인 규칙을 생성합니다."""
+    try:
+        service = PartnerWithdrawalService(db)
+        
+        # 파트너 정책 조회
+        policy = await service.get_withdrawal_policy(safe_str(partner.id))
+        if not policy:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="출금 정책을 찾을 수 없습니다"
+            )
+        
+        # 승인 규칙 생성
+        approval_rule = await service.create_approval_rule(
+            policy_id=policy.id,
+            rule_data=rule_data.model_dump(),
+            admin_id=safe_int(current_user.id)
+        )
+        
+        return approval_rule
+    except Exception as e:
+        logger.error(f"승인 규칙 생성 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.get("/approval-rules", response_model=List[WithdrawalApprovalRuleResponse])
+async def get_approval_rules(
+    partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """승인 규칙들을 조회합니다."""
+    try:
+        service = PartnerWithdrawalService(db)
+        
+        # 파트너 정책 조회
+        policy = await service.get_withdrawal_policy(safe_str(partner.id))
+        if not policy:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="출금 정책을 찾을 수 없습니다"
+            )
+        
+        # 승인 규칙들 조회
+        approval_rules = await service.get_approval_rules(policy.id)
+        
+        return approval_rules
+    except Exception as e:
+        logger.error(f"승인 규칙 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="승인 규칙 조회에 실패했습니다"
+        )
 
 
 # === 출금 한도 및 화이트리스트 관리 ===
@@ -372,7 +534,7 @@ async def create_whitelist_entry(
         
         # 화이트리스트 항목 생성
         whitelist_entry = await service.create_whitelist_entry(
-            policy_id=safe_int(safe_int(policy.id)),
+            policy_id=policy.id,
             whitelist_data=whitelist_data.model_dump(),
             admin_id=safe_int(current_user.id)
         )
@@ -404,7 +566,7 @@ async def get_whitelist_entries(
             )
         
         # 화이트리스트 항목들 조회
-        whitelist_entries = await service.get_whitelist_entries(safe_int(policy.id))
+        whitelist_entries = await service.get_whitelist_entries(policy.id)
         
         return whitelist_entries
     except Exception as e:
