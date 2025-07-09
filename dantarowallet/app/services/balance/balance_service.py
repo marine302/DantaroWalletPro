@@ -18,9 +18,9 @@ class BalanceService(
 ):
     """
     통합 잔고 관리 서비스
-    BalanceQueryService, BalanceTransactionService, BalanceTransferService,
-    BalanceAdjustmentService를 상속하여 모든 잔고 관련 기능을 제공합니다.
+    모든 잔고 관련 기능을 하나의 클래스에서 제공합니다.
     """
 
     def __init__(self, db: AsyncSession):
+        """서비스 초기화."""
         super().__init__(db)
