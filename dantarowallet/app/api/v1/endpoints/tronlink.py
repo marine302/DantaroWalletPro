@@ -45,7 +45,7 @@ async def connect_tronlink_wallet(
         tronlink_service = TronLinkService(db)
         
         result = await tronlink_service.initiate_connection(
-            partner_id=str(current_partner.id),
+            partner_id=safe_int(current_partner.id),
             wallet_address=request.wallet_address,
             signature=request.signature,
             message=request.message
@@ -74,7 +74,7 @@ async def get_partner_wallets(
     try:
         tronlink_service = TronLinkService(db)
         
-        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
+        wallets = await tronlink_service.get_partner_wallets(safe_int(current_partner.id))
         
         return PartnerWalletsResponse(
             wallets=[PartnerWalletInfo(**wallet) for wallet in wallets],
@@ -104,7 +104,7 @@ async def get_wallet_balance(
         tronlink_service = TronLinkService(db)
         
         # 지갑 소유권 확인
-        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
+        wallets = await tronlink_service.get_partner_wallets(safe_int(current_partner.id))
         wallet_addresses = [w["address"] for w in wallets]
         
         if wallet_address not in wallet_addresses:
@@ -142,7 +142,7 @@ async def disconnect_wallet(
         tronlink_service = TronLinkService(db)
         
         success = await tronlink_service.disconnect_wallet(
-            partner_id=current_partner.id,
+            partner_id=safe_int(current_partner.id),
             wallet_id=request.wallet_id
         )
         
@@ -180,7 +180,7 @@ async def get_tronlink_status(
     try:
         tronlink_service = TronLinkService(db)
         
-        wallets = await tronlink_service.get_partner_wallets(current_partner.id)
+        wallets = await tronlink_service.get_partner_wallets(safe_int(current_partner.id))
         
         # 연결된 지갑들의 총 잔액 계산
         total_trx = sum(w["balance"]["trx_balance"] for w in wallets)

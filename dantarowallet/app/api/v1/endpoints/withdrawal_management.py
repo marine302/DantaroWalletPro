@@ -468,7 +468,7 @@ async def create_approval_rule(
         
         # 승인 규칙 생성
         approval_rule = await service.create_approval_rule(
-            policy_id=policy.id,
+            policy_id=safe_int(policy.id),
             rule_data=rule_data.model_dump(),
             admin_id=safe_int(current_user.id)
         )
@@ -500,7 +500,7 @@ async def get_approval_rules(
             )
         
         # 승인 규칙들 조회
-        approval_rules = await service.get_approval_rules(policy.id)
+        approval_rules = await service.get_approval_rules(safe_int(policy.id))
         
         return approval_rules
     except Exception as e:
@@ -534,7 +534,7 @@ async def create_whitelist_entry(
         
         # 화이트리스트 항목 생성
         whitelist_entry = await service.create_whitelist_entry(
-            policy_id=policy.id,
+            policy_id=safe_int(policy.id),
             whitelist_data=whitelist_data.model_dump(),
             admin_id=safe_int(current_user.id)
         )
@@ -566,7 +566,7 @@ async def get_whitelist_entries(
             )
         
         # 화이트리스트 항목들 조회
-        whitelist_entries = await service.get_whitelist_entries(policy.id)
+        whitelist_entries = await service.get_whitelist_entries(safe_int(policy.id))
         
         return whitelist_entries
     except Exception as e:

@@ -32,7 +32,7 @@ async def connect_tronlink_wallet(
     try:
         wallet_service = ExternalWalletService(db)
         wallet = await wallet_service.connect_external_wallet(
-            partner_id=int(current_partner.id),
+            partner_id=safe_int(current_partner.id),
             wallet_type="TRONLINK",
             wallet_address=request.wallet_address,
             public_key=request.public_key,
@@ -57,7 +57,7 @@ async def get_connected_wallets(
     """연결된 TronLink 지갑 목록 조회"""
     try:
         wallet_service = ExternalWalletService(db)
-        wallets = await wallet_service.get_partner_wallets(int(current_partner.id))
+        wallets = await wallet_service.get_partner_wallets(safe_int(current_partner.id))
         
         return [ExternalWalletResponse.model_validate(wallet) for wallet in wallets]
         
@@ -79,7 +79,7 @@ async def get_wallet_balance(
     try:
         wallet_service = ExternalWalletService(db)
         balance_info = await wallet_service.get_wallet_balance(
-            partner_id=int(current_partner.id),
+            partner_id=safe_int(current_partner.id),
             wallet_address=wallet_address
         )
         
@@ -105,7 +105,7 @@ async def get_wallet_transactions(
     try:
         wallet_service = ExternalWalletService(db)
         transactions = await wallet_service.get_wallet_transactions(
-            partner_id=int(current_partner.id),
+            partner_id=safe_int(current_partner.id),
             wallet_address=wallet_address,
             limit=limit,
             offset=offset
@@ -131,7 +131,7 @@ async def disconnect_wallet(
     try:
         wallet_service = ExternalWalletService(db)
         success = await wallet_service.disconnect_wallet(
-            partner_id=int(current_partner.id),
+            partner_id=safe_int(current_partner.id),
             wallet_address=wallet_address
         )
         
@@ -186,3 +186,17 @@ async def verify_wallet_signature(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="서명 검증에 실패했습니다"
         )
+
+
+def safe_int(value, default: int = 0) -> int:
+    """안전한 int 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default

@@ -62,8 +62,8 @@ class DashboardService:
             .limit(1)
         )
         last_transaction = last_tx_result.scalar_one_or_none()
-        last_transaction_date = (
-            last_transaction.created_at if last_transaction else None
+        last_transaction_date = safe_datetime(
+            safe_get_attr(last_transaction, 'created_at') if last_transaction else None
         )
 
         # 월간 거래량
@@ -103,12 +103,12 @@ class DashboardService:
 
         return [
             RecentTransactionResponse(
-                id=tx.id,
-                transaction_type=str(tx.type),
-                amount=tx.amount,
+                id=safe_int(tx.id),
+                transaction_type=str(safe_get_attr(tx, 'type', '')),
+                amount=safe_decimal(tx.amount),
                 currency=getattr(tx, "currency", "TRX") or "TRX",
-                status=str(tx.status),
-                created_at=tx.created_at,
+                status=str(safe_get_attr(tx, 'status', '')),
+                created_at=safe_datetime(tx.created_at, datetime.now()),
                 wallet_address=getattr(tx, "to_address", "")
                 or getattr(tx, "from_address", "")
                 or "",
@@ -211,3 +211,61 @@ class DashboardService:
             average_balance=average_balance,
             wallet_distribution=wallet_distribution,
         )
+
+
+def safe_get_attr(obj, attr, default=None):
+    """SQLAlchemy 컬럼 속성을 안전하게 가져오는 헬퍼 함수"""
+    if obj is None:
+        return default
+    
+    value = getattr(obj, attr, default)
+    
+    # SQLAlchemy Column 타입인 경우 실제 값 추출
+    if value is not None and hasattr(value, 'value'):
+        return value.value
+    else:
+        return value
+
+
+def safe_int(value, default: int = 0) -> int:
+    """안전한 int 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_decimal(value, default=None):
+    """안전한 Decimal 변환"""
+    if value is None:
+        return default or Decimal("0")
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    try:
+        return Decimal(str(value))
+    except (TypeError, ValueError):
+        return default or Decimal("0")
+
+
+def safe_datetime(value, default=None):
+    """안전한 datetime 변환"""
+    if value is None:
+        return default
+    
+    if hasattr(value, 'value'):
+        value = value.value
+    
+    # 이미 datetime이면 그대로 반환
+    from datetime import datetime
+    if isinstance(value, datetime):
+        return value
+    
+    return default

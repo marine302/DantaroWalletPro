@@ -38,6 +38,45 @@ class DeploymentService:
         """배포 롤백"""
         return await self.deployment_manager.rollback_deployment(partner_id, reason)
     
+    async def remove_partner_deployment(self, partner_id: str) -> bool:
+        """파트너 배포 제거"""
+        try:
+            # 기본적인 배포 제거 로직
+            # 실제 구현에서는 파트너별 리소스 정리 로직이 필요
+            return True
+        except Exception as e:
+            raise Exception(f"Failed to remove partner deployment: {str(e)}")
+    
+    async def get_available_templates(self) -> List[PartnerTemplate]:
+        """사용 가능한 템플릿 목록 조회"""
+        return await self.deployment_monitor.get_deployment_templates()
+    
+    async def create_template(self, template_data: Dict[str, Any], admin_id: str) -> Dict[str, Any]:
+        """새 템플릿 생성"""
+        try:
+            # 템플릿 데이터 검증
+            required_fields = ["name", "version", "description", "components"]
+            for field in required_fields:
+                if field not in template_data:
+                    raise ValueError(f"Missing required field: {field}")
+            
+            # 템플릿 생성
+            template_id = f"custom_{admin_id}_{len(template_data.get('name', ''))}"
+            
+            new_template = {
+                "template_id": template_id,
+                "name": template_data["name"],
+                "version": template_data["version"],
+                "description": template_data["description"],
+                "components": template_data["components"],
+                "customizable_fields": template_data.get("customizable_fields", []),
+                "created_by": admin_id
+            }
+            
+            return new_template
+        except Exception as e:
+            raise Exception(f"Failed to create template: {str(e)}")
+    
     def _get_deployment_status(self, deployment_config: Dict[str, Any]) -> str:
         """배포 상태 정보 반환 (호환성을 위한 메서드)"""
         return self.deployment_manager.get_deployment_status_info(deployment_config)

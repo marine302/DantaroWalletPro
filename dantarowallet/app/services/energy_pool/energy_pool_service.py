@@ -38,7 +38,6 @@ from .utils import safe_get_attr, safe_int, safe_decimal
 from .pool_manager import EnergyPoolManager
 from .usage_analyzer import EnergyUsageAnalyzer
 from .queue_manager import EnergyQueueManager
-from .models import EnergyUsageStats
 
 logger = get_logger(__name__)
 
@@ -59,15 +58,15 @@ class EnergyPoolService:
         """새로운 에너지 풀을 생성합니다."""
         return await self.pool_manager.create_energy_pool(request)
     
-    async def recharge_energy(self, amount: int, user_id: int) -> bool:
+    async def recharge_energy(self, amount: int, user_id: int):
         """에너지를 충전합니다."""
         return await self.pool_manager.recharge_energy(amount, user_id)
     
-    async def use_energy(self, amount: int, user_id: int, transaction_hash: str) -> bool:
+    async def use_energy(self, amount: int, user_id: int, transaction_hash: str):
         """에너지를 사용합니다."""
         return await self.pool_manager.use_energy(amount, user_id, transaction_hash)
     
-    async def get_usage_stats(self, start_date: datetime, end_date: datetime) -> EnergyUsageStats:
+    async def get_usage_stats(self, start_date: datetime, end_date: datetime):
         """사용량 통계를 조회합니다."""
         return await self.usage_analyzer.get_usage_stats(start_date, end_date)
     
@@ -75,14 +74,14 @@ class EnergyPoolService:
         """사용량 로그를 조회합니다."""
         return await self.usage_analyzer.get_usage_logs(user_id)
     
-    async def add_to_queue(self, user_id: int, energy_amount: int) -> int:
+    async def add_to_queue(self, user_id: int, energy_amount: int):
         """대기열에 추가합니다."""
         return await self.queue_manager.add_to_queue(user_id, energy_amount)
     
-    async def process_queue(self) -> List[int]:
+    async def process_queue(self):
         """대기열을 처리합니다."""
         return await self.queue_manager.process_queue()
     
-    async def optimize_queue(self) -> bool:
+    async def optimize_queue(self):
         """대기열을 최적화합니다."""
         return await self.queue_manager.optimize_queue()

@@ -68,8 +68,7 @@ class DeploymentMonitor:
                 status="completed",
                 templates=templates,
                 logs=deployment_logs,
-                completed_at=datetime.utcnow(),
-                config={"deployed_at": datetime.utcnow().isoformat()}
+                completed_at=datetime.utcnow()
             )
             
         except Exception as e:

@@ -4,7 +4,7 @@
 import logging
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
@@ -225,9 +225,9 @@ class EnergyPoolManager:
             return int(hours_remaining)
         return None
     
-    async def get_all_energy_pools(self) -> list:
+    async def get_all_energy_pools(self) -> List[PartnerEnergyPool]:
         """모든 에너지 풀 조회"""
         result = await self.db.execute(
             select(PartnerEnergyPool).order_by(PartnerEnergyPool.partner_id)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
