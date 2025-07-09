@@ -68,8 +68,8 @@ class DeploymentMonitor:
                 status="completed",
                 templates=templates,
                 logs=deployment_logs,
-                created_at=datetime.utcnow(),
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
+                config={"deployed_at": datetime.utcnow().isoformat()}
             )
             
         except Exception as e:
@@ -125,7 +125,6 @@ class DeploymentMonitor:
                 status=status,
                 templates=deployment_config.get("templates", {}),
                 logs=deployment_config.get("deployment_logs", []),
-                created_at=partner.created_at,
                 completed_at=None if status != "completed" else datetime.utcnow()
             )
             
@@ -178,7 +177,7 @@ class DeploymentMonitor:
                     "partner_name": safe_str(partner.name),
                     "status": status,
                     "onboarding_status": safe_str(partner.onboarding_status),
-                    "created_at": partner.created_at.isoformat() if partner.created_at else None,
+                    "created_at": partner.created_at.isoformat() if hasattr(partner, 'created_at') and partner.created_at is not None else None,
                     "templates_count": len(deployment_config.get("templates", {})),
                     "last_updated": deployment_config.get("deployed_at")
                 }
@@ -219,14 +218,16 @@ class DeploymentMonitor:
                     name="Standard Partner Template",
                     version="1.0.0",
                     description="Standard template for new partners",
-                    components=["admin_dashboard", "user_wallet", "api_endpoints"]
+                    components=["admin_dashboard", "user_wallet", "api_endpoints"],
+                    customizable_fields=["theme", "branding", "payment_methods"]
                 ),
                 PartnerTemplate(
                     template_id="enterprise_v1",
                     name="Enterprise Partner Template",
                     version="1.0.0",
                     description="Enterprise template with advanced features",
-                    components=["admin_dashboard", "user_wallet", "api_endpoints", "analytics", "reporting"]
+                    components=["admin_dashboard", "user_wallet", "api_endpoints", "analytics", "reporting"],
+                    customizable_fields=["theme", "branding", "payment_methods", "reporting_config", "advanced_features"]
                 )
             ]
             
