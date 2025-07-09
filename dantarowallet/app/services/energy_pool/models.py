@@ -1,7 +1,5 @@
-"""
-에너지 풀 서비스 - 데이터 클래스 및 모델 정의
-"""
-from typing import Optional, Dict, Any
+"""에너지 풀 서비스 모델들"""
+from typing import Optional, Dict
 from datetime import datetime
 from decimal import Decimal
 
@@ -22,7 +20,7 @@ class EnergyPoolStatusInfo:
 
 
 class EnergyTransaction:
-    """에너지 트랜잭션 클래스"""
+    """에너지 트랜잭션"""
     def __init__(self, user_id: int, energy_amount: int, transaction_type: str, 
                  transaction_id: str, created_at: Optional[datetime] = None):
         self.id: Optional[int] = None
@@ -34,7 +32,7 @@ class EnergyTransaction:
 
 
 class EnergyQueue:
-    """에너지 대기열 클래스"""
+    """에너지 대기열"""
     def __init__(self, user_id: int, estimated_energy: int, transaction_type: str, 
                  priority: int = 1, status: str = "pending", created_at: Optional[datetime] = None):
         self.id: Optional[int] = None
@@ -47,7 +45,7 @@ class EnergyQueue:
 
 
 class EnergyAlert:
-    """에너지 알림 클래스"""
+    """에너지 알림"""
     def __init__(self, alert_type: str, message: str, is_active: bool = True, 
                  created_at: Optional[datetime] = None):
         self.id: Optional[int] = None
@@ -58,7 +56,7 @@ class EnergyAlert:
 
 
 class QueueStatus:
-    """대기열 상태 클래스"""
+    """대기열 상태"""
     def __init__(self, position: int, estimated_wait_time: int, queue_size: int):
         self.position = position
         self.estimated_wait_time = estimated_wait_time
@@ -66,7 +64,7 @@ class QueueStatus:
 
 
 class EnergyUsageStats:
-    """에너지 사용 통계 클래스"""
+    """에너지 사용 통계"""
     def __init__(self, daily_usage: int, transaction_count: int, efficiency_score: float, 
                  peak_hour: int, cost_breakdown: Dict[str, float]):
         self.daily_usage = daily_usage
@@ -77,7 +75,7 @@ class EnergyUsageStats:
 
 
 class EnergyRechargeRequest:
-    """에너지 충전 요청 클래스"""
+    """에너지 충전 요청"""
     def __init__(self, amount: int, payment_method: str = "trx", reason: str = ""):
         self.amount = amount
         self.payment_method = payment_method
@@ -85,7 +83,7 @@ class EnergyRechargeRequest:
 
 
 class EnergyQueueCreate:
-    """에너지 대기열 생성 클래스"""
+    """에너지 대기열 생성"""
     def __init__(self, estimated_energy: int, transaction_type: str, priority: int = 1):
         self.estimated_energy = estimated_energy
         self.transaction_type = transaction_type
@@ -93,14 +91,14 @@ class EnergyQueueCreate:
 
 
 class EmergencyWithdrawalCreate:
-    """긴급 출금 생성 클래스"""
+    """긴급 출금 생성"""
     def __init__(self, amount: Decimal, reason: str):
         self.amount = amount
         self.reason = reason
 
 
 class EmergencyWithdrawalResponse:
-    """긴급 출금 응답 클래스"""
+    """긴급 출금 응답"""
     def __init__(self, success: bool, transaction_id: str, message: str):
         self.success = success
         self.transaction_id = transaction_id

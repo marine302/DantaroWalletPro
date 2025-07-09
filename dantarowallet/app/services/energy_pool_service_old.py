@@ -1,4 +1,4 @@
-"""에너지 풀 관리 서비스 - 모듈화된 진입점 (수정 버전)"""
+"""에너지 풀 관리 서비스 - 모듈화된 진입점"""
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -74,9 +74,7 @@ class EnergyPoolModelService:
     
     async def get_queue_status(self, user_id: int) -> Optional[QueueStatus]:
         """사용자의 대기열 상태를 조회합니다."""
-        # 직접 큐 매니저에 접근하는 대신 임시 구현
-        from .energy_pool.models import QueueStatus
-        return QueueStatus(position=1, estimated_wait_time=30, queue_size=5)
+        return await self._service.queue_manager.get_queue_status(user_id)
     
     async def process_queue(self) -> List[int]:
         """대기열을 처리합니다."""

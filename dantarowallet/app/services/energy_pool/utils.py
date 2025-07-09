@@ -1,6 +1,4 @@
-"""
-에너지 풀 서비스 - 유틸리티 함수들
-"""
+"""에너지 풀 서비스 유틸리티 함수들"""
 from typing import Any
 from decimal import Decimal
 import decimal
@@ -42,34 +40,13 @@ def safe_decimal(value: Any, default: Decimal = Decimal('0')) -> Decimal:
         return default
 
 
-def safe_float(value: Any, default: float = 0.0) -> float:
-    """안전하게 float로 변환합니다."""
-    try:
-        if value is None:
-            return default
-        return float(value)
-    except (ValueError, TypeError):
-        return default
-
-
-def calculate_usage_rate(used_energy: int, total_energy: int) -> float:
-    """에너지 사용률 계산"""
-    if total_energy <= 0:
+def calculate_energy_efficiency(used_energy: int, total_energy: int) -> float:
+    """에너지 효율성을 계산합니다."""
+    if total_energy == 0:
         return 0.0
     return (used_energy / total_energy) * 100
 
 
-def calculate_efficiency_score(available_energy: int, total_energy: int) -> float:
-    """효율성 점수 계산"""
-    if total_energy <= 0:
-        return 0.0
-    
-    usage_rate = calculate_usage_rate(total_energy - available_energy, total_energy)
-    
-    # 60-80% 사용률일 때 최고 효율
-    if 60 <= usage_rate <= 80:
-        return 95.0
-    elif usage_rate < 60:
-        return 85.0 + (usage_rate / 60.0) * 10.0
-    else:
-        return 95.0 - ((usage_rate - 80.0) / 20.0) * 20.0
+def validate_energy_amount(amount: int) -> bool:
+    """에너지 양이 유효한지 검증합니다."""
+    return isinstance(amount, int) and amount > 0
