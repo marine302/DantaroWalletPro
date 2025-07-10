@@ -1,109 +1,101 @@
 """
-백업 서비스
-데이터베이스 및 시스템 백업 기능을 제공합니다.
+백업 서비스 모듈
+데이터베이스와 파일 백업을 담당합니다.
 """
-from typing import Optional, Dict, Any, List
+import os
+import shutil
+import sqlite3
 from datetime import datetime
-import asyncio
-import logging
 from pathlib import Path
+from typing import Optional
 
-logger = logging.getLogger(__name__)
+from app.core.config import settings
+from app.core.logging import setup_logging
+
+logger = setup_logging()
 
 
 class BackupService:
     """백업 서비스 클래스"""
     
     def __init__(self):
-        self.backup_path = Path("backups")
-        self.backup_path.mkdir(exist_ok=True)
+        self.backup_dir = Path("backups")
+        self.backup_dir.mkdir(exist_ok=True)
     
-    async def create_database_backup(self, backup_name: Optional[str] = None) -> Dict[str, Any]:
+    async def create_database_backup(self, backup_name: Optional[str] = None) -> str:
         """데이터베이스 백업 생성"""
         try:
             if not backup_name:
-                backup_name = f"db_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_name = f"db_backup_{timestamp}.db"
             
-            # 실제 백업 로직은 여기에 구현
-            logger.info(f"Creating database backup: {backup_name}")
+            backup_path = self.backup_dir / backup_name
             
-            return {
-                "success": True,
-                "backup_name": backup_name,
-                "created_at": datetime.now(),
-                "size": "0 MB"  # 실제 크기 계산 필요
-            }
+            # SQLite 데이터베이스 백업
+            db_path = "dev.db"
+            if os.path.exists(db_path):
+                shutil.copy2(db_path, backup_path)
+                logger.info(f"✅ 데이터베이스 백업 생성: {backup_path}")
+                return str(backup_path)
+            else:
+                logger.warning("❌ 데이터베이스 파일이 존재하지 않습니다")
+                return ""
+                
         except Exception as e:
-            logger.error(f"Backup creation failed: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            logger.error(f"❌ 백업 생성 실패: {e}")
+            raise
     
-    async def list_backups(self) -> List[Dict[str, Any]]:
-        """백업 목록 조회"""
+    async def restore_database_backup(self, backup_path: str) -> bool:
+        """데이터베이스 백업 복원"""
+        try:
+            if not os.path.exists(backup_path):
+                logger.error(f"❌ 백업 파일이 존재하지 않습니다: {backup_path}")
+                return False
+            
+            # 현재 DB 백업
+            current_backup = await self.create_database_backup("current_backup.db")
+            
+            # 백업 복원
+            shutil.copy2(backup_path, "dev.db")
+            logger.info(f"✅ 데이터베이스 복원 완료: {backup_path}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ 백업 복원 실패: {e}")
+            return False
+    
+    async def list_backups(self) -> list:
+        """백업 파일 목록 조회"""
         try:
             backups = []
-            for backup_file in self.backup_path.glob("*.sql"):
+            for backup_file in self.backup_dir.glob("*.db"):
                 stat = backup_file.stat()
                 backups.append({
                     "name": backup_file.name,
+                    "path": str(backup_file),
                     "size": stat.st_size,
                     "created_at": datetime.fromtimestamp(stat.st_ctime),
-                    "path": str(backup_file)
+                    "modified_at": datetime.fromtimestamp(stat.st_mtime)
                 })
             
-            return backups
+            return sorted(backups, key=lambda x: x["created_at"], reverse=True)
+            
         except Exception as e:
-            logger.error(f"Failed to list backups: {e}")
+            logger.error(f"❌ 백업 목록 조회 실패: {e}")
             return []
     
-    async def restore_backup(self, backup_name: str) -> Dict[str, Any]:
-        """백업 복원"""
+    async def delete_backup(self, backup_name: str) -> bool:
+        """백업 파일 삭제"""
         try:
-            backup_file = self.backup_path / backup_name
-            if not backup_file.exists():
-                return {
-                    "success": False,
-                    "error": "Backup file not found"
-                }
-            
-            # 실제 복원 로직은 여기에 구현
-            logger.info(f"Restoring backup: {backup_name}")
-            
-            return {
-                "success": True,
-                "backup_name": backup_name,
-                "restored_at": datetime.now()
-            }
+            backup_path = self.backup_dir / backup_name
+            if backup_path.exists():
+                backup_path.unlink()
+                logger.info(f"✅ 백업 파일 삭제: {backup_name}")
+                return True
+            else:
+                logger.warning(f"❌ 백업 파일이 존재하지 않습니다: {backup_name}")
+                return False
+                
         except Exception as e:
-            logger.error(f"Backup restoration failed: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
-    async def delete_backup(self, backup_name: str) -> Dict[str, Any]:
-        """백업 삭제"""
-        try:
-            backup_file = self.backup_path / backup_name
-            if not backup_file.exists():
-                return {
-                    "success": False,
-                    "error": "Backup file not found"
-                }
-            
-            backup_file.unlink()
-            logger.info(f"Deleted backup: {backup_name}")
-            
-            return {
-                "success": True,
-                "backup_name": backup_name,
-                "deleted_at": datetime.now()
-            }
-        except Exception as e:
-            logger.error(f"Backup deletion failed: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            logger.error(f"❌ 백업 파일 삭제 실패: {e}")
+            return False

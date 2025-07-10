@@ -34,11 +34,11 @@ async def create_tables():
         from app.models.fee_policy import (
             PartnerFeePolicy, 
             FeeTier, 
-            PartnerWithdrawalPolicy, 
             PartnerEnergyPolicy, 
             UserTier, 
             PartnerPolicyCalculationLog
         )
+        from app.models.withdrawal_policy import PartnerWithdrawalPolicy
         from app.models.fee_config import FeeCalculationLog
         from app.models.transaction import Transaction
         from app.models.transaction_analytics import TransactionAlert, TransactionSummary

@@ -41,3 +41,28 @@ Thumbs.db
 # Project specific
 /data/
 /backups/
+
+# 자동 생성되는 임시 파일들 방지
+*_temp.py
+*_backup.py
+*.tmp
+*.bak
+*.orig
+temp_*
+backup_*
+
+# 알렘빅 자동 생성 파일들
+alembic/versions/*.py.backup
+alembic/versions/temp_*.py
+
+# 에너지 서비스 관련 임시 파일들
+app/services/energy/*_temp.py
+app/services/energy/*_backup.py
+app/services/energy/*_old.py
+app/services/energy/*_new.py
+app/services/energy/*_fixed.py
+
+# API 엔드포인트 임시 파일들  
+app/api/v1/endpoints/*_temp.py
+app/api/v1/endpoints/*_backup.py
+app/api/v1/endpoints/admin/*_temp.py
