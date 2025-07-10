@@ -34,6 +34,9 @@ class User(BaseModel):
     # 관계 설정
     deposits = relationship("Deposit", back_populates="user", lazy="selectin")
     wallets = relationship("Wallet", back_populates="user", lazy="selectin")
+    
+    # Doc-30: 감사 로그 관계
+    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
 
     # 인덱스
     __table_args__ = (Index("idx_user_email_active", "email", "is_active"),)
