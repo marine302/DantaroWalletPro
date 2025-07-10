@@ -1,7 +1,8 @@
 """
 Balance Service - 잔액 관리 서비스
 """
-from typing import Optional, Dict, Any
+from decimal import Decimal
+from typing import Optional, Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
@@ -38,12 +39,13 @@ class BalanceService:
         try:
             balance = await self.get_user_balance(user_id, token_symbol)
             if balance:
-                balance.amount = amount
+                # SQLAlchemy 모델의 속성을 안전하게 업데이트
+                setattr(balance, 'amount', Decimal(str(amount)))
             else:
                 balance = Balance(
                     user_id=user_id,
                     token_symbol=token_symbol,
-                    amount=amount
+                    amount=Decimal(str(amount))
                 )
                 self.db.add(balance)
             
@@ -54,13 +56,13 @@ class BalanceService:
             await self.db.rollback()
             return False
     
-    async def get_all_balances(self, user_id: int) -> list:
+    async def get_all_balances(self, user_id: int) -> List[Balance]:
         """사용자의 모든 토큰 잔액 조회"""
         try:
             result = await self.db.execute(
                 select(Balance).where(Balance.user_id == user_id)
             )
-            return result.scalars().all()
+            return list(result.scalars().all())
         except Exception as e:
             logger.error(f"전체 잔액 조회 실패: {e}")
             return []
