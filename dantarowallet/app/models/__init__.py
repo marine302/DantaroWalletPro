@@ -57,6 +57,24 @@ from app.models.withdrawal_policy import (
     WithdrawalApprovalRule,
     WithdrawalWhitelist
 )
+from app.models.partner_onboarding import (
+    PartnerOnboarding,
+    OnboardingStep,
+    OnboardingChecklist,
+    OnboardingLog,
+    OnboardingStatus,
+    OnboardingStepStatus,
+    ChecklistCategory
+)
+from app.models.partner_onboarding import (
+    PartnerOnboarding,
+    OnboardingStep,
+    OnboardingChecklist,
+    OnboardingLog,
+    OnboardingStatus,
+    OnboardingStepStatus,
+    ChecklistCategory
+)
 
 __all__ = [
     "BaseModel",
@@ -111,4 +129,15 @@ __all__ = [
     "SweepConfiguration",
     "SweepLog",
     "SweepQueue",
+    # Doc-28: 출금 관리 고도화 모델
+    "WithdrawalApprovalRule",
+    "WithdrawalWhitelist",
+    # Doc-29: 온보딩 자동화 모델
+    "PartnerOnboarding",
+    "OnboardingStep",
+    "OnboardingChecklist",
+    "OnboardingLog",
+    "OnboardingStatus",
+    "OnboardingStepStatus",
+    "ChecklistCategory",
 ]

@@ -1,7 +1,7 @@
 """Add Sweep HD Wallet tables
 
 Revision ID: sweep_001
-Revises: 6df3c98916b7
+Revises: 93b2e4126195
 Create Date: 2025-07-08 15:20:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'sweep_001'
-down_revision = '6df3c98916b7'
+down_revision = '2b6ff5b2e63f'
 branch_labels = None
 depends_on = None
 

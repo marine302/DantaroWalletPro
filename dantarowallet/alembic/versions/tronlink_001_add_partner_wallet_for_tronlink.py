@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers
 revision: str = 'tronlink_001'
-down_revision: Union[str, None] = '6df3c98916b7'
+down_revision: Union[str, None] = 'energy_pool_001'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

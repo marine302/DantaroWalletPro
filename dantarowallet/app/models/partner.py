@@ -69,3 +69,6 @@ class Partner(Base):
     user_tiers = relationship("UserTier", back_populates="partner", cascade="all, delete-orphan")
     fee_calculation_logs = relationship("FeeCalculationLog", back_populates="partner", cascade="all, delete-orphan")
     policy_calculation_logs = relationship("PartnerPolicyCalculationLog", back_populates="partner", cascade="all, delete-orphan")
+    
+    # Doc-29: 온보딩 자동화 관계
+    onboarding = relationship("PartnerOnboarding", back_populates="partner", uselist=False, cascade="all, delete-orphan")

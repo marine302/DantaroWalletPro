@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     wallet,
     withdrawal,
     withdrawal_management,  # Doc #28: 파트너사 출금 관리 고도화
+    partner_onboarding,  # Doc #29: 파트너사 온보딩 자동화
 )
 from app.api.v1.endpoints.partner import tronlink
 
@@ -34,6 +35,7 @@ api_router.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
 api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
 api_router.include_router(withdrawal_management.router, prefix="/withdrawal-management", tags=["withdrawal_management"])  # Doc #28: 파트너사 출금 관리 고도화
+api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding", tags=["partner_onboarding"])  # Doc #29: 파트너사 온보딩 자동화
 api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
 api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리
 api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
