@@ -72,6 +72,3 @@ class Partner(Base):
     
     # Doc-29: 온보딩 자동화 관계
     onboarding = relationship("PartnerOnboarding", back_populates="partner", uselist=False, cascade="all, delete-orphan")
-    
-    # Doc-30: 감사 로그 관계
-    audit_logs = relationship("AuditLog", back_populates="partner", cascade="all, delete-orphan")

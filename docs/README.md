@@ -14,9 +14,9 @@
   - `copilot-doc-27.md` - 입금 Sweep 자동화
 
 - **in_progress/**: 진행 중인 Copilot 문서들 (Doc #28-35)
-  - `copilot-doc-28.md` - 파트너사 출금 관리 고도화 ✅ COMPLETED
-  - `copilot-doc-29.md` - 파트너사 온보딩 자동화 ✅ COMPLETED
-  - `copilot-doc-30.md` - 트랜잭션 감사 및 컴플라이언스 ✅ COMPLETED
+  - `copilot-doc-28.md` - 파트너사 출금 관리 고도화
+  - `copilot-doc-29.md` - 파트너사 온보딩 자동화
+  - `copilot-doc-30.md` - 트랜잭션 감사 및 컴플라이언스
   - `copilot-doc-31.md` - 파트너 관리자 템플릿
   - `copilot-doc-32.md` - 사용자 모바일 앱 템플릿
   - `copilot-doc-33.md` - 운영 가이드 및 매뉴얼

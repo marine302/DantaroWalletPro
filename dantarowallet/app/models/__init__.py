@@ -66,16 +66,14 @@ from app.models.partner_onboarding import (
     OnboardingStepStatus,
     ChecklistCategory
 )
-# Doc-30: 감사 및 컴플라이언스 모델
-from app.models.audit import (
-    AuditLog,
-    AuditEventType,
-    ComplianceCheck,
-    ComplianceCheckType,
-    ComplianceStatus,
-    RiskLevel,
-    SuspiciousActivity,
-    AuditReport
+from app.models.partner_onboarding import (
+    PartnerOnboarding,
+    OnboardingStep,
+    OnboardingChecklist,
+    OnboardingLog,
+    OnboardingStatus,
+    OnboardingStepStatus,
+    ChecklistCategory
 )
 
 __all__ = [
@@ -142,13 +140,4 @@ __all__ = [
     "OnboardingStatus",
     "OnboardingStepStatus",
     "ChecklistCategory",
-    # Doc-30: 감사 및 컴플라이언스 모델
-    "AuditLog",
-    "AuditEventType",
-    "ComplianceCheck",
-    "ComplianceCheckType",
-    "ComplianceStatus",
-    "RiskLevel",
-    "SuspiciousActivity",
-    "AuditReport",
 ]
