@@ -127,3 +127,12 @@ def get_sync_db():
         yield db
     finally:
         db.close()
+
+def get_db_session():
+    """
+    동기 데이터베이스 세션을 반환합니다.
+    
+    Returns:
+        Session: SQLAlchemy 동기 세션 인스턴스
+    """
+    return SyncSessionLocal()

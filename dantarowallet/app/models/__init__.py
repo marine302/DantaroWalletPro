@@ -66,15 +66,7 @@ from app.models.partner_onboarding import (
     OnboardingStepStatus,
     ChecklistCategory
 )
-from app.models.partner_onboarding import (
-    PartnerOnboarding,
-    OnboardingStep,
-    OnboardingChecklist,
-    OnboardingLog,
-    OnboardingStatus,
-    OnboardingStepStatus,
-    ChecklistCategory
-)
+from app.models.audit import AuditLog, AuditEventType, ComplianceCheck, SuspiciousActivity
 
 __all__ = [
     "BaseModel",
@@ -140,4 +132,9 @@ __all__ = [
     "OnboardingStatus",
     "OnboardingStepStatus",
     "ChecklistCategory",
+    # Audit 모델
+    "AuditLog",
+    "AuditEventType",
+    "ComplianceCheck",
+    "SuspiciousActivity",
 ]
