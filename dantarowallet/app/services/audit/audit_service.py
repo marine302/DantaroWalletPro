@@ -394,7 +394,8 @@ class AuditService:
             }
             
             # 해시 재계산
-            calculated_hash = self._calculate_log_hash(log_data, current_log.previous_hash)
+            previous_hash_value = safe_str(current_log.previous_hash, "")
+            calculated_hash = self._calculate_log_hash(log_data, previous_hash_value)
             
             # 저장된 해시와 비교
             return calculated_hash == current_log.log_hash
