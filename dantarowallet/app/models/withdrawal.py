@@ -23,6 +23,9 @@ class WithdrawalStatus(str, Enum):
     REJECTED = "rejected"  # 거부됨
     FAILED = "failed"  # 실패
     CANCELLED = "cancelled"  # 취소됨
+    QUEUED = "queued"  # 배치 대기
+    SIGNED = "signed"  # 서명됨
+    PENDING_SIGNATURE = "pending_signature"  # 서명 대기
 
 
 class WithdrawalPriority(str, Enum):

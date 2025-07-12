@@ -156,65 +156,6 @@ class EnergyBillingRecord(Base):
     rental_plan = relationship("EnergyRentalPlan", back_populates="billing_records", lazy="select")
     partner = relationship("Partner", back_populates="energy_billing_records", lazy="select")
 
-class EnergyPool(Base):
-    """에너지 풀 관리 (렌탈용)"""
-    __tablename__ = "energy_rental_pools"
-    
-    id = Column(Integer, primary_key=True)
-    pool_name = Column(String(100), nullable=False)
-    
-    # 에너지 현황
-    total_energy = Column(Integer, nullable=False)
-    available_energy = Column(Integer, nullable=False)
-    reserved_energy = Column(Integer, default=0)
-    
-    # TRX 스테이킹 정보
-    staked_trx = Column(Numeric(20, 6), nullable=False)
-    stake_address = Column(String(42), nullable=False)
-    
-    # 효율성 지표
-    energy_per_trx = Column(Numeric(10, 6))  # TRX당 에너지
-    daily_energy_generation = Column(Integer)
-    
-    # 상태
-    is_active = Column(Boolean, default=True)
-    last_updated = Column(DateTime, default=datetime.now(timezone.utc))
-    
-    # 임계값 설정
-    low_energy_threshold = Column(Integer, default=1000000)  # 100만 에너지
-    emergency_threshold = Column(Integer, default=500000)   # 50만 에너지
-    
-    # 메타데이터
-    meta_data = Column(JSON)
-
-class EnergyPricing(Base):
-    """에너지 가격 정책"""
-    __tablename__ = "energy_pricing"
-    
-    id = Column(Integer, primary_key=True)
-    pricing_name = Column(String(100), nullable=False)
-    
-    # 가격 설정
-    base_price = Column(Numeric(20, 10), nullable=False)  # 기본 가격
-    
-    # 볼륨 할인
-    volume_discount_tiers = Column(JSON)  # 볼륨별 할인 정책
-    
-    # 시간대별 가격
-    peak_hours_multiplier = Column(Numeric(3, 2), default=Decimal("1.0"))
-    off_peak_hours_multiplier = Column(Numeric(3, 2), default=Decimal("0.8"))
-    
-    # 유효 기간
-    effective_from = Column(DateTime, nullable=False)
-    effective_to = Column(DateTime)
-    
-    # 상태
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    
-    # 메타데이터
-    description = Column(Text)
-
 class EnergyAllocation(Base):
     """에너지 할당 관리"""
     __tablename__ = "energy_allocations"
@@ -237,7 +178,7 @@ class EnergyAllocation(Base):
     
     # 관계 - 문자열 참조를 사용하여 순환 참조 방지
     partner = relationship("Partner", back_populates="energy_rental_allocations", lazy="select")
-    energy_pool = relationship("EnergyPool", lazy="select")
+    energy_pool = relationship("EnergyPoolModel", lazy="select")
 
 def get_subscription_tier_limits(tier: SubscriptionTier) -> dict:
     """구독 등급별 제한 정보 반환"""

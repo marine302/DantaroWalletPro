@@ -13,11 +13,12 @@ import logging
 
 from app.models.energy_rental import (
     EnergyRentalPlan, EnergyUsageRecord, EnergyBillingRecord,
-    EnergyPool, EnergyPricing, EnergyAllocation,
+    EnergyAllocation,
     RentalPlanType, SubscriptionTier, UsageStatus, PaymentStatus,
     get_subscription_tier_limits, calculate_energy_cost
 )
 from app.models.partner import Partner
+from app.models.energy_pool import EnergyPoolModel
 from app.exceptions.energy_rental import (
     EnergyRentalException, InsufficientEnergyException,
     InvalidRentalPlanException, PaymentException
@@ -109,16 +110,16 @@ class EnergyRentalService:
         try:
             # 에너지 풀 선택
             if from_pool_id:
-                energy_pool = self.db.query(EnergyPool).filter(
-                    EnergyPool.id == from_pool_id,
-                    EnergyPool.is_active == True
+                energy_pool = self.db.query(EnergyPoolModel).filter(
+                    EnergyPoolModel.id == from_pool_id,
+                    EnergyPoolModel.is_active == True
                 ).first()
             else:
                 # 사용 가능한 에너지가 가장 많은 풀 선택
-                energy_pool = self.db.query(EnergyPool).filter(
-                    EnergyPool.is_active == True,
-                    EnergyPool.available_energy >= energy_amount
-                ).order_by(desc(EnergyPool.available_energy)).first()
+                energy_pool = self.db.query(EnergyPoolModel).filter(
+                    EnergyPoolModel.is_active == True,
+                    EnergyPoolModel.available_energy >= energy_amount
+                ).order_by(desc(EnergyPoolModel.available_energy)).first()
             
             if not energy_pool:
                 raise InsufficientEnergyException(f"할당 가능한 에너지가 부족합니다: {energy_amount}")
@@ -322,8 +323,8 @@ class EnergyRentalService:
             에너지 풀 상태 목록
         """
         try:
-            pools = self.db.query(EnergyPool).filter(
-                EnergyPool.is_active == True
+            pools = self.db.query(EnergyPoolModel).filter(
+                EnergyPoolModel.is_active == True
             ).all()
             
             pool_status = []
@@ -538,8 +539,8 @@ class EnergyRentalService:
             업데이트 성공 여부
         """
         try:
-            energy_pool = self.db.query(EnergyPool).filter(
-                EnergyPool.id == pool_id
+            energy_pool = self.db.query(EnergyPoolModel).filter(
+                EnergyPoolModel.id == pool_id
             ).first()
             
             if not energy_pool:
@@ -766,16 +767,16 @@ class EnergyRentalService:
         """
         try:
             # 전체 에너지 풀 통계
-            total_pools = self.db.query(EnergyPool).count()
-            active_pools = self.db.query(EnergyPool).filter(EnergyPool.is_active == True).count()
+            total_pools = self.db.query(EnergyPoolModel).count()
+            active_pools = self.db.query(EnergyPoolModel).filter(EnergyPoolModel.is_active == True).count()
             
             # 전체 에너지 통계
-            total_energy = self.db.query(func.sum(EnergyPool.total_energy)).filter(
-                EnergyPool.is_active == True
+            total_energy = self.db.query(func.sum(EnergyPoolModel.total_energy)).filter(
+                EnergyPoolModel.is_active == True
             ).scalar() or 0
             
-            available_energy = self.db.query(func.sum(EnergyPool.available_energy)).filter(
-                EnergyPool.is_active == True
+            available_energy = self.db.query(func.sum(EnergyPoolModel.available_energy)).filter(
+                EnergyPoolModel.is_active == True
             ).scalar() or 0
             
             # 활성 렌탈 플랜 수
