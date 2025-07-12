@@ -16,8 +16,11 @@ class WithdrawalStatus(str, Enum):
     """출금 상태"""
 
     PENDING = "pending"  # 대기 중
+    QUEUED = "queued"  # 대기열에 있음
     REVIEWING = "reviewing"  # 검토 중
     APPROVED = "approved"  # 승인됨
+    PENDING_SIGNATURE = "pending_signature"  # 서명 대기
+    SIGNED = "signed"  # 서명됨
     PROCESSING = "processing"  # 처리 중
     COMPLETED = "completed"  # 완료
     REJECTED = "rejected"  # 거부됨
