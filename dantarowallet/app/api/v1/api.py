@@ -23,6 +23,7 @@ from app.api.v1.endpoints import (
     withdrawal_management,  # Doc #28: 파트너사 출금 관리 고도화
     partner_onboarding,  # Doc #29: 파트너사 온보딩 자동화
     audit_compliance,  # Doc #30: 트랜잭션 감사 및 컴플라이언스
+    external_energy,  # Doc #35(38): 외부 에너지 공급자 연동
 )
 from app.api.v1.endpoints.partner import tronlink
 
@@ -47,6 +48,7 @@ api_router.include_router(
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
+api_router.include_router(external_energy.router, tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
 # 추후 추가 예정
 # api_router.include_router(users.router, prefix="/users", tags=["users"])
 # api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])

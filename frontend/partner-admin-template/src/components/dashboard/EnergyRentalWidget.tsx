@@ -3,8 +3,8 @@
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+import { Badge } from '../ui/badge'
+import { Progress } from '../ui/progress'
 import { Zap, DollarSign, TrendingUp, Calendar, Settings } from 'lucide-react'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 
