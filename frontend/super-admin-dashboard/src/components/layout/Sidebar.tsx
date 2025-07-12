@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
 import {
-  Bars3Icon,
   XMarkIcon,
   HomeIcon,
   UsersIcon,
@@ -14,6 +13,7 @@ import {
   CogIcon,
   ChartBarIcon,
   ShieldCheckIcon,
+  PresentationChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +23,7 @@ const navigation = [
   { name: 'Energy Management', href: '/energy', icon: BoltIcon },
   { name: 'Fee Management', href: '/fees', icon: CurrencyDollarIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Integrated Dashboard', href: '/integrated-dashboard', icon: PresentationChartBarIcon },
   { name: 'System Admins', href: '/admins', icon: ShieldCheckIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
