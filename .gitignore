@@ -1,1 +1,21 @@
 DantaroWalletPro_backup/
+
+# 자동 생성된 임시 테스트 파일들 무시
+dantarowallet/test_*.py
+dantarowallet/app/models/partners.py
+dantarowallet/app/api/withdrawal_management.py
+dantarowallet/app/services/withdrawal_scheduler.py
+dantarowallet/app/services/energy_rental_service_v2.py
+
+# VS Code 자동 생성 파일들
+**/*.tmp
+**/.vscode/settings.json
+
+# Python 캐시
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Node.js 의존성 (이미 git에 있는 것들 제외)
+**/node_modules/
+**/npm-debug.log*

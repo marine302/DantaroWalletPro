@@ -72,9 +72,3 @@ class Partner(Base):
     
     # Doc-29: 온보딩 자동화 관계
     onboarding = relationship("PartnerOnboarding", back_populates="partner", uselist=False, cascade="all, delete-orphan")
-    
-    # 에너지 렌탈 서비스 관계
-    energy_rental_plans = relationship("EnergyRentalPlan", back_populates="partner", cascade="all, delete-orphan")
-    energy_usage_records = relationship("EnergyUsageRecord", back_populates="partner", cascade="all, delete-orphan")
-    energy_billing_records = relationship("EnergyBillingRecord", back_populates="partner", cascade="all, delete-orphan")
-    energy_rental_allocations = relationship("EnergyAllocation", back_populates="partner", cascade="all, delete-orphan")

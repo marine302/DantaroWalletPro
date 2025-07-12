@@ -6,10 +6,12 @@
 
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, Boolean, Enum, ForeignKey, JSON, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 from decimal import Decimal
 import enum
 from datetime import datetime, timezone
-from app.core.database import Base
+
+Base = declarative_base()
 
 class RentalPlanType(enum.Enum):
     """렌탈 플랜 유형"""
@@ -74,10 +76,10 @@ class EnergyRentalPlan(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     
-    # 관계 - 문자열 참조를 사용하여 순환 참조 방지
-    partner = relationship("Partner", back_populates="energy_rental_plans", lazy="select")
-    usage_records = relationship("EnergyUsageRecord", back_populates="rental_plan", lazy="select")
-    billing_records = relationship("EnergyBillingRecord", back_populates="rental_plan", lazy="select")
+    # 관계
+    # partner = relationship("Partner", back_populates="rental_plans")
+    usage_records = relationship("EnergyUsageRecord", back_populates="rental_plan")
+    billing_records = relationship("EnergyBillingRecord", back_populates="rental_plan")
 
 class EnergyUsageRecord(Base):
     """에너지 사용 기록"""
@@ -105,9 +107,9 @@ class EnergyUsageRecord(Base):
     # 메타데이터
     meta_data = Column(JSON)  # 추가 정보
     
-    # 관계 - 문자열 참조를 사용하여 순환 참조 방지
-    rental_plan = relationship("EnergyRentalPlan", back_populates="usage_records", lazy="select")
-    partner = relationship("Partner", back_populates="energy_usage_records", lazy="select")
+    # 관계
+    rental_plan = relationship("EnergyRentalPlan", back_populates="usage_records")
+    # partner = relationship("Partner", back_populates="energy_usage_records")
 
 class EnergyBillingRecord(Base):
     """에너지 청구 기록"""
@@ -152,9 +154,68 @@ class EnergyBillingRecord(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     
-    # 관계 - 문자열 참조를 사용하여 순환 참조 방지
-    rental_plan = relationship("EnergyRentalPlan", back_populates="billing_records", lazy="select")
-    partner = relationship("Partner", back_populates="energy_billing_records", lazy="select")
+    # 관계
+    rental_plan = relationship("EnergyRentalPlan", back_populates="billing_records")
+    # partner = relationship("Partner", back_populates="energy_billing_records")
+
+class EnergyPool(Base):
+    """에너지 풀 관리"""
+    __tablename__ = "energy_pools"
+    
+    id = Column(Integer, primary_key=True)
+    pool_name = Column(String(100), nullable=False)
+    
+    # 에너지 현황
+    total_energy = Column(Integer, nullable=False)
+    available_energy = Column(Integer, nullable=False)
+    reserved_energy = Column(Integer, default=0)
+    
+    # TRX 스테이킹 정보
+    staked_trx = Column(Numeric(20, 6), nullable=False)
+    stake_address = Column(String(42), nullable=False)
+    
+    # 효율성 지표
+    energy_per_trx = Column(Numeric(10, 6))  # TRX당 에너지
+    daily_energy_generation = Column(Integer)
+    
+    # 상태
+    is_active = Column(Boolean, default=True)
+    last_updated = Column(DateTime, default=datetime.now(timezone.utc))
+    
+    # 임계값 설정
+    low_energy_threshold = Column(Integer, default=1000000)  # 100만 에너지
+    emergency_threshold = Column(Integer, default=500000)   # 50만 에너지
+    
+    # 메타데이터
+    meta_data = Column(JSON)
+
+class EnergyPricing(Base):
+    """에너지 가격 정책"""
+    __tablename__ = "energy_pricing"
+    
+    id = Column(Integer, primary_key=True)
+    pricing_name = Column(String(100), nullable=False)
+    
+    # 가격 설정
+    base_price = Column(Numeric(20, 10), nullable=False)  # 기본 가격
+    
+    # 볼륨 할인
+    volume_discount_tiers = Column(JSON)  # 볼륨별 할인 정책
+    
+    # 시간대별 가격
+    peak_hours_multiplier = Column(Numeric(3, 2), default=Decimal("1.0"))
+    off_peak_hours_multiplier = Column(Numeric(3, 2), default=Decimal("0.8"))
+    
+    # 유효 기간
+    effective_from = Column(DateTime, nullable=False)
+    effective_to = Column(DateTime)
+    
+    # 상태
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    
+    # 메타데이터
+    description = Column(Text)
 
 class EnergyAllocation(Base):
     """에너지 할당 관리"""
@@ -176,9 +237,9 @@ class EnergyAllocation(Base):
     # 상태
     is_active = Column(Boolean, default=True)
     
-    # 관계 - 문자열 참조를 사용하여 순환 참조 방지
-    partner = relationship("Partner", back_populates="energy_rental_allocations", lazy="select")
-    energy_pool = relationship("EnergyPoolModel", lazy="select")
+    # 관계
+    # partner = relationship("Partner", back_populates="energy_allocations")
+    energy_pool = relationship("EnergyPool")
 
 def get_subscription_tier_limits(tier: SubscriptionTier) -> dict:
     """구독 등급별 제한 정보 반환"""

@@ -8,17 +8,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 from decimal import Decimal
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 import logging
 
 from app.models.energy_rental import (
     EnergyRentalPlan, EnergyUsageRecord, EnergyBillingRecord,
-    EnergyAllocation,
+    EnergyPool, EnergyPricing, EnergyAllocation,
     RentalPlanType, SubscriptionTier, UsageStatus, PaymentStatus,
     get_subscription_tier_limits, calculate_energy_cost
 )
 from app.models.partner import Partner
-from app.models.energy_pool import EnergyPoolModel
 from app.exceptions.energy_rental import (
     EnergyRentalException, InsufficientEnergyException,
     InvalidRentalPlanException, PaymentException
@@ -34,7 +33,7 @@ class EnergyRentalService:
     
     def create_rental_plan(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         plan_type: RentalPlanType,
         subscription_tier: Optional[SubscriptionTier] = None,
         **kwargs
@@ -92,7 +91,7 @@ class EnergyRentalService:
     
     def allocate_energy(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         energy_amount: int,
         from_pool_id: Optional[int] = None
     ) -> EnergyAllocation:
@@ -110,16 +109,16 @@ class EnergyRentalService:
         try:
             # 에너지 풀 선택
             if from_pool_id:
-                energy_pool = self.db.query(EnergyPoolModel).filter(
-                    EnergyPoolModel.id == from_pool_id,
-                    EnergyPoolModel.is_active == True
+                energy_pool = self.db.query(EnergyPool).filter(
+                    EnergyPool.id == from_pool_id,
+                    EnergyPool.is_active == True
                 ).first()
             else:
                 # 사용 가능한 에너지가 가장 많은 풀 선택
-                energy_pool = self.db.query(EnergyPoolModel).filter(
-                    EnergyPoolModel.is_active == True,
-                    EnergyPoolModel.available_energy >= energy_amount
-                ).order_by(desc(EnergyPoolModel.available_energy)).first()
+                energy_pool = self.db.query(EnergyPool).filter(
+                    EnergyPool.is_active == True,
+                    EnergyPool.available_energy >= energy_amount
+                ).order_by(desc(EnergyPool.available_energy)).first()
             
             if not energy_pool:
                 raise InsufficientEnergyException(f"할당 가능한 에너지가 부족합니다: {energy_amount}")
@@ -160,7 +159,7 @@ class EnergyRentalService:
     
     def generate_billing_record(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         billing_period_start: datetime,
         billing_period_end: datetime
     ) -> EnergyBillingRecord:
@@ -245,7 +244,7 @@ class EnergyRentalService:
     
     def get_partner_usage_statistics(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         period_start: datetime,
         period_end: datetime
     ) -> Dict[str, Any]:
@@ -323,8 +322,8 @@ class EnergyRentalService:
             에너지 풀 상태 목록
         """
         try:
-            pools = self.db.query(EnergyPoolModel).filter(
-                EnergyPoolModel.is_active == True
+            pools = self.db.query(EnergyPool).filter(
+                EnergyPool.is_active == True
             ).all()
             
             pool_status = []
@@ -358,7 +357,7 @@ class EnergyRentalService:
             logger.error(f"에너지 풀 상태 조회 실패: {str(e)}")
             raise EnergyRentalException(f"에너지 풀 상태 조회 실패: {str(e)}")
     
-    def auto_recharge_check(self, partner_id: Union[int, str]) -> bool:
+    def auto_recharge_check(self, partner_id: int) -> bool:
         """
         자동 재충전 확인 및 실행
         
@@ -399,7 +398,7 @@ class EnergyRentalService:
             logger.error(f"자동 재충전 확인 실패: {str(e)}")
             return False
     
-    def get_partner_remaining_energy(self, partner_id: Union[int, str]) -> int:
+    def get_partner_remaining_energy(self, partner_id: int) -> int:
         """
         파트너의 잔여 에너지 조회
         
@@ -428,7 +427,7 @@ class EnergyRentalService:
     
     def record_energy_usage(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         energy_used: int,
         transaction_hash: str,
         from_address: str,
@@ -539,8 +538,8 @@ class EnergyRentalService:
             업데이트 성공 여부
         """
         try:
-            energy_pool = self.db.query(EnergyPoolModel).filter(
-                EnergyPoolModel.id == pool_id
+            energy_pool = self.db.query(EnergyPool).filter(
+                EnergyPool.id == pool_id
             ).first()
             
             if not energy_pool:
@@ -562,7 +561,7 @@ class EnergyRentalService:
     
     def get_billing_history(
         self,
-        partner_id: Union[int, str],
+        partner_id: int,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
@@ -646,7 +645,7 @@ class EnergyRentalService:
             logger.error(f"결제 상태 업데이트 실패: {str(e)}")
             return False
     
-    def get_partner_energy_allocation(self, partner_id: Union[int, str]) -> Dict[str, Any]:
+    def get_partner_energy_allocation(self, partner_id: int) -> Dict[str, Any]:
         """
         파트너의 에너지 할당 정보 조회
         
@@ -767,16 +766,16 @@ class EnergyRentalService:
         """
         try:
             # 전체 에너지 풀 통계
-            total_pools = self.db.query(EnergyPoolModel).count()
-            active_pools = self.db.query(EnergyPoolModel).filter(EnergyPoolModel.is_active == True).count()
+            total_pools = self.db.query(EnergyPool).count()
+            active_pools = self.db.query(EnergyPool).filter(EnergyPool.is_active == True).count()
             
             # 전체 에너지 통계
-            total_energy = self.db.query(func.sum(EnergyPoolModel.total_energy)).filter(
-                EnergyPoolModel.is_active == True
+            total_energy = self.db.query(func.sum(EnergyPool.total_energy)).filter(
+                EnergyPool.is_active == True
             ).scalar() or 0
             
-            available_energy = self.db.query(func.sum(EnergyPoolModel.available_energy)).filter(
-                EnergyPoolModel.is_active == True
+            available_energy = self.db.query(func.sum(EnergyPool.available_energy)).filter(
+                EnergyPool.is_active == True
             ).scalar() or 0
             
             # 활성 렌탈 플랜 수
