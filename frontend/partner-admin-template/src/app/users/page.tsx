@@ -49,6 +49,21 @@ interface UserStats {
   kyc_pending: number
 }
 
+// 백엔드 응답 타입 (실제 API 응답 구조)
+interface UserStatsResponse {
+  total_users: number
+  active_users: number
+  new_users: number
+  new_users_today: number
+  total_balance: number
+  average_balance: number
+  kyc_approved: number
+  kyc_pending: number
+  daily_growth: number
+  weekly_growth: number
+  activity_rate: number
+}
+
 export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
@@ -142,7 +157,18 @@ export default function UsersPage() {
 
   // 데이터 매핑
   const users = (usersData as { users?: User[] })?.users || fallbackUsers;
-  const stats = (statsData as UserStats) || fallbackStats;
+  
+  // 백엔드 응답을 프론트엔드 UserStats 형식으로 변환
+  const statsResponse = statsData as UserStatsResponse | null;
+  const stats: UserStats = statsResponse ? {
+    total_users: statsResponse.total_users || 0,
+    active_users: statsResponse.active_users || 0,
+    new_users_today: statsResponse.new_users_today || 0,
+    total_balance: statsResponse.total_balance || 0,
+    average_balance: statsResponse.average_balance || 0,
+    kyc_approved: statsResponse.kyc_approved || 0,
+    kyc_pending: statsResponse.kyc_pending || 0
+  } : fallbackStats;
 
   const getStatusBadge = (status: string) => {
     const variants = {

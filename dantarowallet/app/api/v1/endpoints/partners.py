@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, or_, and_
 from decimal import Decimal
 
-from app.core.database import get_db
+from app.core.database import get_sync_db
 from app.models.partner import Partner
 from app.models.user import User
 from app.models.wallet import Wallet
@@ -27,7 +27,7 @@ async def get_partners(
     status: Optional[str] = None,
     sort_by: str = Query("created_at", regex="^(created_at|name|total_volume|last_activity)$"),
     sort_order: str = Query("desc", regex="^(asc|desc)$"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_sync_db)
 ):
     """
     파트너 목록 조회 (페이지네이션, 필터링, 정렬 지원)
@@ -105,7 +105,7 @@ async def get_partners(
 
 
 @router.get("/partners/{partner_id}")
-async def get_partner_detail(partner_id: int, db: Session = Depends(get_db)):
+async def get_partner_detail(partner_id: int, db: Session = Depends(get_sync_db)):
     """
     파트너 상세 정보 조회
     """
@@ -189,7 +189,7 @@ async def get_partner_detail(partner_id: int, db: Session = Depends(get_db)):
 async def update_partner_status(
     partner_id: int,
     status: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_sync_db)
 ):
     """
     파트너 상태 업데이트
@@ -223,7 +223,7 @@ async def update_partner_status(
 async def update_partner_fee_rate(
     partner_id: int,
     fee_rate: float,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_sync_db)
 ):
     """
     파트너 수수료율 업데이트
@@ -264,7 +264,7 @@ async def update_partner_fee_rate(
 async def get_partner_revenue_analytics(
     partner_id: Optional[int] = None,
     days: int = Query(30, ge=1, le=365),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_sync_db)
 ):
     """
     파트너 수익 분석 조회
@@ -308,7 +308,7 @@ async def get_top_performing_partners(
     limit: int = Query(10, ge=1, le=50),
     metric: str = Query("volume", regex="^(volume|transactions|revenue)$"),
     days: int = Query(30, ge=1, le=365),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_sync_db)
 ):
     """
     상위 성과 파트너 조회

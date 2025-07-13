@@ -5,7 +5,7 @@
  */
 
 // 기본 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 const API_VERSION = '/api/v1';
 
 // API 오류 타입
@@ -45,6 +45,7 @@ class HttpClient {
     data?: Record<string, unknown>
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    console.log(`Making ${method} request to:`, url);
     
     try {
       const response = await fetch(url, {
@@ -562,7 +563,7 @@ export const usersApi = {
     if (params.status) queryParams.append('status', params.status);
     
     const query = queryParams.toString();
-    return httpClient.get(`/users${query ? '?' + query : ''}`);
+    return httpClient.get(`/users/${query ? '?' + query : ''}`);
   },
 
   // 사용자 상세 조회

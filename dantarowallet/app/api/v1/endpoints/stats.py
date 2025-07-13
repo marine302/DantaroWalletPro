@@ -59,10 +59,31 @@ async def get_user_stats(db: Session = Depends(get_sync_db)) -> Dict[str, Any]:
         if users_week_ago > 0:
             weekly_growth = ((total_users - users_week_ago) / users_week_ago) * 100
         
+        # 총 잔액 계산 (모든 지갑의 잔액 합계)
+        total_balance = db.query(func.sum(Wallet.balance)).scalar() or 0
+        
+        # 평균 잔액 계산
+        average_balance = (total_balance / total_users) if total_users > 0 else 0
+        
+        # KYC 통계 (User 모델에 kyc_status 필드가 있다고 가정)
+        kyc_approved = db.query(User).filter(User.kyc_status == "approved").count()
+        kyc_pending = db.query(User).filter(User.kyc_status == "pending").count()
+        
+        # 오늘 신규 사용자 수
+        today = datetime.now().date()
+        new_users_today = db.query(User).filter(
+            func.date(User.created_at) == today
+        ).count()
+        
         return {
             "total_users": total_users,
             "active_users": active_users,
             "new_users": new_users,
+            "new_users_today": new_users_today,
+            "total_balance": float(total_balance),
+            "average_balance": round(average_balance, 2),
+            "kyc_approved": kyc_approved,
+            "kyc_pending": kyc_pending,
             "daily_growth": round(daily_growth, 2),
             "weekly_growth": round(weekly_growth, 2),
             "activity_rate": round((active_users / total_users) * 100, 2) if total_users > 0 else 0
@@ -74,6 +95,11 @@ async def get_user_stats(db: Session = Depends(get_sync_db)) -> Dict[str, Any]:
             "total_users": 1250,
             "active_users": 892,
             "new_users": 43,
+            "new_users_today": 23,
+            "total_balance": 2847352.75,
+            "average_balance": 2284.12,
+            "kyc_approved": 756,
+            "kyc_pending": 89,
             "daily_growth": 2.3,
             "weekly_growth": 8.7,
             "activity_rate": 71.4

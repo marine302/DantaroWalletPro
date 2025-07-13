@@ -73,9 +73,12 @@ export const useUserStats = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
+        console.log('Fetching user stats...');
         const result = await api.users.getUserStats();
+        console.log('User stats result:', result);
         setData(result);
       } catch (err) {
+        console.error('Error fetching user stats:', err);
         setError(err as Error);
       } finally {
         setLoading(false);
