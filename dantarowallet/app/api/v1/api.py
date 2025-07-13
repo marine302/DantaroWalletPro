@@ -32,6 +32,9 @@ from app.api.v1.endpoints import (
     tronlink,  # TronLink 연동 (메인 엔드포인트)
 )
 
+# 슈퍼어드민 전용 API 임포트
+from app.api.v1.endpoints.admin import energy_management  # Doc #17: 슈퍼어드민 에너지 관리
+
 # 기능별 라우터 등록
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(balance.router, prefix="/balance", tags=["balance"])
@@ -53,6 +56,7 @@ api_router.include_router(
 )
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+api_router.include_router(energy_management.router, tags=["super_admin_energy"])  # Doc #17: 슈퍼어드민 에너지 관리
 api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
 api_router.include_router(external_energy.router, tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
 api_router.include_router(integrated_dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # Doc #37(34): 파트너사 종합 대시보드
