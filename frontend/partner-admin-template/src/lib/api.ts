@@ -5,7 +5,7 @@
  */
 
 // 기본 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const API_VERSION = '/api/v1';
 
 // API 오류 타입

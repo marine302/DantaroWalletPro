@@ -82,6 +82,8 @@ async def get_partners(
             total_transactions = tx_stats[0] if tx_stats and tx_stats[0] else 0
             total_volume = float(tx_stats[1]) if tx_stats and tx_stats[1] else 0.0
             
+            last_activity_value = getattr(partner, 'last_activity_at', None)
+            
             result.append({
                 "id": partner.id,
                 "name": partner.name,
@@ -93,7 +95,7 @@ async def get_partners(
                 "total_users": user_count,
                 "total_transactions": total_transactions,
                 "total_volume": total_volume,
-                "last_activity": partner.last_activity_at.isoformat() if partner.last_activity_at else None,
+                "last_activity": last_activity_value.isoformat() if last_activity_value is not None else None,
                 "created_at": partner.created_at.isoformat(),
                 "tier": getattr(partner, 'tier', 'standard')
             })

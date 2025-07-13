@@ -210,20 +210,20 @@ async def get_dashboard_overview(db: Session = Depends(get_sync_db)) -> Dict[str
             "energy": {
                 "total_energy": int(total_energy),
                 "available_energy": int(available_energy),
-                "stake_amount": float(frozen_trx),
+                "stake_amount": float(frozen_trx) if frozen_trx is not None else 0.0,
                 "usage_rate": round(((total_energy - available_energy) / total_energy) * 100, 1) if total_energy > 0 else 0,
                 "status": "active" if available_energy > (total_energy * 0.2) else "warning"
             },
             "recent_transactions": [
                 {
                     "id": tx.id,
-                    "type": tx.type,
-                    "amount": float(tx.amount),
-                    "currency": tx.currency,
-                    "status": tx.status,
-                    "created_at": tx.created_at.isoformat(),
-                    "from_address": tx.from_address,
-                    "to_address": tx.to_address
+                    "type": getattr(tx, 'type', 'unknown'),
+                    "amount": float(tx.amount) if hasattr(tx, 'amount') and tx.amount is not None else 0.0,
+                    "currency": getattr(tx, 'currency', 'TRX'),
+                    "status": getattr(tx, 'status', 'pending'),
+                    "created_at": tx.created_at.isoformat() if hasattr(tx, 'created_at') else None,
+                    "from_address": getattr(tx, 'from_address', None),
+                    "to_address": getattr(tx, 'to_address', None)
                 } for tx in recent_transactions
             ]
         }

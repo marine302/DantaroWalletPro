@@ -79,23 +79,28 @@ async def get_energy_pools(
         result = []
         for pool in pools:
             # 사용률 계산
-            usage_rate = 0
-            if pool.total_energy > 0:
-                usage_rate = round(((pool.total_energy - pool.available_energy) / pool.total_energy) * 100, 2)
+            usage_rate = 0.0
+            total_energy = getattr(pool, 'total_energy', 0) or 0
+            available_energy = getattr(pool, 'available_energy', 0) or 0
+            if total_energy > 0:
+                usage_rate = round(((total_energy - available_energy) / total_energy) * 100, 2)
             
             # 최근 사용 로그
             recent_usage = db.query(EnergyUsageLog).filter(
                 EnergyUsageLog.pool_id == pool.id
             ).order_by(desc(EnergyUsageLog.used_at)).limit(5).all()
             
+            frozen_trx_value = getattr(pool, 'frozen_trx', 0)
+            frozen_trx = float(frozen_trx_value) if frozen_trx_value is not None else 0.0
+            
             result.append({
                 "id": pool.id,
                 "pool_name": pool.pool_name,
                 "owner_address": pool.owner_address,
-                "frozen_trx": float(pool.frozen_trx),
-                "total_energy": pool.total_energy,
-                "available_energy": pool.available_energy,
-                "used_energy": pool.used_energy,
+                "frozen_trx": frozen_trx,
+                "total_energy": total_energy,
+                "available_energy": available_energy,
+                "used_energy": getattr(pool, 'used_energy', 0) or 0,
                 "usage_rate": usage_rate,
                 "status": pool.status,
                 "low_threshold": float(getattr(pool, 'low_threshold', 20.0)),
