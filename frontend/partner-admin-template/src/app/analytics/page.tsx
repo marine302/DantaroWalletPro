@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -183,7 +184,8 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6 text-foreground">
+    <Sidebar>
+      <div className="space-y-6 text-foreground">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -464,6 +466,7 @@ export default function AnalyticsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   )
 }

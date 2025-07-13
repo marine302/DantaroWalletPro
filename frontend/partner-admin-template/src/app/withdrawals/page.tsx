@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -195,7 +196,8 @@ export default function WithdrawalsPage() {
   }
 
   return (
-    <div className="space-y-6 text-foreground">
+    <Sidebar>
+      <div className="space-y-6 text-foreground">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -410,6 +412,7 @@ export default function WithdrawalsPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   )
 }

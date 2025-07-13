@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -189,7 +190,8 @@ export default function UsersPage() {
   const error = usersError || statsError
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Sidebar>
+      <div className="container mx-auto p-6 space-y-6">
       {/* 페이지 헤더 */}
       <div className="flex justify-between items-center">
         <div>
@@ -514,6 +516,7 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Sidebar>
   )
 }
