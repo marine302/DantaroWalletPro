@@ -90,8 +90,8 @@ export default function WithdrawalsPage() {
       return fallbackWithdrawals;
     }
     // API 응답 데이터를 WithdrawalRequest[] 형식으로 변환
-    const apiWithdrawals = (withdrawalsData as unknown as any)?.data || 
-                          (withdrawalsData as unknown as any)?.items || 
+    const apiWithdrawals = (withdrawalsData as { data?: WithdrawalRequest[] })?.data || 
+                          (withdrawalsData as { items?: WithdrawalRequest[] })?.items || 
                           withdrawalsData;
     return Array.isArray(apiWithdrawals) ? apiWithdrawals : fallbackWithdrawals;
   }, [withdrawalsData, error, fallbackWithdrawals]);

@@ -8,7 +8,6 @@ import { Progress } from '../ui/progress'
 import { Zap, DollarSign, TrendingUp, Calendar, Settings, Loader2 } from 'lucide-react'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import { useEnergyPoolStatus } from '@/lib/hooks'
-import api from '@/lib/api'
 
 interface EnergyRentalData {
   plan_type: 'subscription' | 'pay_per_use' | 'hybrid'
@@ -103,10 +102,6 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
 
     loadRentalData();
   }, [partnerId]);
-    };
-
-    loadRentalData();
-  }, []);
 
   // 로딩 상태
   if (loading || isLoadingRental || !rentalUsage) {
