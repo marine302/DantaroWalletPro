@@ -146,7 +146,7 @@ async def get_partner_detail(partner_id: int, db: Session = Depends(get_sync_db)
                 "webhook_url": getattr(partner, 'webhook_url', None),
                 "fee_rate": float(getattr(partner, 'fee_rate', 0)),
                 "created_at": partner.created_at.isoformat(),
-                "last_activity": partner.last_activity_at.isoformat() if partner.last_activity_at else None,
+                "last_activity": (lambda la: la.isoformat() if la else None)(getattr(partner, 'last_activity_at', None)),
                 "tier": getattr(partner, 'tier', 'standard'),
                 "settings": getattr(partner, 'settings', {})
             },
@@ -160,7 +160,7 @@ async def get_partner_detail(partner_id: int, db: Session = Depends(get_sync_db)
                 {
                     "id": tx.id,
                     "type": tx.type,
-                    "amount": float(tx.amount),
+                    "amount": float(getattr(tx, 'amount', 0)),
                     "currency": tx.currency,
                     "status": tx.status,
                     "created_at": tx.created_at.isoformat(),
@@ -205,7 +205,8 @@ async def update_partner_status(
         if status not in valid_statuses:
             raise HTTPException(status_code=400, detail="유효하지 않은 상태입니다")
         
-        partner.status = status
+        if hasattr(partner, 'status'):
+            setattr(partner, 'status', status)
         db.commit()
         
         return {
@@ -245,7 +246,8 @@ async def update_partner_fee_rate(
             # 필드가 없으면 설정 JSON에 저장
             settings = getattr(partner, 'settings', {})
             settings['fee_rate'] = fee_rate
-            partner.settings = settings
+            if hasattr(partner, 'settings'):
+                setattr(partner, 'settings', settings)
         
         db.commit()
         

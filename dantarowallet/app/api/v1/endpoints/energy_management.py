@@ -128,8 +128,10 @@ async def get_energy_pool_detail(pool_id: int, db: Session = Depends(get_sync_db
         
         # 사용률 계산
         usage_rate = 0
-        if pool.total_energy > 0:
-            usage_rate = round(((pool.total_energy - pool.available_energy) / pool.total_energy) * 100, 2)
+        total_energy = float(getattr(pool, 'total_energy', 0))
+        available_energy = float(getattr(pool, 'available_energy', 0))
+        if total_energy > 0:
+            usage_rate = round(((total_energy - available_energy) / total_energy) * 100, 2)
         
         # 최근 사용 로그 (최근 50개)
         usage_logs = db.query(EnergyUsageLog).filter(
@@ -170,7 +172,7 @@ async def get_energy_pool_detail(pool_id: int, db: Session = Depends(get_sync_db
                 "id": pool.id,
                 "pool_name": pool.pool_name,
                 "owner_address": pool.owner_address,
-                "frozen_trx": float(pool.frozen_trx),
+                "frozen_trx": float(getattr(pool, 'frozen_trx', 0)) if getattr(pool, 'frozen_trx', None) is not None else 0.0,
                 "total_energy": pool.total_energy,
                 "available_energy": pool.available_energy,
                 "used_energy": pool.used_energy,
@@ -280,12 +282,12 @@ async def update_energy_pool(
             update_fields['frozen_trx'] = pool_data.frozen_trx
         if pool_data.total_energy is not None:
             # 총 에너지 변경 시 사용 가능 에너지도 비례하여 조정
-            old_total = pool.total_energy
+            old_total = float(getattr(pool, 'total_energy', 0))
             new_total = pool_data.total_energy
             if old_total > 0:
                 ratio = new_total / old_total
                 update_fields['total_energy'] = new_total
-                update_fields['available_energy'] = int(pool.available_energy * ratio)
+                update_fields['available_energy'] = int(float(getattr(pool, 'available_energy', 0)) * ratio)
         if pool_data.low_threshold is not None:
             update_fields['low_threshold'] = pool_data.low_threshold
         if pool_data.critical_threshold is not None:
@@ -327,14 +329,17 @@ async def delete_energy_pool(pool_id: int, db: Session = Depends(get_sync_db)):
             raise HTTPException(status_code=404, detail="에너지 풀을 찾을 수 없습니다")
         
         # 활성 상태인지 확인
-        if pool.status == "active" and pool.available_energy > 0:
+        pool_status = getattr(pool, 'status', '')
+        available_energy = float(getattr(pool, 'available_energy', 0))
+        if pool_status == "active" and available_energy > 0:
             raise HTTPException(
                 status_code=400, 
                 detail="활성 상태이고 사용 가능한 에너지가 있어 삭제할 수 없습니다"
             )
         
         # 소프트 삭제
-        pool.status = "deleted"
+        if hasattr(pool, 'status'):
+            setattr(pool, 'status', "deleted")
         if hasattr(pool, 'deleted_at'):
             setattr(pool, 'deleted_at', datetime.now())
         

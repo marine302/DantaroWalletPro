@@ -91,7 +91,8 @@ async def get_transactions(
         result = []
         for tx in transactions:
             # 사용자 정보 조회
-            user = db.query(User).filter(User.id == tx.user_id).first() if tx.user_id else None
+            user_id = getattr(tx, 'user_id', None)
+            user = db.query(User).filter(User.id == user_id).first() if user_id else None
             
             # 파트너 정보 조회
             partner = db.query(Partner).filter(Partner.id == tx.partner_id).first() if tx.partner_id else None
@@ -100,7 +101,7 @@ async def get_transactions(
                 "id": tx.id,
                 "tx_hash": getattr(tx, 'tx_hash', None),
                 "type": tx.type,
-                "amount": float(tx.amount),
+                "amount": float(getattr(tx, 'amount', 0)),
                 "currency": tx.currency,
                 "status": tx.status,
                 "from_address": tx.from_address,
@@ -109,7 +110,7 @@ async def get_transactions(
                 "energy_used": getattr(tx, 'energy_used', 0),
                 "bandwidth_used": getattr(tx, 'bandwidth_used', 0),
                 "created_at": tx.created_at.isoformat(),
-                "updated_at": tx.updated_at.isoformat() if tx.updated_at else None,
+                "updated_at": (lambda ua: ua.isoformat() if ua else None)(getattr(tx, 'updated_at', None)),
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -139,7 +140,8 @@ async def get_transaction_detail(transaction_id: int, db: Session = Depends(get_
             raise HTTPException(status_code=404, detail="거래를 찾을 수 없습니다")
         
         # 사용자 정보 조회
-        user = db.query(User).filter(User.id == tx.user_id).first() if tx.user_id else None
+        user_id = getattr(tx, 'user_id', None)
+        user = db.query(User).filter(User.id == user_id).first() if user_id else None
         
         # 파트너 정보 조회
         partner = db.query(Partner).filter(Partner.id == tx.partner_id).first() if tx.partner_id else None
@@ -149,7 +151,7 @@ async def get_transaction_detail(transaction_id: int, db: Session = Depends(get_
                 "id": tx.id,
                 "tx_hash": getattr(tx, 'tx_hash', None),
                 "type": tx.type,
-                "amount": float(tx.amount),
+                "amount": float(getattr(tx, 'amount', 0)),
                 "currency": tx.currency,
                 "status": tx.status,
                 "from_address": tx.from_address,
@@ -158,7 +160,7 @@ async def get_transaction_detail(transaction_id: int, db: Session = Depends(get_
                 "energy_used": getattr(tx, 'energy_used', 0),
                 "bandwidth_used": getattr(tx, 'bandwidth_used', 0),
                 "created_at": tx.created_at.isoformat(),
-                "updated_at": tx.updated_at.isoformat() if tx.updated_at else None,
+                "updated_at": (lambda ua: ua.isoformat() if ua else None)(getattr(tx, 'updated_at', None)),
                 "confirmation_count": getattr(tx, 'confirmation_count', 0),
                 "block_number": getattr(tx, 'block_number', None),
                 "gas_limit": getattr(tx, 'gas_limit', None),
@@ -342,7 +344,8 @@ async def get_failed_transactions(
         result = []
         for tx in failed_transactions:
             # 사용자 정보 조회
-            user = db.query(User).filter(User.id == tx.user_id).first() if tx.user_id else None
+            user_id = getattr(tx, 'user_id', None)
+            user = db.query(User).filter(User.id == user_id).first() if user_id else None
             
             # 파트너 정보 조회
             partner = db.query(Partner).filter(Partner.id == tx.partner_id).first() if tx.partner_id else None
@@ -351,7 +354,7 @@ async def get_failed_transactions(
                 "id": tx.id,
                 "tx_hash": getattr(tx, 'tx_hash', None),
                 "type": tx.type,
-                "amount": float(tx.amount),
+                "amount": float(getattr(tx, 'amount', 0)),
                 "currency": tx.currency,
                 "from_address": tx.from_address,
                 "to_address": tx.to_address,
@@ -387,12 +390,15 @@ async def retry_failed_transaction(
         if not tx:
             raise HTTPException(status_code=404, detail="거래를 찾을 수 없습니다")
         
-        if tx.status != "failed":
+        tx_status = getattr(tx, 'status', '')
+        if tx_status != "failed":
             raise HTTPException(status_code=400, detail="실패한 거래만 재시도할 수 있습니다")
         
         # 거래 상태를 pending으로 변경
-        tx.status = "pending"
-        tx.updated_at = datetime.now()
+        if hasattr(tx, 'status'):
+            setattr(tx, 'status', "pending")
+        if hasattr(tx, 'updated_at'):
+            setattr(tx, 'updated_at', datetime.now())
         db.commit()
         
         # 여기서 실제 거래 재시도 로직을 구현해야 함

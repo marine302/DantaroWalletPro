@@ -272,7 +272,7 @@ async def get_user_detail(user_id: int, db: Session = Depends(get_sync_db)):
                 {
                     "id": tx.id,
                     "type": getattr(tx, 'type', 'unknown'),
-                    "amount": float(tx.amount) if hasattr(tx, 'amount') and tx.amount is not None else 0.0,
+                    "amount": float(getattr(tx, 'amount', 0)) if hasattr(tx, 'amount') and getattr(tx, 'amount', None) is not None else 0.0,
                     "currency": getattr(tx, 'currency', 'TRX'),
                     "status": getattr(tx, 'status', 'pending'),
                     "created_at": tx.created_at.isoformat() if hasattr(tx, 'created_at') else None,

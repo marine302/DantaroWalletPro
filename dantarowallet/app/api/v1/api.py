@@ -14,12 +14,12 @@ from app.api.v1.endpoints import (
     auth,
     balance,
     deposit,
-    energy,  # Doc #25: 에너지 풀 고급 관리 시스템
+    energy,  # Doc #25: 에너지 풀 고급 관리 시스템 - 오류 수정 완료
     fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
-    partners,  # 파트너 관리 API 엔드포인트
+    partners,  # 파트너 관리 API 엔드포인트 - 오류 수정 완료
     sweep,  # Doc #27: 입금 Sweep 자동화 시스템
     stats,  # 통계 API 엔드포인트
-    transactions,  # 거래 관리 API 엔드포인트
+    transactions,  # 거래 관리 API 엔드포인트 - 오류 수정 완료
     users,  # 사용자 관리 API 엔드포인트
     transaction_analytics,
     wallet,
@@ -41,13 +41,13 @@ api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withd
 api_router.include_router(withdrawal_management.router, prefix="/withdrawal-management", tags=["withdrawal_management"])  # Doc #28: 파트너사 출금 관리 고도화
 api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding", tags=["partner_onboarding"])  # Doc #29: 파트너사 온보딩 자동화
 api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])  # 메인 TronLink 엔드포인트 사용
-api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리 (통합)
+api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리 (통합) - 오류 수정 완료
 api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
 api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Doc #27: 입금 Sweep 자동화 시스템
 api_router.include_router(stats.router, tags=["statistics"])  # 통계 API
 api_router.include_router(users.router, prefix="/users", tags=["users"])  # 사용자 관리 API
-api_router.include_router(partners.router, prefix="/partners", tags=["partners"])  # 파트너 관리 API
-api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # 거래 관리 API
+api_router.include_router(partners.router, prefix="/partners", tags=["partners"])  # 파트너 관리 API - 오류 수정 완료
+api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # 거래 관리 API - 오류 수정 완료
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )
