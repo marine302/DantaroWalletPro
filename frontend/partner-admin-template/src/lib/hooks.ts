@@ -38,8 +38,8 @@ export const useTronLinkStatus = () => {
   return { data, loading, error };
 };
 
-// 에너지 풀 상태 훅
-export const useEnergyPoolStatus = () => {
+// 에너지 풀 상태 훅 - 실제 API에 맞게 수정
+export const useEnergyPoolStatus = (partnerId: number = 1) => {
   const [data, setData] = React.useState<unknown>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<Error | null>(null);
@@ -48,19 +48,21 @@ export const useEnergyPoolStatus = () => {
     const fetchStatus = async () => {
       try {
         setLoading(true);
-        const result = await api.energy.getPoolStatus();
+        // 실제 에너지 모니터링 API 호출 (에너지 풀 상태 대신)
+        const result = await api.energy.getMonitoringData(partnerId);
         setData(result);
       } catch (err) {
         setError(err as Error);
+        console.error('에너지 모니터링 데이터 로드 실패:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 5000); // 5초마다 갱신
+    const interval = setInterval(fetchStatus, 30000); // 30초마다 갱신
     return () => clearInterval(interval);
-  }, []);
+  }, [partnerId]);
 
   return { data, loading, error };
 };

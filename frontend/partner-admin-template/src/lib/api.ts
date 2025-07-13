@@ -199,32 +199,37 @@ export const partnerApi = {
 };
 
 // =============================================================================
-// 에너지 풀 관리 API (Doc-26)
+// 에너지 풀 관리 API (Doc-25, Doc-26) - 실제 백엔드 엔드포인트에 맞게 수정
 // =============================================================================
 export const energyApi = {
-  // 에너지 풀 상태
-  async getPoolStatus() {
-    return httpClient.get('/energy/pool/status');
+  // 파트너 에너지 실시간 모니터링 (실제 엔드포인트: /api/v1/energy/monitor/{partner_id})
+  async getMonitoringData(partnerId: number) {
+    return httpClient.get(`/energy/monitor/${partnerId}`);
   },
 
-  // 에너지 사용량 통계
-  async getUsageStats(period = '24h') {
-    return httpClient.get(`/energy/usage/stats?period=${period}`);
+  // 에너지 분석 (실제 엔드포인트: /api/v1/energy/analytics/{partner_id})
+  async getAnalytics(partnerId: number) {
+    return httpClient.get(`/energy/analytics/${partnerId}`);
   },
 
-  // 에너지 구매
-  async purchaseEnergy(amount: number) {
-    return httpClient.post('/energy/purchase', { amount });
+  // 에너지 대시보드 (실제 엔드포인트: /api/v1/energy/dashboard/{partner_id})
+  async getDashboard(partnerId: number) {
+    return httpClient.get(`/energy/dashboard/${partnerId}`);
   },
 
-  // 에너지 임대 설정
-  async getRentalSettings() {
-    return httpClient.get('/energy/rental/settings');
+  // 에너지 패턴 분석 (실제 엔드포인트: /api/v1/energy/patterns/{partner_id})
+  async getPatterns(partnerId: number) {
+    return httpClient.get(`/energy/patterns/${partnerId}`);
   },
 
-  // 실시간 모니터링 데이터
-  async getRealtimeData() {
-    return httpClient.get('/energy/realtime');
+  // 에너지 알림 목록 (실제 엔드포인트: /api/v1/energy/alerts/{partner_id})
+  async getAlerts(partnerId: number) {
+    return httpClient.get(`/energy/alerts/${partnerId}`);
+  },
+
+  // 글로벌 에너지 분석 (실제 엔드포인트: /api/v1/energy/global/analytics)
+  async getGlobalAnalytics() {
+    return httpClient.get('/energy/global/analytics');
   }
 };
 
@@ -348,41 +353,42 @@ export const auditApi = {
 };
 
 // =============================================================================
-// 에너지 렌탈 서비스 API (Doc-31)
+// 에너지 렌탈 서비스 API (Doc-31) - 실제 백엔드 엔드포인트에 맞게 수정
 // =============================================================================
 export const energyRentalApi = {
-  // 렌탈 플랜 조회
+  // 활성 렌탈 플랜 조회 (실제 엔드포인트: /api/v1/energy-rental/rental-plans)
   async getPlans() {
-    return httpClient.get('/energy-rental/plans');
+    return httpClient.get('/energy-rental/rental-plans');
   },
 
-  // 현재 플랜 정보
-  async getCurrentPlan() {
-    return httpClient.get('/energy-rental/current-plan');
+  // 파트너 사용 통계 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/usage-statistics)
+  async getUsageStats(partnerId: number, period = '30d') {
+    return httpClient.get(`/energy-rental/partner/${partnerId}/usage-statistics?period=${period}`);
   },
 
-  // 플랜 변경
-  async changePlan(planId: string) {
-    return httpClient.post('/energy-rental/change-plan', { plan_id: planId });
+  // 파트너 청구 이력 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/billing-history)
+  async getBillingHistory(partnerId: number) {
+    return httpClient.get(`/energy-rental/partner/${partnerId}/billing-history`);
   },
 
-  // 사용량 통계
-  async getUsageStats(period = '30d') {
-    return httpClient.get(`/energy-rental/usage?period=${period}`);
+  // 파트너 에너지 할당 정보 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/energy-allocation)
+  async getCurrentPlan(partnerId: number) {
+    return httpClient.get(`/energy-rental/partner/${partnerId}/energy-allocation`);
   },
 
-  // 비용 분석
-  async getCostAnalysis() {
-    return httpClient.get('/energy-rental/cost-analysis');
+  // 에너지 풀 상태 (실제 엔드포인트: /api/v1/energy-rental/energy-pools/status)
+  async getPoolStatus() {
+    return httpClient.get('/energy-rental/energy-pools/status');
   },
 
-  // 자동 결제 설정
-  async getAutoPaymentSettings() {
-    return httpClient.get('/energy-rental/auto-payment');
+  // 시스템 상태 (실제 엔드포인트: /api/v1/energy-rental/system/status)
+  async getSystemStatus() {
+    return httpClient.get('/energy-rental/system/status');
   },
 
-  async updateAutoPaymentSettings(settings: Record<string, unknown>) {
-    return httpClient.put('/energy-rental/auto-payment', settings);
+  // 비용 분석 (청구 이력에서 계산)
+  async getCostAnalysis(partnerId: number) {
+    return this.getBillingHistory(partnerId);
   }
 };
 

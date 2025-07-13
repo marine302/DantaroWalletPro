@@ -28,7 +28,8 @@ interface EnergyRentalWidgetProps {
 
 export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 실제 API에서 데이터 가져오기 (Doc-31 에너지 렌탈 서비스)
-  const { loading, error } = useEnergyPoolStatus();
+  const partnerId = 1; // 실제로는 현재 로그인된 파트너 ID
+  const { loading, error } = useEnergyPoolStatus(partnerId);
   
   // 에너지 렌탈 사용량 데이터 추가 로드
   const [rentalUsage, setRentalUsage] = React.useState<EnergyRentalData | null>(null);
@@ -39,9 +40,9 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
       try {
         // Doc-31 API 사용: 현재 렌탈 플랜과 사용량 조회
         const [currentPlan, usageStats, costAnalysis] = await Promise.all([
-          api.energyRental.getCurrentPlan(),
-          api.energyRental.getUsageStats('30d'),
-          api.energyRental.getCostAnalysis()
+          api.energyRental.getCurrentPlan(partnerId),
+          api.energyRental.getUsageStats(partnerId, '30d'),
+          api.energyRental.getCostAnalysis(partnerId)
         ]);
         
         // API 타입이 정의되지 않아서 임시로 unknown 사용
