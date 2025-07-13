@@ -8,7 +8,6 @@ import { StatCard } from '@/components/ui/StatCard';
 import { Table } from '@/components/ui/Table';
 import { apiClient } from '@/lib/api';
 import { formatCurrency, formatNumber, getStatusColor } from '@/lib/utils';
-import { Partner } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();

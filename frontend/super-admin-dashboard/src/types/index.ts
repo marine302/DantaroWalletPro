@@ -1,3 +1,6 @@
+// Common types
+export type ExtraData = Record<string, string | number | boolean | null>;
+
 // Partner related types
 export interface Partner {
   id: number;
@@ -6,10 +9,11 @@ export interface Partner {
   domain: string;
   api_key: string;
   webhook_url?: string;
+  contact_email?: string;
   status: 'active' | 'inactive' | 'suspended';
   created_at: string;
   updated_at: string;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 export interface PartnerConfig {
@@ -20,7 +24,7 @@ export interface PartnerConfig {
   max_withdrawal_amount: number;
   daily_withdrawal_limit: number;
   energy_allocation: number;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
   created_at: string;
   updated_at: string;
 }
@@ -34,7 +38,7 @@ export interface PartnerDailyStatistics {
   total_fees: number;
   new_wallets: number;
   active_wallets: number;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 // Energy Pool types
@@ -48,7 +52,7 @@ export interface EnergyPool {
   auto_recharge_enabled: boolean;
   min_energy_threshold: number;
   recharge_amount: number;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 export interface EnergyTransaction {
@@ -59,7 +63,7 @@ export interface EnergyTransaction {
   transaction_hash?: string;
   status: 'pending' | 'confirmed' | 'failed';
   created_at: string;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 // Fee Configuration types
@@ -73,7 +77,7 @@ export interface FeeConfig {
   is_active: boolean;
   valid_from: string;
   valid_until?: string;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 export interface FeeRevenue {
@@ -85,7 +89,7 @@ export interface FeeRevenue {
   currency: string;
   transaction_hash?: string;
   created_at: string;
-  extra_data?: Record<string, any>;
+  extra_data?: ExtraData;
 }
 
 // System Admin types

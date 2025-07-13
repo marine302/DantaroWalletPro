@@ -21,7 +21,7 @@ export default function PartnersPage() {
       
       // 백엔드 API 호출
       const response = await apiClient.getPartners();
-      setPartners(response.data || []);
+      setPartners(response.items || []);
     } catch (err) {
       console.error('Failed to fetch partners:', err);
       setError('파트너 목록을 불러오는데 실패했습니다.');
