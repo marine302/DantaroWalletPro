@@ -119,6 +119,134 @@ export const useAnalyticsDashboard = () => {
   return { data, loading, error };
 };
 
+// 수익 분석 훅
+export const useRevenueAnalytics = (period: string = '30d') => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.analytics.getRevenueAnalytics(period);
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [period]);
+
+  return { data, loading, error };
+};
+
+// 거래 분석 훅
+export const useTransactionAnalytics = (period: string = '7d') => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.analytics.getTransactionAnalytics(period);
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [period]);
+
+  return { data, loading, error };
+};
+
+// 사용자 활동 분석 훅
+export const useUserActivityAnalytics = () => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.analytics.getUserActivityAnalytics();
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 60000); // 1분마다 갱신
+    return () => clearInterval(interval);
+  }, []);
+
+  return { data, loading, error };
+};
+
+// 비용 분석 훅
+export const useCostAnalytics = () => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.analytics.getCostAnalytics();
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 60000); // 1분마다 갱신
+    return () => clearInterval(interval);
+  }, []);
+
+  return { data, loading, error };
+};
+
+// 종합 분석 데이터 훅 (모든 분석 데이터를 통합)
+export const useComprehensiveAnalytics = (period: string = '30d') => {
+  const { data: dashboardData, loading: dashboardLoading, error: dashboardError } = useAnalyticsDashboard();
+  const { data: revenueData, loading: revenueLoading, error: revenueError } = useRevenueAnalytics(period);
+  const { data: transactionData, loading: transactionLoading, error: transactionError } = useTransactionAnalytics(period);
+  const { data: userData, loading: userLoading, error: userError } = useUserActivityAnalytics();
+  const { data: costData, loading: costLoading, error: costError } = useCostAnalytics();
+
+  const loading = dashboardLoading || revenueLoading || transactionLoading || userLoading || costLoading;
+  const error = dashboardError || revenueError || transactionError || userError || costError;
+
+  return {
+    data: {
+      dashboard: dashboardData,
+      revenue: revenueData,
+      transactions: transactionData,
+      users: userData,
+      costs: costData
+    },
+    loading,
+    error
+  };
+};
+
 // WebSocket 연결 훅
 export const useWebSocket = () => {
   React.useEffect(() => {
