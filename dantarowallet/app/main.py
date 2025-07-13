@@ -147,10 +147,6 @@ async def root():
 # API 라우터 등록
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
-# 에너지 렌탈 API 라우터 등록
-from app.api.energy_rental import router as energy_rental_router
-app.include_router(energy_rental_router, prefix=settings.API_V1_PREFIX)
-
 # 인증 페이지 라우터 등록
 from app.api.v1.auth_pages import router as auth_pages_router
 

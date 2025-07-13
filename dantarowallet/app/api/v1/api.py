@@ -15,7 +15,6 @@ from app.api.v1.endpoints import (
     balance,
     deposit,
     energy,  # Doc #25: 에너지 풀 고급 관리 시스템
-    energy_management,  # 에너지 관리 API 엔드포인트
     fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
     partners,  # 파트너 관리 API 엔드포인트
     sweep,  # Doc #27: 입금 Sweep 자동화 시스템
@@ -30,11 +29,8 @@ from app.api.v1.endpoints import (
     audit_compliance,  # Doc #30: 트랜잭션 감사 및 컴플라이언스
     external_energy,  # Doc #35(38): 외부 에너지 공급자 연동
     integrated_dashboard,  # Doc #37(34): 파트너사 종합 대시보드
+    tronlink,  # TronLink 연동 (메인 엔드포인트)
 )
-from app.api.v1.endpoints.partner import tronlink
-
-# 추후 추가 예정
-# from app.api.v1.endpoints import users, transactions
 
 # 기능별 라우터 등록
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
@@ -44,15 +40,14 @@ api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
 api_router.include_router(withdrawal_management.router, prefix="/withdrawal-management", tags=["withdrawal_management"])  # Doc #28: 파트너사 출금 관리 고도화
 api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding", tags=["partner_onboarding"])  # Doc #29: 파트너사 온보딩 자동화
-api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])
-api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리
+api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])  # 메인 TronLink 엔드포인트 사용
+api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리 (통합)
 api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
 api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Doc #27: 입금 Sweep 자동화 시스템
 api_router.include_router(stats.router, tags=["statistics"])  # 통계 API
 api_router.include_router(users.router, prefix="/users", tags=["users"])  # 사용자 관리 API
 api_router.include_router(partners.router, prefix="/partners", tags=["partners"])  # 파트너 관리 API
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # 거래 관리 API
-api_router.include_router(energy_management.router, prefix="/energy-management", tags=["energy_management"])  # 에너지 관리 API
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )
@@ -61,9 +56,6 @@ api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
 api_router.include_router(external_energy.router, tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
 api_router.include_router(integrated_dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # Doc #37(34): 파트너사 종합 대시보드
-# 추후 추가 예정
-# api_router.include_router(users.router, prefix="/users", tags=["users"])
-# api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 
 
 # 임시 테스트 엔드포인트
