@@ -328,3 +328,78 @@ export const useApiError = () => {
 
   return { error, handleApiCall, clearError };
 };
+
+// 출금 요청 목록 훅
+export const useWithdrawalRequests = (page = 1, limit = 20, status?: string) => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.withdrawal.getRequests(page, limit, status);
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [page, limit, status]);
+
+  return { data, loading, error };
+};
+
+// 출금 정책 훅
+export const useWithdrawalPolicy = () => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.withdrawal.getPolicy();
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+};
+
+// 배치 출금 훅
+export const useWithdrawalBatches = () => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await api.withdrawal.getBatches();
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+};
