@@ -38,6 +38,102 @@ export const useTronLinkStatus = () => {
   return { data, loading, error };
 };
 
+// 사용자 목록 훅
+export const useUsers = (page: number = 1, limit: number = 20, search?: string, status?: string) => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const result = await api.users.getUsers({ page, limit, search, status });
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [page, limit, search, status]);
+
+  return { data, loading, error };
+};
+
+// 사용자 통계 훅
+export const useUserStats = () => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const result = await api.users.getUserStats();
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000); // 30초마다 갱신
+    return () => clearInterval(interval);
+  }, []);
+
+  return { data, loading, error };
+};
+
+// 사용자 KYC 상태 업데이트 훅
+export const useUpdateUserKYC = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  const updateKYC = async (userId: string, status: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await api.users.updateKYCStatus(userId, status);
+      return result;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateKYC, loading, error };
+};
+
+// 사용자 상태 업데이트 훅
+export const useUpdateUserStatus = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  const updateStatus = async (userId: string, status: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await api.users.updateUserStatus(userId, status);
+      return result;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateStatus, loading, error };
+};
+
 // 에너지 풀 상태 훅 - 실제 API에 맞게 수정
 export const useEnergyPoolStatus = (partnerId: number = 1) => {
   const [data, setData] = React.useState<unknown>(null);
@@ -402,4 +498,117 @@ export const useWithdrawalBatches = () => {
   }, []);
 
   return { data, loading, error };
+};
+
+// 사용자 로그인 히스토리 조회
+export const useUserLoginHistory = (userId: string, page: number = 1, limit: number = 20) => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchLoginHistory = async () => {
+      try {
+        setLoading(true);
+        const result = await api.users.getUserLoginHistory(userId, { page, limit });
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLoginHistory();
+  }, [userId, page, limit]);
+
+  return { data, loading, error };
+};
+
+// 에너지 풀 상세 데이터 훅
+export const useEnergyPoolDetails = (partnerId: number = 1) => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        setLoading(true);
+        const result = await api.energy.getPoolStatus(partnerId);
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+    const interval = setInterval(fetchDetails, 30000); // 30초마다 갱신
+    return () => clearInterval(interval);
+  }, [partnerId]);
+
+  return { data, loading, error };
+};
+
+// 에너지 거래 내역 훅
+export const useEnergyTransactions = (partnerId: number = 1, page: number = 1, limit: number = 20) => {
+  const [data, setData] = React.useState<unknown>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        const result = await api.energy.getTransactions(partnerId, { page, limit });
+        setData(result);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [partnerId, page, limit]);
+
+  return { data, loading, error };
+};
+
+// 에너지 스테이킹 액션 훅
+export const useEnergyStaking = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
+
+  const stakeForEnergy = async (partnerId: number, amount: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await api.energy.stakeForEnergy(partnerId, amount);
+      return result;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const unstakeEnergy = async (partnerId: number, amount: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await api.energy.unstake(partnerId, amount);
+      return result;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { stakeForEnergy, unstakeEnergy, loading, error };
 };

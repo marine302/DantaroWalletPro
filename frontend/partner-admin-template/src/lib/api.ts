@@ -230,6 +230,45 @@ export const energyApi = {
   // 글로벌 에너지 분석 (실제 엔드포인트: /api/v1/energy/global/analytics)
   async getGlobalAnalytics() {
     return httpClient.get('/energy/global/analytics');
+  },
+
+  // 에너지 풀 상태 조회 (실제 엔드포인트: /api/v1/energy/pool/{partner_id})
+  async getPoolStatus(partnerId: number) {
+    return httpClient.get(`/energy/pool/${partnerId}`);
+  },
+
+  // 에너지 거래 내역 조회 (실제 엔드포인트: /api/v1/energy/transactions/{partner_id})
+  async getTransactions(partnerId: number, params: { page?: number; limit?: number } = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    
+    const query = queryParams.toString();
+    return httpClient.get(`/energy/transactions/${partnerId}${query ? '?' + query : ''}`);
+  },
+
+  // TRX 스테이킹으로 에너지 생성 (실제 엔드포인트: /api/v1/energy/stake)
+  async stakeForEnergy(partnerId: number, amount: number) {
+    return httpClient.post('/energy/stake', { partner_id: partnerId, amount });
+  },
+
+  // 에너지 언스테이킹 (실제 엔드포인트: /api/v1/energy/unstake) 
+  async unstake(partnerId: number, amount: number) {
+    return httpClient.post('/energy/unstake', { partner_id: partnerId, amount });
+  },
+
+  // 에너지 할당 (실제 엔드포인트: /api/v1/energy/allocate)
+  async allocateEnergy(partnerId: number, targetAddress: string, amount: number) {
+    return httpClient.post('/energy/allocate', { 
+      partner_id: partnerId, 
+      target_address: targetAddress, 
+      amount 
+    });
+  },
+
+  // 에너지 풀 최적화 (실제 엔드포인트: /api/v1/energy/optimize)
+  async optimizePool(partnerId: number) {
+    return httpClient.post(`/energy/optimize/${partnerId}`);
   }
 };
 
@@ -506,6 +545,91 @@ export class WebSocketManager {
 export const wsManager = new WebSocketManager();
 
 // =============================================================================
+// 사용자 관리 API (Users) 
+// =============================================================================
+export const usersApi = {
+  // 사용자 목록 조회
+  async getUsers(params: { 
+    page?: number; 
+    limit?: number; 
+    search?: string; 
+    status?: string; 
+  } = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.search) queryParams.append('search', params.search);
+    if (params.status) queryParams.append('status', params.status);
+    
+    const query = queryParams.toString();
+    return httpClient.get(`/users${query ? '?' + query : ''}`);
+  },
+
+  // 사용자 상세 조회
+  async getUser(userId: string) {
+    return httpClient.get(`/users/${userId}`);
+  },
+
+  // 사용자 통계 조회
+  async getUserStats() {
+    return httpClient.get('/users/stats');
+  },
+
+  // 사용자 KYC 상태 업데이트
+  async updateKYCStatus(userId: string, status: string) {
+    return httpClient.put(`/users/${userId}/kyc`, { status });
+  },
+
+  // 사용자 상태 업데이트 (활성/비활성/정지)
+  async updateUserStatus(userId: string, status: string) {
+    return httpClient.put(`/users/${userId}/status`, { status });
+  },
+
+  // 사용자 계정 정지
+  async suspendUser(userId: string, reason: string) {
+    return httpClient.post(`/users/${userId}/suspend`, { reason });
+  },
+
+  // 사용자 계정 정지 해제
+  async unsuspendUser(userId: string) {
+    return httpClient.post(`/users/${userId}/unsuspend`);
+  },
+
+  // 사용자 잔액 조회
+  async getUserBalance(userId: string) {
+    return httpClient.get(`/users/${userId}/balance`);
+  },
+
+  // 사용자 거래 내역 조회
+  async getUserTransactions(userId: string, params: { 
+    page?: number; 
+    limit?: number; 
+    type?: string;
+  } = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.type) queryParams.append('type', params.type);
+    
+    const query = queryParams.toString();
+    return httpClient.get(`/users/${userId}/transactions${query ? '?' + query : ''}`);
+  },
+
+  // 사용자 로그인 히스토리 조회
+  async getUserLoginHistory(userId: string, params: { 
+    page?: number; 
+    limit?: number; 
+  } = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    
+    const query = queryParams.toString();
+    return httpClient.get(`/users/${userId}/login-history${query ? '?' + query : ''}`);
+  }
+};
+
+// =============================================================================
 // 유틸리티 함수
 // =============================================================================
 export const apiUtils = {
@@ -536,6 +660,7 @@ apiUtils.restoreAuthToken();
 
 const api = {
   auth: authApi,
+  users: usersApi,
   tronlink: tronlinkApi,
   partner: partnerApi,
   energy: energyApi,

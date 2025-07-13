@@ -21,6 +21,9 @@
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
   --radius: 0.5rem;
+  
+  /* 고정 색상 추가 */
+  --text-color: #1f2937;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -80,7 +83,7 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 *,
 a *, 
 label *, 
 button * {
-  color: inherit !important;
+  color: var(--text-color) !important;
 }
 
 /* 명시적 텍스트 색상 설정 */
