@@ -38,7 +38,27 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   React.useEffect(() => {
     const loadRentalData = async () => {
       try {
-        // Doc-31 API 사용: 현재 렌탈 플랜과 사용량 조회
+        // TODO: 실제 API 연동 (현재는 임시 테스트 데이터 사용)
+        console.log('에너지 렌탈 데이터 로드 시작...');
+        
+        // 임시 테스트 데이터로 화면 검증
+        setTimeout(() => {
+          setRentalUsage({
+            plan_type: 'subscription',
+            subscription_tier: 'Standard',
+            is_active: true,
+            monthly_energy_quota: 1000000,
+            current_rate: 0.000420,
+            monthly_used: 650000,
+            estimated_monthly_cost: 273.0,
+            daily_consumption: 21500,
+            efficiency_score: 85.5
+          });
+          setIsLoadingRental(false);
+          console.log('에너지 렌탈 데이터 로드 완료 (테스트 데이터)');
+        }, 1000);
+        
+        /* 실제 API 호출 코드 (나중에 활성화)
         const [currentPlan, usageStats, costAnalysis] = await Promise.all([
           api.energyRental.getCurrentPlan(partnerId),
           api.energyRental.getUsageStats(partnerId, '30d'),
@@ -61,6 +81,8 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
           daily_consumption: (usageStatsData?.daily_average as number) || 21500,
           efficiency_score: (usageStatsData?.efficiency_score as number) || 85.5
         });
+        setIsLoadingRental(false);
+        */
       } catch (error) {
         console.error('에너지 렌탈 데이터 로드 실패:', error);
         // 폴백 데이터 사용
@@ -75,9 +97,12 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
           daily_consumption: 21500,
           efficiency_score: 85.5
         });
-      } finally {
         setIsLoadingRental(false);
       }
+    };
+
+    loadRentalData();
+  }, [partnerId]);
     };
 
     loadRentalData();
