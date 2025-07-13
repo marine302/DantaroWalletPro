@@ -1,0 +1,546 @@
+/**
+ * API 클라이언트 - 백엔드 연동
+ * 참고 문서: Doc-24 (TronLink), Doc-25 (파트너 관리), Doc-26 (에너지), Doc-27 (수수료)
+ *            Doc-28 (출금), Doc-29 (온보딩), Doc-30 (감사), Doc-31 (에너지 렌탈)
+ */
+
+// 기본 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_VERSION = '/api/v1';
+
+// API 오류 타입
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public data?: unknown
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+// HTTP 클라이언트 유틸리티
+class HttpClient {
+  private baseURL: string;
+  private headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+  }
+
+  setAuthToken(token: string) {
+    this.headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  removeAuthToken() {
+    delete this.headers['Authorization'];
+  }
+
+  private async request<T>(
+    method: string,
+    endpoint: string,
+    data?: Record<string, unknown>
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: this.headers,
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.message || `HTTP ${response.status}`,
+          response.status,
+          errorData
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError('Network error', 0, error);
+    }
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>('GET', endpoint);
+  }
+
+  async post<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
+    return this.request<T>('POST', endpoint, data);
+  }
+
+  async put<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
+    return this.request<T>('PUT', endpoint, data);
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>('DELETE', endpoint);
+  }
+}
+
+// HTTP 클라이언트 인스턴스
+const httpClient = new HttpClient(`${API_BASE_URL}${API_VERSION}`);
+
+// =============================================================================
+// 인증 API (Auth)
+// =============================================================================
+export const authApi = {
+  async login(email: string, password: string) {
+    return httpClient.post('/auth/login', { email, password });
+  },
+
+  async logout() {
+    return httpClient.post('/auth/logout');
+  },
+
+  async refreshToken() {
+    return httpClient.post('/auth/refresh');
+  },
+
+  async me() {
+    return httpClient.get('/auth/me');
+  }
+};
+
+// =============================================================================
+// TronLink 연동 API (Doc-24)
+// =============================================================================
+export const tronlinkApi = {
+  // 지갑 연결
+  async connect(walletAddress: string, signature: string) {
+    return httpClient.post('/tronlink/connect', {
+      wallet_address: walletAddress,
+      signature
+    });
+  },
+
+  // 지갑 연결 해제
+  async disconnect(walletAddress: string) {
+    return httpClient.post('/tronlink/disconnect', {
+      wallet_address: walletAddress
+    });
+  },
+
+  // 연결된 지갑 목록
+  async getWallets() {
+    return httpClient.get('/tronlink/wallets');
+  },
+
+  // 지갑 잔액 조회
+  async getBalance(walletAddress: string) {
+    return httpClient.get(`/tronlink/balance/${walletAddress}`);
+  },
+
+  // 트랜잭션 생성
+  async createTransaction(data: {
+    to_address: string;
+    amount: number;
+    token_type?: string;
+  }) {
+    return httpClient.post('/tronlink/transaction/create', data);
+  },
+
+  // 트랜잭션 서명 완료
+  async submitTransaction(transactionId: string, signedTx: string) {
+    return httpClient.post('/tronlink/transaction/submit', {
+      transaction_id: transactionId,
+      signed_transaction: signedTx
+    });
+  },
+
+  // 연결 상태 확인
+  async getStatus() {
+    return httpClient.get('/tronlink/status');
+  }
+};
+
+// =============================================================================
+// 파트너 관리 API (Doc-25)
+// =============================================================================
+export const partnerApi = {
+  // 파트너 정보 조회
+  async getProfile() {
+    return httpClient.get('/partners/profile');
+  },
+
+  // 파트너 설정 업데이트
+  async updateSettings(settings: Record<string, unknown>) {
+    return httpClient.put('/partners/settings', settings);
+  },
+
+  // 파트너 통계
+  async getStats() {
+    return httpClient.get('/partners/stats');
+  },
+
+  // 사용자 목록
+  async getUsers(page = 1, limit = 20) {
+    return httpClient.get(`/partners/users?page=${page}&limit=${limit}`);
+  },
+
+  // 사용자 생성
+  async createUser(userData: {
+    email: string;
+    name: string;
+    role?: string;
+  }) {
+    return httpClient.post('/partners/users', userData);
+  }
+};
+
+// =============================================================================
+// 에너지 풀 관리 API (Doc-26)
+// =============================================================================
+export const energyApi = {
+  // 에너지 풀 상태
+  async getPoolStatus() {
+    return httpClient.get('/energy/pool/status');
+  },
+
+  // 에너지 사용량 통계
+  async getUsageStats(period = '24h') {
+    return httpClient.get(`/energy/usage/stats?period=${period}`);
+  },
+
+  // 에너지 구매
+  async purchaseEnergy(amount: number) {
+    return httpClient.post('/energy/purchase', { amount });
+  },
+
+  // 에너지 임대 설정
+  async getRentalSettings() {
+    return httpClient.get('/energy/rental/settings');
+  },
+
+  // 실시간 모니터링 데이터
+  async getRealtimeData() {
+    return httpClient.get('/energy/realtime');
+  }
+};
+
+// =============================================================================
+// 수수료 최적화 API (Doc-27)
+// =============================================================================
+export const feeApi = {
+  // 수수료 추천
+  async getRecommendation(transactionType: string, amount?: number) {
+    return httpClient.get(`/fees/recommendation?type=${transactionType}&amount=${amount || ''}`);
+  },
+
+  // 수수료 통계
+  async getStats(period = '7d') {
+    return httpClient.get(`/fees/stats?period=${period}`);
+  },
+
+  // 동적 수수료 정책
+  async getFeePolicy() {
+    return httpClient.get('/fees/policy');
+  }
+};
+
+// =============================================================================
+// 출금 관리 고도화 API (Doc-28)
+// =============================================================================
+export const withdrawalApi = {
+  // 출금 정책 조회
+  async getPolicy() {
+    return httpClient.get('/withdrawal/policy');
+  },
+
+  // 출금 정책 업데이트
+  async updatePolicy(policy: Record<string, unknown>) {
+    return httpClient.put('/withdrawal/policy', policy);
+  },
+
+  // 출금 요청 목록
+  async getRequests(page = 1, limit = 20, status?: string) {
+    const params = new URLSearchParams({ 
+      page: page.toString(), 
+      limit: limit.toString(),
+      ...(status && { status })
+    });
+    return httpClient.get(`/withdrawal/requests?${params}`);
+  },
+
+  // 출금 요청 생성
+  async createRequest(data: {
+    amount: number;
+    to_address: string;
+    description?: string;
+  }) {
+    return httpClient.post('/withdrawal/requests', data);
+  },
+
+  // 배치 출금 관리
+  async getBatches() {
+    return httpClient.get('/withdrawal/batches');
+  },
+
+  // 자동 승인 규칙
+  async getApprovalRules() {
+    return httpClient.get('/withdrawal/approval-rules');
+  }
+};
+
+// =============================================================================
+// 온보딩 자동화 API (Doc-29)
+// =============================================================================
+export const onboardingApi = {
+  // 온보딩 진행률
+  async getProgress() {
+    return httpClient.get('/onboarding/progress');
+  },
+
+  // 온보딩 단계별 상태
+  async getSteps() {
+    return httpClient.get('/onboarding/steps');
+  },
+
+  // 체크리스트
+  async getChecklist() {
+    return httpClient.get('/onboarding/checklist');
+  },
+
+  // 단계 완료 처리
+  async completeStep(stepId: string, data?: Record<string, unknown>) {
+    return httpClient.post(`/onboarding/steps/${stepId}/complete`, data);
+  }
+};
+
+// =============================================================================
+// 감사 및 컴플라이언스 API (Doc-30)
+// =============================================================================
+export const auditApi = {
+  // 감사 로그 조회
+  async getLogs(page = 1, limit = 50, filters?: Record<string, unknown>) {
+    const params = new URLSearchParams({ 
+      page: page.toString(), 
+      limit: limit.toString(),
+      ...filters
+    });
+    return httpClient.get(`/audit/logs?${params}`);
+  },
+
+  // 의심 거래 목록
+  async getSuspiciousTransactions() {
+    return httpClient.get('/audit/suspicious-transactions');
+  },
+
+  // AML/KYC 상태
+  async getComplianceStatus() {
+    return httpClient.get('/audit/compliance-status');
+  },
+
+  // 규제 보고서
+  async generateReport(type: string, period: string) {
+    return httpClient.post('/audit/reports', { type, period });
+  }
+};
+
+// =============================================================================
+// 에너지 렌탈 서비스 API (Doc-31)
+// =============================================================================
+export const energyRentalApi = {
+  // 렌탈 플랜 조회
+  async getPlans() {
+    return httpClient.get('/energy-rental/plans');
+  },
+
+  // 현재 플랜 정보
+  async getCurrentPlan() {
+    return httpClient.get('/energy-rental/current-plan');
+  },
+
+  // 플랜 변경
+  async changePlan(planId: string) {
+    return httpClient.post('/energy-rental/change-plan', { plan_id: planId });
+  },
+
+  // 사용량 통계
+  async getUsageStats(period = '30d') {
+    return httpClient.get(`/energy-rental/usage?period=${period}`);
+  },
+
+  // 비용 분석
+  async getCostAnalysis() {
+    return httpClient.get('/energy-rental/cost-analysis');
+  },
+
+  // 자동 결제 설정
+  async getAutoPaymentSettings() {
+    return httpClient.get('/energy-rental/auto-payment');
+  },
+
+  async updateAutoPaymentSettings(settings: Record<string, unknown>) {
+    return httpClient.put('/energy-rental/auto-payment', settings);
+  }
+};
+
+// =============================================================================
+// 분석 및 리포팅 API (Doc-33)
+// =============================================================================
+export const analyticsApi = {
+  // 대시보드 데이터
+  async getDashboardData() {
+    return httpClient.get('/analytics/dashboard');
+  },
+
+  // 거래 분석
+  async getTransactionAnalytics(period = '7d') {
+    return httpClient.get(`/analytics/transactions?period=${period}`);
+  },
+
+  // 수익 분석
+  async getRevenueAnalytics(period = '30d') {
+    return httpClient.get(`/analytics/revenue?period=${period}`);
+  },
+
+  // 사용자 활동 분석
+  async getUserActivityAnalytics() {
+    return httpClient.get('/analytics/user-activity');
+  },
+
+  // 비용 분석
+  async getCostAnalytics() {
+    return httpClient.get('/analytics/costs');
+  }
+};
+
+// =============================================================================
+// WebSocket 연결 관리
+// =============================================================================
+export class WebSocketManager {
+  private ws: WebSocket | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private listeners: Map<string, ((data: unknown) => void)[]> = new Map();
+
+  connect() {
+    try {
+      const wsUrl = `${API_BASE_URL.replace('http', 'ws')}/ws`;
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        console.log('WebSocket connected');
+        this.reconnectAttempts = 0;
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          this.emit(data.type, data.payload);
+        } catch (error) {
+          console.error('WebSocket message parsing error:', error);
+        }
+      };
+
+      this.ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        this.attemptReconnect();
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    } catch (error) {
+      console.error('WebSocket connection error:', error);
+    }
+  }
+
+  private attemptReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      setTimeout(() => this.connect(), 1000 * this.reconnectAttempts);
+    }
+  }
+
+  on(eventType: string, callback: (data: unknown) => void) {
+    if (!this.listeners.has(eventType)) {
+      this.listeners.set(eventType, []);
+    }
+    this.listeners.get(eventType)!.push(callback);
+  }
+
+  off(eventType: string, callback: (data: unknown) => void) {
+    const listeners = this.listeners.get(eventType);
+    if (listeners) {
+      const index = listeners.indexOf(callback);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  private emit(eventType: string, data: unknown) {
+    const listeners = this.listeners.get(eventType);
+    if (listeners) {
+      listeners.forEach(callback => callback(data));
+    }
+  }
+
+  disconnect() {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+}
+
+// WebSocket 인스턴스
+export const wsManager = new WebSocketManager();
+
+// =============================================================================
+// 유틸리티 함수
+// =============================================================================
+export const apiUtils = {
+  // 인증 토큰 설정
+  setAuthToken(token: string) {
+    httpClient.setAuthToken(token);
+    localStorage.setItem('auth_token', token);
+  },
+
+  // 인증 토큰 제거
+  removeAuthToken() {
+    httpClient.removeAuthToken();
+    localStorage.removeItem('auth_token');
+  },
+
+  // 저장된 토큰 복원
+  restoreAuthToken() {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      httpClient.setAuthToken(token);
+    }
+    return token;
+  }
+};
+
+// 초기화
+apiUtils.restoreAuthToken();
+
+const api = {
+  auth: authApi,
+  tronlink: tronlinkApi,
+  partner: partnerApi,
+  energy: energyApi,
+  fee: feeApi,
+  withdrawal: withdrawalApi,
+  onboarding: onboardingApi,
+  audit: auditApi,
+  energyRental: energyRentalApi,
+  analytics: analyticsApi,
+  ws: wsManager,
+  utils: apiUtils
+};
+
+export default api;
