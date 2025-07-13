@@ -135,12 +135,12 @@ export default function DashboardPage() {
 
   return (
     <Sidebar>
-      <div className="space-y-6">
+      <div className="space-y-6 text-foreground">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
-            <p className="text-gray-600">파트너 관리자 통합 대시보드</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">대시보드</h1>
+            <p className="text-gray-600 dark:text-gray-300">파트너 관리자 통합 대시보드</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm">

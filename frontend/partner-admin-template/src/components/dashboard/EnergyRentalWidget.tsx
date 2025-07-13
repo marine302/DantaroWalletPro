@@ -111,11 +111,11 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 로딩 상태
   if (loading || isLoadingRental || !rentalUsage) {
     return (
-      <Card className={className}>
+      <Card className={`${className} text-foreground`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Zap className="w-5 h-5 text-yellow-500" />
-            에너지 렌탈 현황
+            <span className="text-foreground">에너지 렌탈 현황</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
@@ -129,11 +129,11 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 오류 상태
   if (error) {
     return (
-      <Card className={className}>
+      <Card className={`${className} text-foreground`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Zap className="w-5 h-5 text-yellow-500" />
-            에너지 렌탈 현황
+            <span className="text-foreground">에너지 렌탈 현황</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
@@ -155,9 +155,9 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   const estimatedDaysRemaining = Math.floor(remainingEnergy / rentalUsage.daily_consumption)
 
   return (
-    <Card className={className}>
+    <Card className={`${className} text-foreground`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
           <Zap className="w-5 h-5 text-yellow-500" />
           에너지 렌탈 현황
         </CardTitle>
