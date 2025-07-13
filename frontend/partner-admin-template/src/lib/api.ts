@@ -636,27 +636,36 @@ export const apiUtils = {
   // 인증 토큰 설정
   setAuthToken(token: string) {
     httpClient.setAuthToken(token);
-    localStorage.setItem('auth_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   },
 
   // 인증 토큰 제거
   removeAuthToken() {
     httpClient.removeAuthToken();
-    localStorage.removeItem('auth_token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   },
 
   // 저장된 토큰 복원
   restoreAuthToken() {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      httpClient.setAuthToken(token);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        httpClient.setAuthToken(token);
+      }
+      return token;
     }
-    return token;
+    return null;
   }
 };
 
-// 초기화
-apiUtils.restoreAuthToken();
+// 초기화 (브라우저 환경에서만)
+if (typeof window !== 'undefined') {
+  apiUtils.restoreAuthToken();
+}
 
 const api = {
   auth: authApi,

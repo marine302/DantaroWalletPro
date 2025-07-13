@@ -86,6 +86,7 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
   
   // 실제 API 데이터 사용 (현재는 타입 불일치로 fallback 사용)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: _analyticsData, loading, error } = useComprehensiveAnalytics(period);
 
   // 새로고침 함수
