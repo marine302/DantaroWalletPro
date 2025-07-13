@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.external_energy import (
     ExternalEnergyProvider,
-    EnergyPriceHistory,
+    ExternalEnergyPriceHistory,
     ExternalEnergyPurchase,
     EnergyProviderType,
     PurchaseStatus
@@ -72,9 +72,9 @@ class ExternalEnergyService:
             
             for provider in providers:
                 # 최신 가격 정보 조회
-                stmt = select(EnergyPriceHistory).where(
-                    EnergyPriceHistory.provider_id == provider.id
-                ).order_by(desc(EnergyPriceHistory.recorded_at)).limit(1)
+                stmt = select(ExternalEnergyPriceHistory).where(
+                    ExternalEnergyPriceHistory.provider_id == provider.id
+                ).order_by(desc(ExternalEnergyPriceHistory.recorded_at)).limit(1)
                 
                 result = await session.execute(stmt)
                 latest_price = result.scalar_one_or_none()
@@ -144,9 +144,9 @@ class ExternalEnergyService:
         """구매 기록 생성"""
         try:
             # 현재 가격 조회
-            stmt = select(EnergyPriceHistory).where(
-                EnergyPriceHistory.provider_id == provider.id
-            ).order_by(desc(EnergyPriceHistory.recorded_at)).limit(1)
+            stmt = select(ExternalEnergyPriceHistory).where(
+                ExternalEnergyPriceHistory.provider_id == provider.id
+            ).order_by(desc(ExternalEnergyPriceHistory.recorded_at)).limit(1)
             
             result = await session.execute(stmt)
             latest_price = result.scalar_one_or_none()

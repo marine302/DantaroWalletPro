@@ -1,0 +1,304 @@
+"""
+사용자 관리 API 엔드포인트
+파트너 관리자 대시보드에서 사용자 관리 기능을 제공합니다.
+"""
+
+from datetime import datetime, timedelta
+from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import func, desc, or_, and_
+from pydantic import BaseModel
+
+from app.core.database import get_sync_db
+from app.models.user import User
+from app.models.wallet import Wallet
+from app.models.transaction import Transaction
+
+router = APIRouter()
+
+
+class UserFilter(BaseModel):
+    """사용자 필터 모델"""
+    search: Optional[str] = None
+    status: Optional[str] = None
+    created_from: Optional[datetime] = None
+    created_to: Optional[datetime] = None
+    min_balance: Optional[float] = None
+    max_balance: Optional[float] = None
+
+
+class UserResponse(BaseModel):
+    """사용자 응답 모델"""
+    id: int
+    username: str
+    email: str
+    phone: Optional[str]
+    status: str
+    balance: float
+    total_transactions: int
+    total_volume: float
+    last_activity: Optional[datetime]
+    created_at: datetime
+    kyc_status: str
+    referral_code: Optional[str]
+
+
+@router.get("/users")
+async def get_users(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    sort_by: str = Query("created_at", regex="^(created_at|balance|last_activity|username)$"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    db: Session = Depends(get_sync_db)
+):
+    """
+    사용자 목록 조회 (페이지네이션, 필터링, 정렬 지원)
+    """
+    try:
+        query = db.query(User)
+        
+        # 검색 필터
+        if search:
+            query = query.filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.phone.ilike(f"%{search}%")
+                )
+            )
+        
+        # 상태 필터
+        if status:
+            query = query.filter(User.status == status)
+        
+        # 정렬
+        if sort_by == "created_at":
+            order_column = User.created_at
+        elif sort_by == "balance":
+            order_column = User.balance
+        elif sort_by == "last_activity":
+            order_column = User.last_activity_at
+        else:
+            order_column = User.username
+        
+        if sort_order == "desc":
+            query = query.order_by(desc(order_column))
+        else:
+            query = query.order_by(order_column)
+        
+        # 페이지네이션
+        users = query.offset(skip).limit(limit).all()
+        
+        # 응답 데이터 구성
+        result = []
+        for user in users:
+            # 사용자 지갑 정보 조회
+            wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+            balance = wallet.balance if wallet else 0
+            
+            # 거래 통계 조회
+            tx_stats = db.query(
+                func.count(Transaction.id),
+                func.sum(Transaction.amount)
+            ).filter(Transaction.user_id == user.id).first()
+            
+            total_transactions = tx_stats[0] if tx_stats and tx_stats[0] else 0
+            total_volume = float(tx_stats[1]) if tx_stats and tx_stats[1] else 0.0
+            
+            result.append({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "phone": user.phone,
+                "status": user.status,
+                "balance": float(balance),
+                "total_transactions": total_transactions,
+                "total_volume": total_volume,
+                "last_activity": user.last_activity_at.isoformat() if user.last_activity_at else None,
+                "created_at": user.created_at.isoformat(),
+                "kyc_status": getattr(user, 'kyc_status', 'pending'),
+                "referral_code": getattr(user, 'referral_code', None)
+            })
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/{user_id}")
+async def get_user_detail(user_id: int, db: Session = Depends(get_sync_db)):
+    """
+    사용자 상세 정보 조회
+    """
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다")
+        
+        # 지갑 정보 조회
+        wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+        
+        # 거래 통계 조회
+        tx_stats = db.query(
+            func.count(Transaction.id),
+            func.sum(Transaction.amount)
+        ).filter(Transaction.user_id == user_id).first()
+        
+        # 최근 거래 내역
+        recent_transactions = db.query(Transaction).filter(
+            Transaction.user_id == user_id
+        ).order_by(desc(Transaction.created_at)).limit(20).all()
+        
+        return {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "phone": user.phone,
+                "status": user.status,
+                "created_at": user.created_at.isoformat(),
+                "last_activity": user.last_activity_at.isoformat() if user.last_activity_at else None,
+                "kyc_status": getattr(user, 'kyc_status', 'pending'),
+                "referral_code": getattr(user, 'referral_code', None)
+            },
+            "wallet": {
+                "address": wallet.address if wallet else None,
+                "balance": float(wallet.balance) if wallet else 0,
+                "frozen_balance": float(getattr(wallet, 'frozen_balance', 0)) if wallet else 0,
+                "energy": getattr(wallet, 'energy', 0) if wallet else 0,
+                "bandwidth": getattr(wallet, 'bandwidth', 0) if wallet else 0
+            },
+            "statistics": {
+                "total_transactions": tx_stats[0] if tx_stats and tx_stats[0] else 0,
+                "total_volume": float(tx_stats[1]) if tx_stats and tx_stats[1] else 0.0,
+                "last_transaction": recent_transactions[0].created_at.isoformat() if recent_transactions else None
+            },
+            "recent_transactions": [
+                {
+                    "id": tx.id,
+                    "type": tx.type,
+                    "amount": float(tx.amount),
+                    "currency": tx.currency,
+                    "status": tx.status,
+                    "created_at": tx.created_at.isoformat(),
+                    "from_address": tx.from_address,
+                    "to_address": tx.to_address,
+                    "tx_hash": getattr(tx, 'tx_hash', None)
+                } for tx in recent_transactions
+            ]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/users/{user_id}/status")
+async def update_user_status(
+    user_id: int,
+    status: str,
+    db: Session = Depends(get_sync_db)
+):
+    """
+    사용자 상태 업데이트
+    """
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다")
+        
+        valid_statuses = ["active", "inactive", "suspended", "pending"]
+        if status not in valid_statuses:
+            raise HTTPException(status_code=400, detail="유효하지 않은 상태입니다")
+        
+        user.status = status
+        db.commit()
+        
+        return {
+            "message": "사용자 상태가 업데이트되었습니다",
+            "user_id": user_id,
+            "new_status": status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/activity/recent")
+async def get_recent_user_activity(
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_sync_db)
+):
+    """
+    최근 사용자 활동 조회
+    """
+    try:
+        # 최근 로그인한 사용자들
+        recent_users = db.query(User).filter(
+            User.last_activity_at.isnot(None)
+        ).order_by(desc(User.last_activity_at)).limit(limit).all()
+        
+        return [
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "last_activity": user.last_activity_at.isoformat() if user.last_activity_at else None,
+                "status": user.status
+            } for user in recent_users
+        ]
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/stats/daily")
+async def get_daily_user_stats(
+    days: int = Query(7, ge=1, le=365),
+    db: Session = Depends(get_sync_db)
+):
+    """
+    일별 사용자 통계 조회
+    """
+    try:
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # 일별 신규 사용자 수
+        daily_stats = []
+        for i in range(days):
+            date = start_date + timedelta(days=i)
+            next_date = date + timedelta(days=1)
+            
+            new_users = db.query(User).filter(
+                and_(
+                    User.created_at >= date,
+                    User.created_at < next_date
+                )
+            ).count()
+            
+            active_users = db.query(User).filter(
+                and_(
+                    User.last_activity_at >= date,
+                    User.last_activity_at < next_date
+                )
+            ).count()
+            
+            daily_stats.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "new_users": new_users,
+                "active_users": active_users
+            })
+        
+        return daily_stats
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

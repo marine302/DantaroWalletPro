@@ -64,11 +64,11 @@ class ExternalEnergyProvider(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # 관계
-    price_history = relationship("EnergyPriceHistory", back_populates="provider")
+    price_history = relationship("ExternalEnergyPriceHistory", back_populates="provider")
     purchases = relationship("ExternalEnergyPurchase", back_populates="provider")
 
 
-class EnergyPriceHistory(Base):
+class ExternalEnergyPriceHistory(Base):
     """에너지 가격 히스토리"""
     __tablename__ = "external_energy_price_history"
     

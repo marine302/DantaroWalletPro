@@ -6,6 +6,7 @@ from app.models.balance import Balance
 from app.models.base import BaseModel
 from app.models.deposit import Deposit
 from app.models.energy_pool import EnergyPoolModel, EnergyUsageLog, EnergyPriceHistory
+from app.models.external_energy import ExternalEnergyProvider, ExternalEnergyPriceHistory
 from app.models.energy_usage_history import EnergyUsageHistory
 from app.models.partner import Partner
 from app.models.partner_history import (
