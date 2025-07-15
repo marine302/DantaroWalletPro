@@ -17,6 +17,10 @@ class AdminAuthMiddleware(BaseHTTPMiddleware):
         if not any(request.url.path.startswith(path) for path in self.admin_paths):
             return await call_next(request)
 
+        # API 엔드포인트는 제외 (이미 API 레벨에서 인증 처리)
+        if "/api/v1/" in request.url.path:
+            return await call_next(request)
+
         # 로그인 페이지는 제외
         if request.url.path.endswith("/login"):
             return await call_next(request)

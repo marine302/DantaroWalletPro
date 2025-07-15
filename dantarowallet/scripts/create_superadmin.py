@@ -40,15 +40,13 @@ async def create_superadmin():
                 return
             
             # 슈퍼어드민 계정 생성
-            hashed_password = get_password_hash("admin123")
+            hashed_password = get_password_hash("SuperAdmin123!")
             
             superadmin = User(
                 email="superadmin@dantaro.com",
-                username="superadmin",
-                full_name="Super Administrator",
-                hashed_password=hashed_password,
+                password_hash=hashed_password,
                 is_active=True,
-                is_superuser=True,
+                is_admin=True,
                 is_verified=True
             )
             
@@ -59,7 +57,7 @@ async def create_superadmin():
             logger.info(f"Superadmin created successfully: {superadmin.email}")
             logger.info("Login credentials:")
             logger.info("  Email: superadmin@dantaro.com")
-            logger.info("  Password: admin123")
+            logger.info("  Password: SuperAdmin123!")
             
         except Exception as e:
             logger.error(f"Failed to create superadmin: {e}")

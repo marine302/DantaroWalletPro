@@ -1,6 +1,6 @@
 
-> super-admin-dashboard@0.1.0 dev
-> next dev --turbopack -p 3010
+> super-admin-dashboard@0.1.0 start
+> next start -p 3010
 
  ⨯ Failed to start server
 Error: listen EADDRINUSE: address already in use :::3010
@@ -12,4 +12,3 @@ Error: listen EADDRINUSE: address already in use :::3010
   address: '::',
   port: 3010
 }
-[?25h

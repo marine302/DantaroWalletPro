@@ -134,7 +134,10 @@ export default function LoginPage() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Default credentials: admin@dantarowallet.com / Secret123!
+              ✅ Auto-filled: superadmin@dantaro.com / SuperAdmin123!
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Just click &quot;Sign in&quot; to login
             </p>
           </div>
         </form>

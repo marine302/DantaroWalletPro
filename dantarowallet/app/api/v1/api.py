@@ -31,6 +31,7 @@ from app.api.v1.endpoints import (
     external_energy,  # Doc #35(38): 외부 에너지 공급자 연동
     integrated_dashboard,  # Doc #37(34): 파트너사 종합 대시보드
     tronlink,  # TronLink 연동 (메인 엔드포인트)
+    admin_dashboard,  # 슈퍼어드민 대시보드 통계
 )
 
 # 기능별 라우터 등록
@@ -55,8 +56,9 @@ api_router.include_router(
 )
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+api_router.include_router(admin_dashboard.router, prefix="/admin", tags=["admin_dashboard"])  # 슈퍼어드민 대시보드 통계
 api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
-api_router.include_router(external_energy.router, tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
+api_router.include_router(external_energy.router, prefix="/external-energy", tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
 api_router.include_router(integrated_dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # Doc #37(34): 파트너사 종합 대시보드
 
 

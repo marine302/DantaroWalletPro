@@ -627,3 +627,59 @@ async def get_onboarding_logs(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="온보딩 로그 조회 중 오류가 발생했습니다."
         )
+
+
+@router.get("/admin/all")
+async def get_onboarding_list(
+    status: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """파트너 온보딩 목록을 조회합니다."""
+    try:
+        # 기본 쿼리
+        query = select(PartnerOnboarding)
+        
+        # 상태 필터
+        if status:
+            query = query.where(PartnerOnboarding.status == status)
+            
+        # 정렬 및 페이징
+        query = query.order_by(PartnerOnboarding.created_at.desc()).offset(offset).limit(limit)
+        
+        result = await db.execute(query)
+        onboardings = result.scalars().all()
+        
+        # 응답 데이터 구성
+        items = []
+        for onboarding in onboardings:
+            created_at = getattr(onboarding, 'created_at', None)
+            updated_at = getattr(onboarding, 'updated_at', None)
+            items.append({
+                "id": onboarding.id,
+                "partner_id": onboarding.partner_id,
+                "status": onboarding.status.value if hasattr(onboarding.status, 'value') else str(onboarding.status),
+                "current_step": onboarding.current_step,
+                "total_steps": onboarding.total_steps,
+                "progress_percentage": onboarding.progress_percentage,
+                "created_at": created_at.isoformat() if created_at else None,
+                "updated_at": updated_at.isoformat() if updated_at else None
+            })
+        
+        return {
+            "items": items,
+            "total": len(items),
+            "limit": limit,
+            "offset": offset
+        }
+        
+    except Exception as e:
+        logger.error(f"온보딩 목록 조회 실패: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"온보딩 목록 조회 중 오류가 발생했습니다: {str(e)}"
+        )
+
+# === 온보딩 생성 및 조회 ===

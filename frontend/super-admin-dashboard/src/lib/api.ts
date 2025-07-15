@@ -100,7 +100,7 @@ class ApiClient {
   }
 
   async getSystemHealth(): Promise<SystemHealth> {
-    const response: AxiosResponse<SystemHealth> = await this.client.get('/admin/system/health');
+    const response: AxiosResponse<SystemHealth> = await this.client.get('/admin/system-health');
     return response.data;
   }
 

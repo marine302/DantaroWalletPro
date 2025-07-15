@@ -155,3 +155,39 @@ export function downloadCSV(data: Record<string, unknown>[], filename: string): 
   link.click();
   document.body.removeChild(link);
 }
+
+// 방어적 처리를 위한 safe 함수들
+export function safeNumber(value: unknown, defaultValue = 0): number {
+  if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return defaultValue;
+}
+
+export function safeCurrency(value: unknown, currency = 'USDT'): string {
+  const num = safeNumber(value);
+  return formatCurrency(num, currency);
+}
+
+export function safeFormatNumber(value: unknown): string {
+  const num = safeNumber(value);
+  return formatNumber(num);
+}
+
+export function safePercentage(value: unknown): string {
+  const num = safeNumber(value);
+  return formatPercentage(num);
+}
+
+export function safeString(value: unknown, defaultValue = ''): string {
+  if (value === null || value === undefined) {
+    return defaultValue;
+  }
+  return String(value);
+}

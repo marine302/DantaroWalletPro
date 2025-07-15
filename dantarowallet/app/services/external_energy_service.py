@@ -42,58 +42,140 @@ class ExternalEnergyService:
     async def get_all_providers(self, session: AsyncSession) -> List[ExternalEnergyProvider]:
         """모든 공급자 조회"""
         try:
+            logger.info("=== get_all_providers 시작 ===")
             stmt = select(ExternalEnergyProvider).options(
                 selectinload(ExternalEnergyProvider.price_history)
             )
+            logger.info(f"SQL 쿼리 생성: {stmt}")
+            
             result = await session.execute(stmt)
-            return list(result.scalars().all())
+            providers = list(result.scalars().all())
+            
+            logger.info(f"조회된 공급자 수: {len(providers)}")
+            for provider in providers:
+                logger.info(f"공급자: id={safe_get_value(provider, 'id')}, name={safe_get_value(provider, 'name')}, active={safe_get_value(provider, 'is_active')}")
+                
+            return providers
         except Exception as e:
             logger.error(f"공급자 조회 오류: {e}")
+            import traceback
+            logger.error(f"스택 트레이스: {traceback.format_exc()}")
             return []
     
     async def get_active_providers(self, session: AsyncSession) -> List[ExternalEnergyProvider]:
         """활성 공급자 조회"""
         try:
+            logger.info("=== get_active_providers 시작 ===")
             stmt = select(ExternalEnergyProvider).where(
                 ExternalEnergyProvider.is_active == True
             ).order_by(ExternalEnergyProvider.priority)
             
+            logger.info(f"활성 공급자 쿼리: {stmt}")
             result = await session.execute(stmt)
-            return list(result.scalars().all())
+            providers = list(result.scalars().all())
+            
+            logger.info(f"활성 공급자 수: {len(providers)}")
+            for provider in providers:
+                logger.info(f"활성 공급자: id={safe_get_value(provider, 'id')}, name={safe_get_value(provider, 'name')}, priority={safe_get_value(provider, 'priority')}")
+                
+            return providers
         except Exception as e:
             logger.error(f"활성 공급자 조회 오류: {e}")
+            import traceback
+            logger.error(f"스택 트레이스: {traceback.format_exc()}")
             return []
     
     async def get_current_prices(self, session: AsyncSession) -> List[Dict[str, Any]]:
         """현재 가격 정보 조회"""
         try:
+            print("🚀 === get_current_prices 서비스 시작 ===")  # print 추가
+            logger.info("=== get_current_prices 시작 ===")
             prices = []
             providers = await self.get_active_providers(session)
             
+            print(f"📊 서비스: 가격 조회 대상 공급자 수: {len(providers)}")  # print 추가
+            logger.info(f"가격 조회 대상 공급자 수: {len(providers)}")
+            
             for provider in providers:
+                print(f"🔍 공급자 {safe_get_value(provider, 'id')} 가격 조회 중...")  # print 추가
+                logger.info(f"공급자 {safe_get_value(provider, 'id')} 가격 조회 중...")
+                
                 # 최신 가격 정보 조회
                 stmt = select(ExternalEnergyPriceHistory).where(
                     ExternalEnergyPriceHistory.provider_id == provider.id
                 ).order_by(desc(ExternalEnergyPriceHistory.recorded_at)).limit(1)
                 
+                logger.info(f"가격 히스토리 쿼리: {stmt}")
                 result = await session.execute(stmt)
                 latest_price = result.scalar_one_or_none()
                 
+                print(f"💰 공급자 {safe_get_value(provider, 'id')} 최신 가격 정보: {latest_price}")  # print 추가
+                logger.info(f"공급자 {safe_get_value(provider, 'id')} 최신 가격 정보: {latest_price}")
+                
                 if latest_price:
-                    prices.append({
-                        'provider_id': provider.id,
-                        'provider_name': provider.name,
-                        'provider_type': provider.provider_type,
-                        'price_per_energy': latest_price.price_per_energy,
-                        'available_amount': latest_price.available_amount,
-                        'min_order': latest_price.min_order,
-                        'max_order': latest_price.max_order,
-                        'recorded_at': latest_price.recorded_at
-                    })
+                    # 안전한 값 추출
+                    provider_type_value = safe_get_value(provider, 'provider_type', '')
+                    logger.info(f"provider_type_value: {provider_type_value}, type: {type(provider_type_value)}")
+                    
+                    try:
+                        # Enum인 경우 .value 속성 사용 (동적 처리)
+                        if hasattr(provider_type_value, 'value') and provider_type_value.__class__.__name__ != 'str':
+                            provider_type_value = getattr(provider_type_value, 'value')  # type: ignore
+                            logger.info(f"Enum value 추출: {provider_type_value}")
+                    except Exception as e:
+                        logger.warning(f"Enum value 추출 실패: {e}")
+                        pass
+                    
+                    price_value = safe_get_value(latest_price, 'price_per_energy', 0)
+                    logger.info(f"price_value: {price_value}, type: {type(price_value)}")
+                    
+                    try:
+                        price_value = float(price_value)
+                        logger.info(f"price_value float 변환: {price_value}")
+                    except Exception as e:
+                        logger.warning(f"가격 float 변환 실패: {e}")
+                        price_value = 0.0
+                    
+                    recorded_at_value = safe_get_value(latest_price, 'recorded_at', None)
+                    logger.info(f"recorded_at_value: {recorded_at_value}, type: {type(recorded_at_value)}")
+                    
+                    try:
+                        if recorded_at_value and hasattr(recorded_at_value, 'isoformat'):
+                            recorded_at_value = recorded_at_value.isoformat()
+                            logger.info(f"recorded_at ISO 변환: {recorded_at_value}")
+                    except Exception as e:
+                        logger.warning(f"날짜 ISO 변환 실패: {e}")
+                        recorded_at_value = None
+                    
+                    price_data = {
+                        'provider_id': safe_get_value(provider, 'id', 0),
+                        'provider_name': safe_get_value(provider, 'name', ''),
+                        'provider_type': str(provider_type_value),
+                        'price_per_energy': price_value,
+                        'available_amount': safe_get_value(latest_price, 'available_amount', 0),
+                        'min_order': safe_get_value(latest_price, 'min_order', 0),
+                        'max_order': safe_get_value(latest_price, 'max_order', 0),
+                        'recorded_at': recorded_at_value
+                    }
+                    
+                    print(f"✅ 생성된 가격 데이터: {price_data}")  # print 추가
+                    logger.info(f"생성된 가격 데이터: {price_data}")
+                    prices.append(price_data)
+                else:
+                    print(f"⚠️ 공급자 {safe_get_value(provider, 'id')} 가격 정보 없음")  # print 추가
+                    logger.warning(f"공급자 {safe_get_value(provider, 'id')} 가격 정보 없음")
             
+            print(f"🎯 최종 가격 목록: {prices}")  # print 추가
+            print(f"📋 가격 목록 길이: {len(prices)}")  # print 추가
+            logger.info(f"최종 가격 목록: {prices}")
+            logger.info(f"가격 목록 길이: {len(prices)}")
             return prices
         except Exception as e:
+            print(f"❌ 서비스: 가격 정보 조회 오류: {e}")  # print 추가
             logger.error(f"가격 정보 조회 오류: {e}")
+            import traceback
+            logger.error(f"스택 트레이스: {traceback.format_exc()}")
+            print(f"📋 서비스: 스택 트레이스: {traceback.format_exc()}")  # print 추가
             return []
     
     async def execute_purchase(
@@ -223,20 +305,33 @@ class ExternalEnergyService:
     ) -> List[ExternalEnergyPurchase]:
         """구매 히스토리 조회"""
         try:
+            logger.info(f"=== get_purchase_history 시작 ===")
+            logger.info(f"provider_id: {provider_id}, limit: {limit}")
+            
             stmt = select(ExternalEnergyPurchase).options(
                 selectinload(ExternalEnergyPurchase.provider)
             )
             
             if provider_id:
                 stmt = stmt.where(ExternalEnergyPurchase.provider_id == provider_id)
+                logger.info(f"특정 공급자 필터링: {provider_id}")
             
             stmt = stmt.order_by(desc(ExternalEnergyPurchase.created_at)).limit(limit)
+            logger.info(f"구매 히스토리 쿼리: {stmt}")
             
             result = await session.execute(stmt)
-            return list(result.scalars().all())
+            purchases = list(result.scalars().all())
+            
+            logger.info(f"조회된 구매 히스토리 수: {len(purchases)}")
+            for purchase in purchases:
+                logger.info(f"구매 기록: id={safe_get_value(purchase, 'id')}, energy_amount={safe_get_value(purchase, 'energy_amount')}, status={safe_get_value(purchase, 'status')}")
+            
+            return purchases
             
         except Exception as e:
             logger.error(f"구매 히스토리 조회 오류: {e}")
+            import traceback
+            logger.error(f"스택 트레이스: {traceback.format_exc()}")
             return []
     
     async def update_provider_stats(self, session: AsyncSession):

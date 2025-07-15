@@ -1,0 +1,44 @@
+
+> super-admin-dashboard@0.1.0 dev
+> next dev --turbopack -p 3010
+
+   ▲ Next.js 15.3.5 (Turbopack)
+   - Local:        http://localhost:3010
+   - Network:      http://172.30.1.33:3010
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 892ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.2s
+ GET / 200 in 2496ms
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+ ✓ Compiled /favicon.ico in 303ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 554ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 222ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1182ms
+ GET /login 200 in 1225ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 233ms
+ GET / 200 in 24ms
+ ○ Compiling /partners ...
+ ✓ Compiled /partners in 668ms
+ GET /partners 200 in 691ms
+ ○ Compiling /energy ...
+ ✓ Compiled /energy in 527ms
+ GET /energy 200 in 551ms
+ ✓ Compiled /fees in 477ms
+ GET /fees 200 in 500ms
+ GET / 200 in 22ms
+ GET /fees 200 in 83ms
+ ○ Compiling /integrated-dashboard ...
+ ✓ Compiled /integrated-dashboard in 749ms
+ GET /integrated-dashboard 200 in 775ms
+ GET / 200 in 65ms
+ GET / 200 in 91ms
+ GET /integrated-dashboard 200 in 70ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 230ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /integrated-dashboard 200 in 62ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 269ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms

@@ -8,12 +8,20 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     logger = logging.getLogger(name or __name__)
     
     if not logger.handlers:
-        handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
+        # 콘솔 핸들러
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        console_handler.setFormatter(console_formatter)
+        
+        # 파일 핸들러 (선택적)
+        # file_handler = logging.FileHandler('logs/debug.log')
+        # file_handler.setFormatter(console_formatter)
+        
+        logger.addHandler(console_handler)
+        # logger.addHandler(file_handler)
+        logger.setLevel(logging.DEBUG)  # DEBUG 레벨로 변경
+        logger.propagate = False  # 중복 로그 방지
     
     return logger

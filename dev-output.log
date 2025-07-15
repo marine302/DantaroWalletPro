@@ -1,0 +1,176 @@
+
+> super-admin-dashboard@0.1.0 dev
+> next dev --turbopack -p 3010
+
+   ▲ Next.js 15.3.5 (Turbopack)
+   - Local:        http://localhost:3010
+   - Network:      http://172.30.1.33:3010
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 954ms
+ ○ Compiling /integrated-dashboard ...
+ ✓ Compiled /integrated-dashboard in 1451ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590521196 200 in 1659ms
+ ✓ Compiled /_not-found/page in 364ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 399ms
+ ✓ Compiled in 110ms
+ ✓ Compiled in 83ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 186ms
+ ○ Compiling /analytics ...
+ ✓ Compiled /analytics in 1039ms
+ GET /analytics 200 in 1174ms
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+ ✓ Compiled /favicon.ico in 308ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 552ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 223ms
+ GET /integrated-dashboard 200 in 33ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 94ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1009ms
+ GET / 200 in 1117ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 47ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 244ms
+ GET /analytics 200 in 57ms
+ GET /integrated-dashboard 200 in 28ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 278ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 320ms
+ GET /integrated-dashboard 200 in 302ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 271ms
+ GET /favicon.ico 200 in 307ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 155ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 208ms
+ GET /integrated-dashboard 200 in 200ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 252ms
+ GET /favicon.ico 200 in 223ms
+ ✓ Compiled in 114ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 147ms
+ ✓ Compiled /integrated-dashboard in 25ms
+ GET /integrated-dashboard 200 in 284ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 301ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 222ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 239ms
+ ✓ Compiled in 112ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /integrated-dashboard in 28ms
+ GET /integrated-dashboard 200 in 208ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 232ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 45ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 58ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 221ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 221ms
+ ✓ Compiled in 98ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 147ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 150ms
+ ✓ Compiled in 90ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 73ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 85ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 45ms
+ ✓ Compiled in 61ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 60ms
+ ✓ Compiled in 66ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 79ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 110ms
+ ✓ Compiled in 122ms
+ ✓ Compiled /integrated-dashboard in 19ms
+ GET /integrated-dashboard 200 in 70ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 74ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 89ms
+ GET /api/v1/integrated-dashboard/dashboard/1 404 in 82ms
+ ✓ Compiled in 97ms
+ GET /integrated-dashboard 200 in 247ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 230ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 223ms
+ GET / 200 in 94ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 233ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1431ms
+ GET /login 200 in 1557ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 352ms
+ GET / 200 in 203ms
+ ○ Compiling /partners ...
+ ✓ Compiled /partners in 845ms
+ GET /partners 200 in 873ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 285ms
+ ○ Compiling /energy ...
+ ✓ Compiled /energy in 565ms
+ GET /energy 200 in 588ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
+ ○ Compiling /fees ...
+ ✓ Compiled /fees in 626ms
+ GET /fees 200 in 654ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 224ms
+ GET /analytics 200 in 27ms
+ GET /integrated-dashboard 200 in 21ms
+ GET /integrated-dashboard 200 in 47ms
+ GET /integrated-dashboard 200 in 37ms
+ GET / 200 in 23ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 49ms
+ GET /integrated-dashboard 200 in 143ms
+ ✓ Compiled in 112ms
+ ✓ Compiled in 173ms
+ ✓ Compiled in 728ms
+ ✓ Compiled /integrated-dashboard in 75ms
+ GET /integrated-dashboard?id=6f22174d-82ed-4d98-89b3-f4fedb9b4ba1&vscodeBrowserReqId=1752590686828 200 in 220ms
+ GET /integrated-dashboard 200 in 217ms
+ GET /integrated-dashboard 200 in 655ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 339ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 235ms
+ ○ Compiling /admins ...
+ ✓ Compiled /admins in 2.5s
+ GET /admins 200 in 2701ms
+ GET / 200 in 41ms
+ GET /login 200 in 91ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 257ms
+ GET / 200 in 23ms
+ GET /partners 200 in 43ms
+ GET /energy 200 in 57ms
+ ○ Compiling /energy/external-market ...
+ ✓ Compiled /energy/external-market in 925ms
+ GET /energy/external-market 200 in 953ms
+ ○ Compiling /energy/external-market/purchase ...
+ ✓ Compiled /energy/external-market/purchase in 751ms
+ GET /energy/external-market/purchase 200 in 891ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 249ms
+ GET /energy/external-market 200 in 75ms
+ GET / 200 in 45ms
+ GET /partners 200 in 28ms
+ GET /energy 200 in 34ms
+ GET /fees 200 in 33ms
+ GET /analytics 200 in 51ms
+ GET /integrated-dashboard 200 in 87ms
+ GET /admins 200 in 69ms
+ ○ Compiling /settings ...
+ ✓ Compiled /settings in 1002ms
+ GET /settings 200 in 1044ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 57ms
+ GET /integrated-dashboard 200 in 63ms
+ GET / 200 in 79ms
+ GET /partners 200 in 45ms
+ GET /partners 200 in 154ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 224ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
+ GET / 200 in 24ms
+ GET /partners 200 in 22ms
+ GET /energy 200 in 32ms
+ GET /settings 200 in 36ms
+ GET /settings 200 in 30ms
+ GET / 200 in 32ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 57ms
+ ✓ Compiled in 299ms
+ ✓ Compiled in 294ms
+ ✓ Compiled in 457ms
+ ✓ Compiled in 121ms
+ ✓ Compiled in 93ms
+ ✓ Compiled in 105ms
+ ✓ Compiled in 276ms
+ ✓ Compiled in 145ms
+ ✓ Compiled in 118ms
+[?25h

@@ -46,30 +46,47 @@ async def get_providers(
 ):
     """공급자 목록 조회"""
     try:
+        logger.info("=== 공급자 목록 조회 API 시작 ===")
+        logger.info(f"active_only: {active_only}")
+        
         if active_only:
+            logger.info("활성 공급자만 조회")
             providers = await external_energy_service.get_active_providers(session)
         else:
+            logger.info("모든 공급자 조회")
             providers = await external_energy_service.get_all_providers(session)
+        
+        logger.info(f"서비스에서 받은 공급자 수: {len(providers)}")
         
         result = []
         for provider in providers:
+            logger.info(f"공급자 처리 중: {safe_get_value(provider, 'id')}")
+            
+            provider_type = safe_get_value(provider, 'provider_type')
             price_updated_at = safe_get_value(provider, 'price_updated_at')
-            result.append({
+            
+            provider_data = {
                 "id": safe_get_value(provider, 'id'),
-                "provider_type": safe_get_value(provider, 'provider_type'),
+                "provider_type": provider_type.value if provider_type else None,
                 "name": safe_get_value(provider, 'name'),
                 "is_active": safe_get_value(provider, 'is_active'),
                 "priority": safe_get_value(provider, 'priority'),
-                "success_rate": float(safe_get_value(provider, 'success_rate', 0)),
-                "last_price": float(safe_get_value(provider, 'last_price', 0)) if safe_get_value(provider, 'last_price') else None,
+                "success_rate": float(safe_get_value(provider, 'success_rate') or 0),
+                "last_price": float(safe_get_value(provider, 'last_price') or 0) if safe_get_value(provider, 'last_price') else None,
                 "price_updated_at": price_updated_at.isoformat() if price_updated_at else None
-            })
+            }
+            
+            logger.info(f"공급자 데이터 생성: {provider_data}")
+            result.append(provider_data)
         
-        return JSONResponse(content=result)
+        logger.info(f"최종 반환 데이터 수: {len(result)}")
+        return result
         
     except Exception as e:
         logger.error(f"공급자 조회 오류: {e}")
-        raise HTTPException(status_code=500, detail="공급자 조회 중 오류가 발생했습니다")
+        import traceback
+        logger.error(f"스택 트레이스: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"공급자 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get("/prices")
@@ -79,16 +96,30 @@ async def get_current_prices(
 ):
     """현재 에너지 가격 조회"""
     try:
+        print("🚀 === 가격 조회 API 시작 ===")  # print 추가
+        logger.info("=== 가격 조회 API 시작 ===")
+        logger.info(f"force_refresh: {force_refresh}")
+        print(f"🔍 force_refresh: {force_refresh}")  # print 추가
+        
         # 가격 조회
         prices = await external_energy_service.get_current_prices(session)
+        logger.info(f"서비스에서 받은 prices: {prices}")
+        logger.info(f"prices 타입: {type(prices)}")
+        print(f"📊 서비스에서 받은 prices: {prices}")  # print 추가
         
         if not prices:
+            logger.warning("가격 정보가 비어있음")
+            print("⚠️ 가격 정보가 비어있음")  # print 추가
             raise HTTPException(status_code=503, detail="가격 정보를 조회할 수 없습니다")
         
         # 최적 가격 찾기
         best_price = None
         if prices:
+            logger.info("최적 가격 계산 중...")
+            print("🎯 최적 가격 계산 중...")  # print 추가
             best_price = min(prices, key=lambda x: x['price_per_energy'])
+            logger.info(f"최적 가격: {best_price}")
+            print(f"💰 최적 가격: {best_price}")  # print 추가
         
         # 응답 구성
         response = {
@@ -97,11 +128,18 @@ async def get_current_prices(
             "best_price": best_price
         }
         
-        return JSONResponse(content=response)
+        logger.info(f"최종 응답: {response}")
+        print(f"✅ 최종 응답: {response}")  # print 추가
+        return response
         
     except Exception as e:
         logger.error(f"가격 조회 오류: {e}")
-        raise HTTPException(status_code=500, detail="가격 조회 중 오류가 발생했습니다")
+        logger.error(f"오류 타입: {type(e)}")
+        print(f"❌ 가격 조회 오류: {e}")  # print 추가
+        import traceback
+        logger.error(f"스택 트레이스: {traceback.format_exc()}")
+        print(f"📋 스택 트레이스: {traceback.format_exc()}")  # print 추가
+        raise HTTPException(status_code=500, detail=f"가격 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.post("/purchase")
@@ -196,6 +234,9 @@ async def get_purchase_history(
 ):
     """구매 히스토리 조회"""
     try:
+        logger.info("=== 구매 히스토리 조회 API 시작 ===")
+        logger.info(f"provider_id: {provider_id}, limit: {limit}")
+        
         # 구매 히스토리 조회
         purchases = await external_energy_service.get_purchase_history(
             session=session,
@@ -203,32 +244,39 @@ async def get_purchase_history(
             limit=limit
         )
         
+        logger.info(f"서비스에서 받은 구매 기록 수: {len(purchases)}")
+        
         result = []
         for purchase in purchases:
+            logger.info(f"구매 기록 처리 중: {safe_get_value(purchase, 'id')}")
+            
             created_at = safe_get_value(purchase, 'created_at')
             completed_at = safe_get_value(purchase, 'completed_at')
+            status = safe_get_value(purchase, 'status')
             
-            result.append({
+            purchase_data = {
                 "purchase_id": safe_get_value(purchase, 'id'),
-                "provider": {
-                    "id": safe_get_value(purchase.provider, 'id'),
-                    "name": safe_get_value(purchase.provider, 'name'),
-                    "provider_type": safe_get_value(purchase.provider, 'provider_type')
-                },
+                "provider_id": safe_get_value(purchase, 'provider_id'),
                 "energy_amount": safe_get_value(purchase, 'energy_amount'),
-                "price_per_energy": float(safe_get_value(purchase, 'price_per_energy', 0)),
-                "total_cost": float(safe_get_value(purchase, 'total_cost', 0)),
-                "status": safe_get_value(purchase, 'status'),
+                "price_per_energy": float(safe_get_value(purchase, 'price_per_energy') or 0),
+                "total_cost": float(safe_get_value(purchase, 'total_cost') or 0),
+                "status": status.value if status and hasattr(status, 'value') else str(status) if status else "unknown",
                 "purchase_type": safe_get_value(purchase, 'purchase_type'),
                 "created_at": created_at.isoformat() if created_at else None,
                 "completed_at": completed_at.isoformat() if completed_at else None
-            })
+            }
+            
+            logger.info(f"구매 데이터 생성: {purchase_data}")
+            result.append(purchase_data)
         
-        return JSONResponse(content=result)
+        logger.info(f"최종 반환 구매 기록 수: {len(result)}")
+        return result
         
     except Exception as e:
         logger.error(f"구매 히스토리 조회 오류: {e}")
-        raise HTTPException(status_code=500, detail="구매 히스토리 조회 중 오류가 발생했습니다")
+        import traceback
+        logger.error(f"스택 트레이스: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"구매 히스토리 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.post("/stats/update")
