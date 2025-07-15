@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { DashboardLayout } from "@/components/layout/DashboardLayout"
 
 interface WalletInfo {
   address: string
@@ -71,18 +72,49 @@ export default function IntegratedDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper functions for safe data access
+  const safeNumber = (value: number | undefined | null): number => {
+    return typeof value === 'number' && !isNaN(value) ? value : 0
+  }
+
+  const safeString = (value: string | undefined | null): string => {
+    return typeof value === 'string' ? value : 'N/A'
+  }
+
+  const safePercentage = (value: number | undefined | null): string => {
+    return safeNumber(value).toFixed(1)
+  }
+
+  const safeLocaleString = (value: number | undefined | null): string => {
+    return safeNumber(value).toLocaleString()
+  }
+
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/v1/integrated-dashboard/dashboard/${partnerId}`)
+      // 임시 토큰 (실제로는 로그인에서 받아와야 함)
+      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzUyNTkyNzE5fQ.0vBkw9S2XxVPYbJqBVz6_yM5hT__NhNb6NrYIEzOC2g"
+      
+      const response = await fetch(`http://localhost:8001/api/v1/integrated-dashboard/dashboard/${partnerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const result = await response.json()
       if (result.success) {
         setDashboardData(result.data)
+        setError(null)
       } else {
         setError('대시보드 데이터를 불러오는데 실패했습니다.')
       }
-    } catch {
-      setError('네트워크 오류가 발생했습니다.')
+    } catch (err) {
+      console.error('Dashboard data fetch error:', err)
+      setError('네트워크 오류가 발생했습니다. 백엔드 서버가 실행 중인지 확인해주세요.')
     } finally {
       setLoading(false)
     }
@@ -117,29 +149,30 @@ export default function IntegratedDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">파트너사 종합 대시보드</h1>
-        <div className="flex items-center gap-4 mb-6">
-          <label className="text-sm font-medium text-gray-700">파트너사 ID:</label>
-          <input
-            type="number"
-            value={partnerId}
-            onChange={(e) => setPartnerId(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            min="1"
-          />
-          <button
-            onClick={fetchDashboardData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            새로고침
-          </button>
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">파트너사 종합 대시보드</h1>
+          <div className="flex items-center gap-4 mb-6">
+            <label className="text-sm font-medium text-gray-700">파트너사 ID:</label>
+            <input
+              type="number"
+              value={partnerId}
+              onChange={(e) => setPartnerId(parseInt(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min="1"
+            />
+            <button
+              onClick={fetchDashboardData}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              새로고침
+            </button>
+          </div>
+          <div className="text-sm text-gray-500">
+            최근 업데이트: {dashboardData.last_updated ? new Date(dashboardData.last_updated).toLocaleString() : 'N/A'}
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          최근 업데이트: {new Date(dashboardData.last_updated).toLocaleString()}
-        </div>
-      </div>
 
       {/* 지갑 현황 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -149,17 +182,17 @@ export default function IntegratedDashboardPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">총 잔액</span>
               <span className="text-lg font-bold text-blue-600">
-                {dashboardData.wallet_overview.total_balance.toLocaleString()} TRX
+                {safeLocaleString(dashboardData?.wallet_overview?.total_balance)} TRX
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">지갑 수</span>
-              <span className="text-lg font-bold">{dashboardData.wallet_overview.wallet_count}</span>
+              <span className="text-lg font-bold">{safeNumber(dashboardData?.wallet_overview?.wallet_count)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">보안 점수</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.wallet_overview.security_score}/100
+                {safeNumber(dashboardData?.wallet_overview?.security_score)}/100
               </Badge>
             </div>
           </div>
@@ -171,19 +204,19 @@ export default function IntegratedDashboardPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">24h 거래량</span>
               <span className="text-lg font-bold text-green-600">
-                {dashboardData.transaction_flow.total_count}
+                {safeNumber(dashboardData?.transaction_flow?.total_count)}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">평균 거래액</span>
               <span className="text-lg font-bold">
-                {dashboardData.transaction_flow.avg_amount.toLocaleString()} TRX
+                {safeLocaleString(dashboardData?.transaction_flow?.avg_amount)} TRX
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">트렌드</span>
               <Badge className="bg-blue-100 text-blue-800">
-                {dashboardData.transaction_flow.trend}
+                {safeString(dashboardData?.transaction_flow?.trend)}
               </Badge>
             </div>
           </div>
@@ -195,19 +228,19 @@ export default function IntegratedDashboardPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">총 에너지</span>
               <span className="text-lg font-bold text-purple-600">
-                {dashboardData.energy_status.total_energy.toLocaleString()}
+                {safeLocaleString(dashboardData?.energy_status?.total_energy)}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">사용률</span>
               <Badge className="bg-yellow-100 text-yellow-800">
-                {dashboardData.energy_status.usage_rate.toFixed(1)}%
+                {safePercentage(dashboardData?.energy_status?.usage_rate)}%
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">효율성</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.energy_status.efficiency_score}/100
+                {safeNumber(dashboardData?.energy_status?.efficiency_score)}/100
               </Badge>
             </div>
           </div>
@@ -223,17 +256,17 @@ export default function IntegratedDashboardPage() {
               <span className="text-sm font-medium text-gray-700">Hot Wallet</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">
-                  {dashboardData.wallet_overview.distribution.hot.percentage.toFixed(1)}%
+                  {safePercentage(dashboardData?.wallet_overview?.distribution?.hot?.percentage)}%
                 </span>
                 <span className="text-sm font-bold text-red-600">
-                  {dashboardData.wallet_overview.distribution.hot.balance.toLocaleString()} TRX
+                  {safeLocaleString(dashboardData?.wallet_overview?.distribution?.hot?.balance)} TRX
                 </span>
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-red-500 h-2 rounded-full"
-                style={{ width: `${dashboardData.wallet_overview.distribution.hot.percentage}%` }}
+                style={{ width: `${safeNumber(dashboardData?.wallet_overview?.distribution?.hot?.percentage)}%` }}
               ></div>
             </div>
 
@@ -241,17 +274,17 @@ export default function IntegratedDashboardPage() {
               <span className="text-sm font-medium text-gray-700">Warm Wallet</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">
-                  {dashboardData.wallet_overview.distribution.warm.percentage.toFixed(1)}%
+                  {safePercentage(dashboardData?.wallet_overview?.distribution?.warm?.percentage)}%
                 </span>
                 <span className="text-sm font-bold text-yellow-600">
-                  {dashboardData.wallet_overview.distribution.warm.balance.toLocaleString()} TRX
+                  {safeLocaleString(dashboardData?.wallet_overview?.distribution?.warm?.balance)} TRX
                 </span>
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-yellow-500 h-2 rounded-full"
-                style={{ width: `${dashboardData.wallet_overview.distribution.warm.percentage}%` }}
+                style={{ width: `${safeNumber(dashboardData?.wallet_overview?.distribution?.warm?.percentage)}%` }}
               ></div>
             </div>
 
@@ -259,17 +292,17 @@ export default function IntegratedDashboardPage() {
               <span className="text-sm font-medium text-gray-700">Cold Wallet</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">
-                  {dashboardData.wallet_overview.distribution.cold.percentage.toFixed(1)}%
+                  {safePercentage(dashboardData?.wallet_overview?.distribution?.cold?.percentage)}%
                 </span>
                 <span className="text-sm font-bold text-blue-600">
-                  {dashboardData.wallet_overview.distribution.cold.balance.toLocaleString()} TRX
+                  {safeLocaleString(dashboardData?.wallet_overview?.distribution?.cold?.balance)} TRX
                 </span>
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${dashboardData.wallet_overview.distribution.cold.percentage}%` }}
+                style={{ width: `${safeNumber(dashboardData?.wallet_overview?.distribution?.cold?.percentage)}%` }}
               ></div>
             </div>
           </div>
@@ -279,20 +312,20 @@ export default function IntegratedDashboardPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">사용자 분석</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{dashboardData.user_analytics.total_users}</div>
+              <div className="text-2xl font-bold text-blue-600">{safeNumber(dashboardData?.user_analytics?.total_users)}</div>
               <div className="text-sm text-gray-600">총 사용자</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{dashboardData.user_analytics.active_users}</div>
+              <div className="text-2xl font-bold text-green-600">{safeNumber(dashboardData?.user_analytics?.active_users)}</div>
               <div className="text-sm text-gray-600">활성 사용자</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{dashboardData.user_analytics.new_users}</div>
+              <div className="text-2xl font-bold text-purple-600">{safeNumber(dashboardData?.user_analytics?.new_users)}</div>
               <div className="text-sm text-gray-600">신규 사용자</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {dashboardData.user_analytics.retention_rate.toFixed(1)}%
+                {safePercentage(dashboardData?.user_analytics?.retention_rate)}%
               </div>
               <div className="text-sm text-gray-600">유지율</div>
             </div>
@@ -308,25 +341,25 @@ export default function IntegratedDashboardPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">총 수익</span>
               <span className="text-lg font-bold text-green-600">
-                {dashboardData.revenue_metrics.total_revenue.toLocaleString()} TRX
+                {safeLocaleString(dashboardData?.revenue_metrics?.total_revenue)} TRX
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">수수료 수익</span>
               <span className="text-lg font-bold text-blue-600">
-                {dashboardData.revenue_metrics.commission_earned.toLocaleString()} TRX
+                {safeLocaleString(dashboardData?.revenue_metrics?.commission_earned)} TRX
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">이익률</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.revenue_metrics.profit_margin.toFixed(1)}%
+                {safePercentage(dashboardData?.revenue_metrics?.profit_margin)}%
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">성장률</span>
               <Badge className="bg-blue-100 text-blue-800">
-                {dashboardData.revenue_metrics.growth_rate.toFixed(1)}%
+                {safePercentage(dashboardData?.revenue_metrics?.growth_rate)}%
               </Badge>
             </div>
           </div>
@@ -338,31 +371,31 @@ export default function IntegratedDashboardPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">전체 점수</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.system_health.overall_score}/100
+                {safeNumber(dashboardData?.system_health?.overall_score)}/100
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">데이터베이스</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.system_health.database_health}/100
+                {safeNumber(dashboardData?.system_health?.database_health)}/100
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">지갑 연결</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.system_health.wallet_connections}/100
+                {safeNumber(dashboardData?.system_health?.wallet_connections)}/100
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">외부 서비스</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.system_health.external_services}/100
+                {safeNumber(dashboardData?.system_health?.external_services)}/100
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">가동률</span>
               <Badge className="bg-green-100 text-green-800">
-                {dashboardData.system_health.uptime.toFixed(1)}%
+                {safePercentage(dashboardData?.system_health?.uptime)}%
               </Badge>
             </div>
           </div>
@@ -377,30 +410,31 @@ export default function IntegratedDashboardPage() {
             <div className="text-lg font-bold text-blue-600">거래량 예측</div>
             <div className="text-sm text-gray-600">다음 24시간</div>
             <div className="text-2xl font-bold text-gray-900 mt-2">
-              {dashboardData.predictions.transaction_volume.toLocaleString()}
+              {safeLocaleString(dashboardData?.predictions?.transaction_volume)}
             </div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-purple-600">에너지 소비 예측</div>
             <div className="text-sm text-gray-600">다음 24시간</div>
             <div className="text-2xl font-bold text-gray-900 mt-2">
-              {dashboardData.predictions.energy_consumption.toLocaleString()}
+              {safeLocaleString(dashboardData?.predictions?.energy_consumption)}
             </div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-green-600">수익 예측</div>
             <div className="text-sm text-gray-600">다음 24시간</div>
             <div className="text-2xl font-bold text-gray-900 mt-2">
-              {dashboardData.predictions.revenue.toLocaleString()} TRX
+              {safeLocaleString(dashboardData?.predictions?.revenue)} TRX
             </div>
           </div>
         </div>
         <div className="mt-4 text-center">
           <Badge className="bg-blue-100 text-blue-800">
-            예측 신뢰도: {dashboardData.predictions.confidence.toFixed(1)}%
+            예측 신뢰도: {safePercentage(dashboardData?.predictions?.confidence)}%
           </Badge>
         </div>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }
