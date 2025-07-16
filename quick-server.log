@@ -3454,3 +3454,19 @@ fastapi.exceptions.ResponseValidationError: 2 validation errors:
   {'type': 'string_type', 'loc': ('response', 0, 'subscription_plan'), 'msg': 'Input should be a valid string', 'input': None}
   {'type': 'dict_type', 'loc': ('response', 0, 'settings'), 'msg': 'Input should be a valid dictionary', 'input': None}
 
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.011s", "request_id": "1752690140043431000", "timestamp": "2025-07-16T18:22:20.056082", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/dashboard/stats - 200 - 0.010s", "request_id": "1752690140047239000", "timestamp": "2025-07-16T18:22:20.057193", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/system-health - 200 - 0.009s", "request_id": "1752690140047863000", "timestamp": "2025-07-16T18:22:20.057364", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.008s", "request_id": "1752690140049128000", "timestamp": "2025-07-16T18:22:20.057525", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/dashboard/stats - 200 - 0.006s", "request_id": "1752690140051431000", "timestamp": "2025-07-16T18:22:20.057943", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/system-health - 200 - 0.006s", "request_id": "1752690140052526000", "timestamp": "2025-07-16T18:22:20.058326", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.000s", "request_id": "1752690140059675000", "timestamp": "2025-07-16T18:22:20.060108", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.003s", "request_id": "1752690140073227000", "timestamp": "2025-07-16T18:22:20.076299", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.002s", "request_id": "1752690140074684000", "timestamp": "2025-07-16T18:22:20.077257", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/dashboard/stats - 200 - 0.003s", "request_id": "1752690140074723000", "timestamp": "2025-07-16T18:22:20.077541", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.003s", "request_id": "1752690140074753000", "timestamp": "2025-07-16T18:22:20.077686", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/superadmin/system-health - 200 - 0.003s", "request_id": "1752690140074899000", "timestamp": "2025-07-16T18:22:20.077807", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.003s", "request_id": "1752690140075114000", "timestamp": "2025-07-16T18:22:20.078220", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.002s", "request_id": "1752690140078865000", "timestamp": "2025-07-16T18:22:20.080770", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.001s", "request_id": "1752690140079892000", "timestamp": "2025-07-16T18:22:20.081162", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
+{"message": "OPTIONS /api/v1/admin/partners - 200 - 0.001s", "request_id": "1752690140080016000", "timestamp": "2025-07-16T18:22:20.081375", "level": "INFO", "app_name": "DantaroWallet", "app_version": "0.1.0"}
