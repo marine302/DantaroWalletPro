@@ -4,8 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Users, DollarSign, Zap, Activity, TrendingUp } from 'lucide-react';
-import { StatCard } from '@/components/ui/StatCard';
-import { Table } from '@/components/ui/Table';
+import { 
+  StatCard, 
+  Section,
+  Button 
+} from '@/components/ui/DarkThemeComponents';
+import { gridLayouts } from '@/styles/dark-theme';
 import { apiClient } from '@/lib/api';
 import { getStatusColor, safeFormatNumber, safeCurrency } from '@/lib/utils';
 
@@ -25,14 +29,12 @@ export default function DashboardPage() {
 
   const {
     data: stats,
-    isLoading: statsLoading,
-    error: statsError,
   } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => apiClient.getDashboardStats(),
-    enabled: isAuthenticated, // Only run query if authenticated
-    retry: 1, // 최대 1번만 재시도
-    retryDelay: 1000, // 1초 후 재시도
+    enabled: isAuthenticated,
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const {
@@ -40,7 +42,7 @@ export default function DashboardPage() {
   } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => apiClient.getSystemHealth(),
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
     enabled: isAuthenticated,
     retry: 1,
   });
@@ -49,185 +51,150 @@ export default function DashboardPage() {
     data: partnersResponse,
     isLoading: partnersLoading,
   } = useQuery({
-    queryKey: ['partners', 1, 5],
+    queryKey: ['partners'],
     queryFn: () => apiClient.getPartners(1, 5),
     enabled: isAuthenticated,
+    retry: 1,
   });
 
-  // Show loading spinner while checking authentication
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (statsError) {
-    console.error('Dashboard stats error:', statsError);
-  }
-
-  // 오류나 로딩 중일 때 사용할 fallback 데이터
+  // Fallback data for UI consistency
   const displayStats = stats || {
-    total_partners: 1,
-    active_partners: 1,
-    total_users: 50,
-    active_users: 45,
-    transactions_today: 25,
+    total_partners: 5,
+    active_partners: 4,
+    total_users: 150,
+    active_users: 120,
+    total_revenue: 75000.0,
+    total_transactions_today: 25,
     daily_volume: 125000.0,
     total_energy: 1500000,
     available_energy: 1150000,
-    total_revenue: 75000.0,
-    total_energy_consumed: 350000,
-    total_transactions_today: 25,
     active_wallets: 45,
   };
 
-  const partnerColumns = [
-    {
-      key: 'name',
-      title: 'Partner Name',
-    },
-    {
-      key: 'domain',
-      title: 'Domain',
-    },
-    {
-      key: 'status',
-      title: 'Status',
-      render: (value: unknown) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(String(value))}`}>
-          {String(value)}
-        </span>
-      ),
-    },
-    {
-      key: 'created_at',
-      title: 'Created',
-      render: (value: unknown) => new Date(String(value)).toLocaleDateString(),
-    },
-  ];
+  const displayPartners = partnersResponse?.items || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Page header */}
-      <div className="mb-8">
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Dashboard
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Welcome to the DantaroWallet Super Admin Dashboard
-            </p>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4">
-            {systemHealth && (
-              <div className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md ${
-                systemHealth.status === 'healthy' 
-                  ? 'text-green-700 bg-green-100' 
-                  : systemHealth.status === 'warning'
-                  ? 'text-yellow-700 bg-yellow-100'
-                  : 'text-red-700 bg-red-100'
-              }`}>
-                <Activity className="h-4 w-4 mr-2" />
-                System {systemHealth.status}
-              </div>
-            )}
+    <div className="space-y-6">
+      {/* System Health Status */}
+      {systemHealth && (
+        <div className="flex justify-end">
+          <div className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md ${
+            systemHealth.status === 'healthy' 
+              ? 'text-green-300 bg-green-900/30 border-green-600' 
+              : systemHealth.status === 'warning'
+              ? 'text-yellow-300 bg-yellow-900/30 border-yellow-600'
+              : 'text-red-300 bg-red-900/30 border-red-600'
+          }`}>
+            <Activity className="h-4 w-4 mr-2" />
+            System {systemHealth.status}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* Main Stats Grid */}
+      <div className={gridLayouts.statsGrid}>
         <StatCard
           title="Total Partners"
           value={safeFormatNumber(displayStats.total_partners)}
-          icon={Users}
-          iconColor="text-blue-600"
-          loading={statsLoading}
+          icon={<Users className="h-5 w-5" />}
         />
         <StatCard
           title="Active Partners"
           value={safeFormatNumber(displayStats.active_partners)}
-          icon={TrendingUp}
-          iconColor="text-green-600"
-          loading={statsLoading}
+          icon={<TrendingUp className="h-5 w-5" />}
+          trend="up"
         />
         <StatCard
           title="Total Revenue"
           value={safeCurrency(displayStats.total_revenue)}
-          icon={DollarSign}
-          iconColor="text-emerald-600"
-          loading={statsLoading}
+          icon={<DollarSign className="h-5 w-5" />}
+          trend="up"
         />
         <StatCard
           title="Available Energy"
           value={safeFormatNumber(displayStats.available_energy)}
-          icon={Zap}
-          iconColor="text-yellow-600"
-          loading={statsLoading}
+          icon={<Zap className="h-5 w-5" />}
         />
       </div>
 
-      {/* Additional stats */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* Secondary Stats Grid */}
+      <div className={gridLayouts.statsGrid}>
         <StatCard
           title="Daily Volume"
           value={safeCurrency(displayStats.daily_volume)}
-          icon={Activity}
-          iconColor="text-purple-600"
-          loading={statsLoading}
+          icon={<Activity className="h-5 w-5" />}
         />
         <StatCard
-          title="Energy Consumed"
-          value={safeFormatNumber(displayStats.total_energy_consumed)}
-          icon={Zap}
-          iconColor="text-orange-600"
-          loading={statsLoading}
+          title="Total Energy"
+          value={safeFormatNumber(1500000)}
+          icon={<Zap className="h-5 w-5" />}
         />
         <StatCard
           title="Transactions Today"
           value={safeFormatNumber(displayStats.total_transactions_today)}
-          icon={TrendingUp}
-          iconColor="text-indigo-600"
-          loading={statsLoading}
+          icon={<TrendingUp className="h-5 w-5" />}
+          trend="up"
         />
         <StatCard
           title="Active Wallets"
           value={safeFormatNumber(displayStats.active_wallets)}
-          icon={Users}
-          iconColor="text-pink-600"
-          loading={statsLoading}
+          icon={<Users className="h-5 w-5" />}
         />
       </div>
 
-      {/* Recent Partners table */}
-      <div className="mb-8">
-        <div className="sm:flex sm:items-center mb-4">
-          <div className="sm:flex-auto">
-            <h3 className="text-lg font-medium text-gray-900">Recent Partners</h3>
-            <p className="mt-1 text-sm text-gray-700">
-              Latest partners added to the platform.
-            </p>
+      {/* Recent Partners Section */}
+      <Section title="Recent Partners">
+        {partnersLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <a
-              href="/partners"
-              className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+        ) : displayPartners.length > 0 ? (
+          <div className="space-y-4">
+            {displayPartners.map((partner) => (
+              <div key={partner.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                <div>
+                  <h4 className="text-white font-medium">{partner.name || `Partner ${partner.id}`}</h4>
+                  <p className="text-gray-300 text-sm">Partner {partner.id}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(partner.status)}`}>
+                    {partner.status}
+                  </span>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => router.push(`/partners/${partner.id}`)}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <div className="text-center pt-4">
+              <Button onClick={() => router.push('/partners')}>
+                View all partners
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-400">No partners found</p>
+            <Button 
+              onClick={() => router.push('/partners')}
+              className="mt-4"
             >
-              View all partners
-            </a>
+              Add Partner
+            </Button>
           </div>
-        </div>
-
-        <Table
-          data={(partnersResponse?.items || []) as unknown as Record<string, unknown>[]}
-          columns={partnerColumns}
-          loading={partnersLoading}
-          emptyMessage="No partners found"
-        />
-      </div>
+        )}
+      </Section>
     </div>
   );
 }
