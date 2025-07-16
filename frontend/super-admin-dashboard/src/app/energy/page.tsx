@@ -1,171 +1,156 @@
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { BasePage } from '@/components/ui/BasePage';
+import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import Link from "next/link";
 
 export default function EnergyPage() {
+  const headerActions = (
+    <Button variant="primary">
+      Create Energy Pool
+    </Button>
+  );
+
   return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="md:flex md:items-center md:justify-between mb-6">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              Energy Management
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Monitor and manage energy pools, allocations, and usage across the platform.
-            </p>
-          </div>
-          <div className="mt-4 flex md:ml-4 md:mt-0">
-            <button
-              type="button"
-              className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-            >
-              Create Energy Pool
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">⚡</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Energy
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">1,250,000 TRX</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">🔋</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Available Energy
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">850,000 TRX</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">📊</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Usage Rate
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">68%</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 외부 에너지 시장 섹션 */}
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              외부 에너지 시장
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              에너지 부족 시 외부 공급자에서 에너지를 구매하여 서비스 안정성을 확보하세요.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link href="/energy/external-market">
-                <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 text-sm">🏪</span>
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-sm font-medium text-gray-900">시장 모니터링</h4>
-                      <p className="text-xs text-gray-500">실시간 가격 및 공급자 현황</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link href="/energy/external-market/purchase">
-                <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 text-sm">💰</span>
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-sm font-medium text-gray-900">수동 구매</h4>
-                      <p className="text-xs text-gray-500">즉시 에너지 구매</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link href="/energy/auto-purchase">
-                <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-purple-600 text-sm">🤖</span>
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-sm font-medium text-gray-900">자동 구매 설정</h4>
-                      <p className="text-xs text-gray-500">임계값 및 정책 관리</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-              
-              <Link href="/energy/purchase-history">
-                <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <span className="text-orange-600 text-sm">📊</span>
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-sm font-medium text-gray-900">구매 이력</h4>
-                      <p className="text-xs text-gray-500">구매 기록 및 통계</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Energy Pool Management
-            </h3>
-            <div className="text-center py-12">
-              <p className="text-gray-500">Energy management functionality coming soon...</p>
-            </div>
-          </div>
-        </div>
+    <BasePage 
+      title="Energy Management"
+      description="Monitor and manage energy pools, allocations, and usage across the platform."
+      headerActions={headerActions}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <StatCard
+          title="Total Energy"
+          value="1,250,000 TRX"
+          icon="⚡"
+          trend="up"
+        />
+        <StatCard
+          title="Available Energy"
+          value="890,500 TRX"
+          icon="🔋"
+          trend="neutral"
+        />
+        <StatCard
+          title="Daily Usage"
+          value="45,200 TRX"
+          icon="📊"
+          trend="down"
+        />
       </div>
-    </DashboardLayout>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <Section title="Quick Actions">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href="/energy/auto-purchase"
+              className="block p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+            >
+              <div className="text-blue-400 text-2xl mb-2">🤖</div>
+              <h3 className="text-lg font-medium text-white mb-1">Auto Purchase</h3>
+              <p className="text-gray-300 text-sm">Configure automatic energy purchasing</p>
+            </Link>
+
+            <Link
+              href="/energy/external-market"
+              className="block p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+            >
+              <div className="text-green-400 text-2xl mb-2">🏪</div>
+              <h3 className="text-lg font-medium text-white mb-1">External Market</h3>
+              <p className="text-gray-300 text-sm">Buy energy from external sources</p>
+            </Link>
+
+            <Link
+              href="/energy/purchase-history"
+              className="block p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+            >
+              <div className="text-purple-400 text-2xl mb-2">📈</div>
+              <h3 className="text-lg font-medium text-white mb-1">Purchase History</h3>
+              <p className="text-gray-300 text-sm">View all energy transactions</p>
+            </Link>
+
+            <div className="block p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer">
+              <div className="text-orange-400 text-2xl mb-2">⚙️</div>
+              <h3 className="text-lg font-medium text-white mb-1">Energy Settings</h3>
+              <p className="text-gray-300 text-sm">Configure energy policies</p>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Energy Pools">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+              <div>
+                <h4 className="text-white font-medium">Main Pool</h4>
+                <p className="text-gray-300 text-sm">850,000 TRX available</p>
+              </div>
+              <span className="px-2 py-1 text-xs bg-green-900/30 text-green-300 rounded-full">
+                Active
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+              <div>
+                <h4 className="text-white font-medium">Emergency Pool</h4>
+                <p className="text-gray-300 text-sm">40,500 TRX available</p>
+              </div>
+              <span className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-full">
+                Reserve
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+              <div>
+                <h4 className="text-white font-medium">Partner Pool</h4>
+                <p className="text-gray-300 text-sm">0 TRX available</p>
+              </div>
+              <span className="px-2 py-1 text-xs bg-red-900/30 text-red-300 rounded-full">
+                Empty
+              </span>
+            </div>
+          </div>
+        </Section>
+      </div>
+
+      <Section title="Recent Activity">
+        <div className="overflow-hidden shadow ring-1 ring-gray-700 rounded-lg">
+          <table className="min-w-full divide-y divide-gray-600">
+            <thead className="bg-gray-800">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Pool
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-gray-900 divide-y divide-gray-700">
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">Auto Purchase</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">+50,000 TRX</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">Main Pool</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2 hours ago</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">Manual Transfer</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">-15,000 TRX</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">Emergency Pool</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">5 hours ago</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">Pool Creation</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">+100,000 TRX</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">Partner Pool</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1 day ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Section>
+    </BasePage>
   );
 }

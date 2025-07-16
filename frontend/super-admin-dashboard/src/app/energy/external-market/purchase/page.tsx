@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { ArrowLeft, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { BasePage } from "@/components/ui/BasePage";
+import { Section, Button, FormField } from '@/components/ui/DarkThemeComponents';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 
 interface PurchaseRequest {
   providerId: string;
@@ -23,338 +21,270 @@ export default function ManualPurchasePage() {
   const [step, setStep] = useState(1);
   const [purchaseRequest, setPurchaseRequest] = useState<PurchaseRequest | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState(1000000);
+  const [urgencyLevel, setUrgencyLevel] = useState('normal');
 
   // 모의 공급자 데이터
   const providers = [
     { id: '1', name: 'JustLend Energy', pricePerEnergy: 0.0045, available: 5000000 },
     { id: '2', name: 'TronNRG', pricePerEnergy: 0.0052, available: 3500000 },
-    { id: '4', name: 'P2P Energy Trading', pricePerEnergy: 0.0041, available: 2800000 }
+    { id: '3', name: 'P2P Energy Trading', pricePerEnergy: 0.0041, available: 2000000 },
   ];
 
-  const handleProviderSelect = (providerId: string, amount: number, urgency: 'normal' | 'high' | 'emergency') => {
-    const provider = providers.find(p => p.id === providerId);
+  const getMarginRate = (urgency: string) => {
+    switch (urgency) {
+      case 'emergency': return 0.20;
+      case 'high': return 0.15;
+      default: return 0.10;
+    }
+  };
+
+  const calculatePurchase = () => {
+    const provider = providers.find(p => p.id === selectedProvider);
     if (!provider) return;
 
-    const marginRate = urgency === 'emergency' ? 0.25 : urgency === 'high' ? 0.15 : 0.10;
-    const totalCost = amount * provider.pricePerEnergy;
+    const marginRate = getMarginRate(urgencyLevel);
+    const totalCost = purchaseAmount * provider.pricePerEnergy;
     const finalPrice = provider.pricePerEnergy * (1 + marginRate);
 
     setPurchaseRequest({
-      providerId,
+      providerId: provider.id,
       providerName: provider.name,
-      amount,
+      amount: purchaseAmount,
       pricePerEnergy: provider.pricePerEnergy,
       totalCost,
-      urgency,
+      urgency: urgencyLevel as 'normal' | 'high' | 'emergency',
       marginRate,
       finalPrice,
-      estimatedDelivery: urgency === 'emergency' ? '즉시' : urgency === 'high' ? '5분 내' : '10분 내'
+      estimatedDelivery: urgencyLevel === 'emergency' ? '즉시' : urgencyLevel === 'high' ? '5분' : '10분'
     });
 
     setStep(2);
   };
 
-  const handleSubmit = async () => {
-    if (!purchaseRequest) return;
-
+  const submitPurchase = async () => {
     setIsSubmitting(true);
-    
-    // 모의 API 호출
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setStep(3);
-    }, 2000);
-  };
-
-  const handleGoBack = () => {
-    window.history.back();
-  };
-
-  const handleGoToMarket = () => {
-    window.location.href = '/energy/external-market';
-  };
-
-  const handleGoToHistory = () => {
-    window.location.href = '/energy/purchase-history';
+    // 모의 제출 프로세스
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsSubmitting(false);
+    setStep(3);
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'emergency': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'normal': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'emergency': return 'text-red-400';
+      case 'high': return 'text-orange-400';
+      default: return 'text-green-400';
     }
   };
 
-  return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
-        {/* 헤더 */}
-        <div className="mb-6">
-          <div className="flex items-center mb-4">
-            <Button
-              variant="ghost"
-              onClick={handleGoBack}
-              className="mr-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              돌아가기
-            </Button>
-            <h1 className="text-2xl font-bold">수동 에너지 구매</h1>
-          </div>
-          
-          {/* 진행 단계 */}
-          <div className="flex items-center space-x-4">
-            <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
-                1
+  const getUrgencyBadge = (urgency: string) => {
+    const colors = {
+      normal: 'bg-green-900 text-green-200',
+      high: 'bg-orange-900 text-orange-200',
+      emergency: 'bg-red-900 text-red-200'
+    };
+    return colors[urgency as keyof typeof colors] || 'bg-gray-900 text-gray-200';
+  };
+
+  if (step === 3) {
+    return (
+      <BasePage title="구매 완료" description="에너지 구매가 성공적으로 완료되었습니다">
+        <div className="max-w-2xl mx-auto">
+          <Section title="구매 결과">
+            <div className="text-center py-8">
+              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">구매 성공!</h2>
+              <p className="text-gray-400 mb-6">
+                {purchaseRequest?.amount.toLocaleString()} 에너지가 성공적으로 구매되었습니다.
+              </p>
+              
+              <div className="bg-gray-800 rounded-lg p-6 text-left">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-400">제공업체</p>
+                    <p className="font-medium">{purchaseRequest?.providerName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">구매량</p>
+                    <p className="font-medium">{purchaseRequest?.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">총 비용</p>
+                    <p className="font-medium">${purchaseRequest?.totalCost.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">트랜잭션 ID</p>
+                    <p className="font-mono text-sm">0x1234...abcd</p>
+                  </div>
+                </div>
               </div>
-              <span className="ml-2 text-sm font-medium">구매 설정</span>
-            </div>
-            <div className="flex-1 h-0.5 bg-gray-200">
-              <div className={`h-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`} />
-            </div>
-            <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
-                2
+              
+              <div className="flex gap-4 mt-6">
+                <Button onClick={() => window.history.back()}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  돌아가기
+                </Button>
+                <Button onClick={() => {setStep(1); setPurchaseRequest(null);}}>
+                  새 구매
+                </Button>
               </div>
-              <span className="ml-2 text-sm font-medium">확인</span>
             </div>
-            <div className="flex-1 h-0.5 bg-gray-200">
-              <div className={`h-full ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`} />
-            </div>
-            <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
-                3
-              </div>
-              <span className="ml-2 text-sm font-medium">완료</span>
-            </div>
-          </div>
+          </Section>
         </div>
+      </BasePage>
+    );
+  }
 
-        {/* Step 1: 구매 설정 */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>구매 정보 설정</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+  if (step === 2 && purchaseRequest) {
+    return (
+      <BasePage title="구매 확인" description="구매 정보를 확인하고 최종 승인합니다">
+        <div className="max-w-2xl mx-auto">
+          <Section title="구매 정보 확인">
+            <div className="space-y-6">
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">구매 세부사항</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      구매 수량
-                    </label>
-                    <select
-                      id="amount"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      defaultValue="1000000"
-                    >
-                      <option value="500000">500,000 에너지</option>
-                      <option value="1000000">1,000,000 에너지</option>
-                      <option value="2000000">2,000,000 에너지</option>
-                      <option value="5000000">5,000,000 에너지</option>
-                    </select>
+                    <p className="text-sm text-gray-400">제공업체</p>
+                    <p className="font-medium">{purchaseRequest.providerName}</p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      긴급도
-                    </label>
-                    <select
-                      id="urgency"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      defaultValue="normal"
-                    >
-                      <option value="normal">일반 (마진 10%)</option>
-                      <option value="high">높음 (마진 15%)</option>
-                      <option value="emergency">긴급 (마진 25%)</option>
-                    </select>
+                    <p className="text-sm text-gray-400">구매량</p>
+                    <p className="font-medium">{purchaseRequest.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">원가</p>
+                    <p className="font-medium">${purchaseRequest.pricePerEnergy}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">마진</p>
+                    <p className="font-medium">{(purchaseRequest.marginRate * 100).toFixed(1)}%</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">최종 단가</p>
+                    <p className="font-medium">${purchaseRequest.finalPrice.toFixed(4)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">총 비용</p>
+                    <p className="text-lg font-bold text-green-400">${purchaseRequest.totalCost.toFixed(2)}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>공급자 선택</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {providers.map((provider) => (
-                    <div
-                      key={provider.id}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h3 className="font-medium text-gray-900">{provider.name}</h3>
-                          <p className="text-sm text-gray-500">
-                            가격: {provider.pricePerEnergy.toFixed(4)} TRX/에너지
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-500">가용량</p>
-                          <p className="font-medium">{provider.available.toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          const amountSelect = document.getElementById('amount') as HTMLSelectElement;
-                          const urgencySelect = document.getElementById('urgency') as HTMLSelectElement;
-                          handleProviderSelect(
-                            provider.id,
-                            Number(amountSelect.value),
-                            urgencySelect.value as 'normal' | 'high' | 'emergency'
-                          );
-                        }}
-                        className="w-full"
-                      >
-                        선택
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Step 2: 확인 */}
-        {step === 2 && purchaseRequest && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>구매 요청 확인</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">공급자</p>
-                      <p className="font-medium">{purchaseRequest.providerName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">구매 수량</p>
-                      <p className="font-medium">{purchaseRequest.amount.toLocaleString()} 에너지</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">공급자 가격</p>
-                      <p className="font-medium">{purchaseRequest.pricePerEnergy.toFixed(4)} TRX</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">총 비용</p>
-                      <p className="font-medium">{purchaseRequest.totalCost.toFixed(2)} TRX</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">긴급도</p>
-                      <Badge className={getUrgencyColor(purchaseRequest.urgency)}>
-                        {purchaseRequest.urgency}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">마진율</p>
-                      <p className="font-medium">{(purchaseRequest.marginRate * 100).toFixed(1)}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">파트너사 판매가</p>
-                      <p className="font-medium text-blue-600">{purchaseRequest.finalPrice.toFixed(4)} TRX</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">예상 배송</p>
-                      <p className="font-medium">{purchaseRequest.estimatedDelivery}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <div className="flex items-center text-amber-600 mb-2">
-                      <AlertTriangle className="w-4 h-4 mr-2" />
-                      <span className="text-sm font-medium">주의사항</span>
-                    </div>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• 구매 승인 후 취소가 불가능합니다</li>
-                      <li>• 에너지 배송은 공급자 상황에 따라 지연될 수 있습니다</li>
-                      <li>• 마진율은 긴급도에 따라 자동 적용됩니다</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                이전
-              </Button>
-              <Button 
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Clock className="w-4 h-4 mr-2 animate-spin" />
-                    처리 중...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    구매 승인
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: 완료 */}
-        {step === 3 && purchaseRequest && (
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="mb-4">
-                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  구매 요청이 완료되었습니다
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {purchaseRequest.providerName}에서 {purchaseRequest.amount.toLocaleString()} 에너지를 구매했습니다.
-                </p>
                 
-                <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">총 비용</p>
-                      <p className="font-medium">{purchaseRequest.totalCost.toFixed(2)} TRX</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">예상 배송</p>
-                      <p className="font-medium">{purchaseRequest.estimatedDelivery}</p>
-                    </div>
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <span className={`px-3 py-1 rounded-full text-sm ${getUrgencyBadge(purchaseRequest.urgency)}`}>
+                      {purchaseRequest.urgency}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      예상 배송: {purchaseRequest.estimatedDelivery}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleGoToMarket}
-                    className="flex-1"
+              <div className="flex gap-4">
+                <Button variant="secondary" onClick={() => setStep(1)}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  이전
+                </Button>
+                <Button onClick={submitPurchase} className="flex-1">
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      구매 중...
+                    </div>
+                  ) : (
+                    '구매 확인'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Section>
+        </div>
+      </BasePage>
+    );
+  }
+
+  return (
+    <BasePage title="수동 에너지 구매" description="원하는 제공업체에서 직접 에너지를 구매합니다">
+      <div className="max-w-2xl mx-auto">
+        <Section title="구매 설정">
+          <div className="space-y-6">
+            <FormField
+              label="구매량"
+              type="number"
+              value={purchaseAmount}
+              onChange={(value) => setPurchaseAmount(Number(value))}
+              placeholder="1000000"
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-200 mb-2">긴급도</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['normal', 'high', 'emergency'].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setUrgencyLevel(level)}
+                    className={`p-3 rounded-lg border ${
+                      urgencyLevel === level 
+                        ? 'border-blue-500 bg-blue-900/20' 
+                        : 'border-gray-600 bg-gray-700'
+                    }`}
                   >
-                    시장으로 돌아가기
-                  </Button>
-                  <Button 
-                    onClick={handleGoToHistory}
-                    className="flex-1"
+                    <div className="text-center">
+                      <div className={`text-sm font-medium ${getUrgencyColor(level)}`}>
+                        {level === 'normal' ? '일반' : level === 'high' ? '높음' : '긴급'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        마진 {(getMarginRate(level) * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-200 mb-2">제공업체 선택</label>
+              <div className="space-y-2">
+                {providers.map((provider) => (
+                  <button
+                    key={provider.id}
+                    onClick={() => setSelectedProvider(provider.id)}
+                    className={`w-full p-4 rounded-lg border text-left ${
+                      selectedProvider === provider.id
+                        ? 'border-blue-500 bg-blue-900/20'
+                        : 'border-gray-600 bg-gray-700'
+                    }`}
                   >
-                    구매 이력 보기
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{provider.name}</h4>
+                        <p className="text-sm text-gray-400">
+                          가용량: {provider.available.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-400">${provider.pricePerEnergy}</p>
+                        <p className="text-xs text-gray-400">per energy</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button 
+              onClick={calculatePurchase} 
+              className={`w-full ${(!selectedProvider || purchaseAmount <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              구매 계산
+            </Button>
           </div>
-        )}
+        </Section>
       </div>
-    </DashboardLayout>
+    </BasePage>
   );
 }

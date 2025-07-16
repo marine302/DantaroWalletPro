@@ -1,11 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Download, Filter, Search, Eye, RefreshCw } from 'lucide-react';
+import { BasePage } from "@/components/ui/BasePage";
+import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
+import { Download, RefreshCw } from 'lucide-react';
 
 interface PurchaseHistory {
   id: string;
@@ -14,8 +12,6 @@ interface PurchaseHistory {
   amount: number;
   pricePerEnergy: number;
   totalCost: number;
-  margin: number;
-  finalPrice: number;
   status: 'completed' | 'pending' | 'failed' | 'cancelled';
   type: 'auto' | 'manual';
   urgency: 'normal' | 'high' | 'emergency';
@@ -25,15 +21,10 @@ interface PurchaseHistory {
 }
 
 export default function PurchaseHistoryPage() {
-  const [purchases, setPurchases] = useState<PurchaseHistory[]>([]);
   const [filteredPurchases, setFilteredPurchases] = useState<PurchaseHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [dateRange, setDateRange] = useState('7d');
 
-  // 모의 데이터
   useEffect(() => {
     const mockPurchases: PurchaseHistory[] = [
       {
@@ -43,375 +34,181 @@ export default function PurchaseHistoryPage() {
         amount: 1000000,
         pricePerEnergy: 0.0041,
         totalCost: 4100,
-        margin: 0.15,
-        finalPrice: 0.0047,
         status: 'completed',
         type: 'auto',
         urgency: 'high',
-        deliveryTime: '3분',
-        transactionHash: '0x1234...5678'
+        approvedBy: 'System Auto',
+        deliveryTime: '2 minutes',
+        transactionHash: '0x1234...abcd'
       },
       {
         id: '2',
         timestamp: '2024-01-15T09:15:00Z',
-        provider: 'JustLend Energy',
-        amount: 2000000,
-        pricePerEnergy: 0.0045,
-        totalCost: 9000,
-        margin: 0.10,
-        finalPrice: 0.0050,
+        provider: 'Energy Market Pro',
+        amount: 750000,
+        pricePerEnergy: 0.0038,
+        totalCost: 2850,
         status: 'completed',
         type: 'manual',
         urgency: 'normal',
-        approvedBy: 'admin@example.com',
-        deliveryTime: '8분',
-        transactionHash: '0x9876...5432'
-      },
-      {
-        id: '3',
-        timestamp: '2024-01-15T08:45:00Z',
-        provider: 'TronNRG',
-        amount: 500000,
-        pricePerEnergy: 0.0052,
-        totalCost: 2600,
-        margin: 0.25,
-        finalPrice: 0.0065,
-        status: 'failed',
-        type: 'auto',
-        urgency: 'emergency',
-        deliveryTime: '실패'
-      },
-      {
-        id: '4',
-        timestamp: '2024-01-14T16:20:00Z',
-        provider: 'JustLend Energy',
-        amount: 1500000,
-        pricePerEnergy: 0.0043,
-        totalCost: 6450,
-        margin: 0.10,
-        finalPrice: 0.0047,
-        status: 'completed',
-        type: 'manual',
-        urgency: 'normal',
-        approvedBy: 'admin@example.com',
-        deliveryTime: '12분',
-        transactionHash: '0x1111...2222'
-      },
-      {
-        id: '5',
-        timestamp: '2024-01-14T14:10:00Z',
-        provider: 'P2P Energy Trading',
-        amount: 800000,
-        pricePerEnergy: 0.0040,
-        totalCost: 3200,
-        margin: 0.15,
-        finalPrice: 0.0046,
-        status: 'pending',
-        type: 'auto',
-        urgency: 'high'
+        approvedBy: 'Admin User',
+        deliveryTime: '5 minutes',
+        transactionHash: '0x5678...efgh'
       }
     ];
 
-    setTimeout(() => {
-      setPurchases(mockPurchases);
-      setFilteredPurchases(mockPurchases);
-      setIsLoading(false);
-    }, 1000);
+    setFilteredPurchases(mockPurchases);
+    setFilteredPurchases(mockPurchases);
+    setIsLoading(false);
   }, []);
-
-  // 필터링 로직
-  useEffect(() => {
-    let filtered = purchases;
-
-    // 검색 필터
-    if (searchTerm) {
-      filtered = filtered.filter(purchase => 
-        purchase.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        purchase.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // 상태 필터
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(purchase => purchase.status === statusFilter);
-    }
-
-    // 타입 필터
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(purchase => purchase.type === typeFilter);
-    }
-
-    // 날짜 필터
-    const now = new Date();
-    const filterDate = new Date();
-    switch (dateRange) {
-      case '1d':
-        filterDate.setDate(now.getDate() - 1);
-        break;
-      case '7d':
-        filterDate.setDate(now.getDate() - 7);
-        break;
-      case '30d':
-        filterDate.setDate(now.getDate() - 30);
-        break;
-      default:
-        filterDate.setFullYear(2000); // 모든 기간
-    }
-    
-    filtered = filtered.filter(purchase => 
-      new Date(purchase.timestamp) >= filterDate
-    );
-
-    setFilteredPurchases(filtered);
-  }, [purchases, searchTerm, statusFilter, typeFilter, dateRange]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'auto': return 'bg-blue-100 text-blue-800';
-      case 'manual': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'text-green-400';
+      case 'pending': return 'text-yellow-400';
+      case 'failed': return 'text-red-400';
+      case 'cancelled': return 'text-gray-400';
+      default: return 'text-gray-400';
     }
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'emergency': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'normal': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'emergency': return 'text-red-400';
+      case 'high': return 'text-orange-400';
+      case 'normal': return 'text-green-400';
+      default: return 'text-gray-400';
     }
   };
 
-  const handleExport = () => {
-    // CSV 내보내기 로직
-    const csvContent = "data:text/csv;charset=utf-8," + 
-      "ID,날짜,공급자,수량,가격,총비용,마진,최종가격,상태,타입,긴급도\n" +
-      filteredPurchases.map(p => 
-        `${p.id},${p.timestamp},${p.provider},${p.amount},${p.pricePerEnergy},${p.totalCost},${p.margin},${p.finalPrice},${p.status},${p.type},${p.urgency}`
-      ).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "purchase-history.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const totalSpent = filteredPurchases.reduce((sum, p) => sum + p.totalCost, 0);
-  const totalEnergy = filteredPurchases.reduce((sum, p) => sum + p.amount, 0);
-  const avgPrice = filteredPurchases.length > 0 ? totalSpent / totalEnergy : 0;
-
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
+      <BasePage title="에너지 구매 내역" description="에너지 구매 기록을 확인하고 관리합니다">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </BasePage>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">구매 이력</h1>
-              <p className="text-gray-600 mt-1">
-                외부 에너지 구매 기록을 확인하고 관리합니다.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => window.location.reload()}>
+    <BasePage title="에너지 구매 내역" description="에너지 구매 기록을 확인하고 관리합니다">
+      <div className="space-y-6">
+        {/* 통계 요약 */}
+        <Section title="구매 통계">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatCard
+              title="총 구매량"
+              value="1,750,000"
+              trend="up"
+            />
+            <StatCard
+              title="총 구매 비용"
+              value="$6,950"
+              trend="up"
+            />
+            <StatCard
+              title="평균 단가"
+              value="$0.0040"
+              trend="neutral"
+            />
+            <StatCard
+              title="성공률"
+              value="98.5%"
+              trend="up"
+            />
+          </div>
+        </Section>
+
+        {/* 필터 및 검색 */}
+        <Section title="필터 및 검색">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <FormField
+              label="검색"
+              type="text"
+              value={searchTerm}
+              onChange={(value) => setSearchTerm(value.toString())}
+              placeholder="거래 ID, 제공업체 검색..."
+            />
+            <div className="flex gap-2 mt-4">
+              <Button onClick={() => window.location.reload()}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 새로고침
               </Button>
-              <Button onClick={handleExport}>
+              <Button>
                 <Download className="w-4 h-4 mr-2" />
-                내보내기
+                내역 다운로드
               </Button>
             </div>
           </div>
+        </Section>
 
-          {/* 요약 통계 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">총 구매 건수</p>
-                  <p className="text-2xl font-bold text-gray-900">{filteredPurchases.length}</p>
+        {/* 구매 내역 목록 */}
+        <Section title="구매 내역">
+          <div className="space-y-4">
+            {filteredPurchases.map((purchase) => (
+              <div key={purchase.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-400">거래 ID</p>
+                    <p className="font-medium">{purchase.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">제공업체</p>
+                    <p className="font-medium">{purchase.provider}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">구매량</p>
+                    <p className="font-medium">{purchase.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">총 비용</p>
+                    <p className="font-medium">${purchase.totalCost.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">상태</p>
+                    <p className={`font-medium ${getStatusColor(purchase.status)}`}>
+                      {purchase.status}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">긴급도</p>
+                    <p className={`font-medium ${getUrgencyColor(purchase.urgency)}`}>
+                      {purchase.urgency}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">총 구매 에너지</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalEnergy.toLocaleString()}</p>
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">시간: </span>
+                      <span>{new Date(purchase.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">단가: </span>
+                      <span>${purchase.pricePerEnergy}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">유형: </span>
+                      <span>{purchase.type}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">승인자: </span>
+                      <span>{purchase.approvedBy || 'N/A'}</span>
+                    </div>
+                  </div>
+                  {purchase.transactionHash && (
+                    <div className="mt-2">
+                      <span className="text-gray-400">트랜잭션 해시: </span>
+                      <span className="font-mono text-sm">{purchase.transactionHash}</span>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">총 지출 금액</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalSpent.toFixed(2)} TRX</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">평균 가격</p>
-                  <p className="text-2xl font-bold text-gray-900">{avgPrice.toFixed(4)} TRX</p>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
-
-          {/* 필터 섹션 */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">모든 상태</option>
-                  <option value="completed">완료</option>
-                  <option value="pending">대기</option>
-                  <option value="failed">실패</option>
-                  <option value="cancelled">취소</option>
-                </select>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">모든 타입</option>
-                  <option value="auto">자동</option>
-                  <option value="manual">수동</option>
-                </select>
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="1d">최근 1일</option>
-                  <option value="7d">최근 7일</option>
-                  <option value="30d">최근 30일</option>
-                  <option value="all">전체 기간</option>
-                </select>
-                <Button variant="outline" className="w-full">
-                  <Filter className="w-4 h-4 mr-2" />
-                  필터 초기화
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 구매 이력 테이블 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>구매 기록</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-4">ID</th>
-                    <th className="text-left p-4">날짜</th>
-                    <th className="text-left p-4">공급자</th>
-                    <th className="text-left p-4">수량</th>
-                    <th className="text-left p-4">가격</th>
-                    <th className="text-left p-4">총 비용</th>
-                    <th className="text-left p-4">마진</th>
-                    <th className="text-left p-4">상태</th>
-                    <th className="text-left p-4">타입</th>
-                    <th className="text-left p-4">긴급도</th>
-                    <th className="text-left p-4">작업</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPurchases.map((purchase) => (
-                    <tr key={purchase.id} className="border-b hover:bg-gray-50">
-                      <td className="p-4 font-medium">{purchase.id}</td>
-                      <td className="p-4">
-                        {new Date(purchase.timestamp).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </td>
-                      <td className="p-4">{purchase.provider}</td>
-                      <td className="p-4">{purchase.amount.toLocaleString()}</td>
-                      <td className="p-4">{purchase.pricePerEnergy.toFixed(4)} TRX</td>
-                      <td className="p-4">{purchase.totalCost.toFixed(2)} TRX</td>
-                      <td className="p-4">{(purchase.margin * 100).toFixed(1)}%</td>
-                      <td className="p-4">
-                        <Badge className={getStatusColor(purchase.status)}>
-                          {purchase.status}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <Badge className={getTypeColor(purchase.type)}>
-                          {purchase.type}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <Badge className={getUrgencyColor(purchase.urgency)}>
-                          {purchase.urgency}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {filteredPurchases.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">검색 결과가 없습니다.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        </Section>
       </div>
-    </DashboardLayout>
+    </BasePage>
   );
 }

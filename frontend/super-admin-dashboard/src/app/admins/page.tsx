@@ -1,160 +1,254 @@
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { BasePage } from '@/components/ui/BasePage';
+import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 
 export default function AdminsPage() {
+  const headerActions = (
+    <Button variant="primary">
+      Add Administrator
+    </Button>
+  );
+
   return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="md:flex md:items-center md:justify-between mb-6">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              System Administrators
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage system administrator accounts, roles, and permissions.
-            </p>
-          </div>
-          <div className="mt-4 flex md:ml-4 md:mt-0">
-            <button
-              type="button"
-              className="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-            >
-              Add Administrator
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">👑</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Super Admins
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">3</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">🛡️</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Admins
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">12</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">✅</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Active Sessions
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">7</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Administrator List
-            </h3>
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Login
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">JD</span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">John Doe</div>
-                          <div className="text-sm text-gray-500">john@dantarowallet.com</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Super Admin
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      2 hours ago
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                      <button className="text-red-600 hover:text-red-900">Disable</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center">
-                      <p className="text-gray-500">Additional admin management features coming soon...</p>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    <BasePage 
+      title="System Administrators"
+      description="Manage system administrator accounts, roles, and permissions."
+      headerActions={headerActions}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <StatCard
+          title="Super Admins"
+          value="3"
+          icon="👑"
+          trend="neutral"
+        />
+        <StatCard
+          title="System Admins"
+          value="8"
+          icon="🔧"
+          trend="up"
+        />
+        <StatCard
+          title="Support Staff"
+          value="15"
+          icon="🎧"
+          trend="up"
+        />
       </div>
-    </DashboardLayout>
+
+      <Section title="Administrator List">
+        <div className="overflow-hidden shadow ring-1 ring-gray-700 rounded-lg">
+          <table className="min-w-full divide-y divide-gray-600">
+            <thead className="bg-gray-800">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Administrator
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-gray-900 divide-y divide-gray-700">
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 bg-red-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">SA</span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-white">Super Admin</div>
+                      <div className="text-sm text-gray-300">superadmin@dantaro.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-red-900/30 text-red-300 rounded-full">
+                    Super Admin
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-green-900/30 text-green-300 rounded-full">
+                    Active
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  2 hours ago
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button className="text-blue-400 hover:text-blue-300 mr-3">Edit</button>
+                  <button className="text-red-400 hover:text-red-300">Disable</button>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">JD</span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-white">John Doe</div>
+                      <div className="text-sm text-gray-300">john.doe@dantaro.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-full">
+                    System Admin
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-green-900/30 text-green-300 rounded-full">
+                    Active
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  5 hours ago
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button className="text-blue-400 hover:text-blue-300 mr-3">Edit</button>
+                  <button className="text-red-400 hover:text-red-300">Disable</button>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 bg-green-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">JS</span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-white">Jane Smith</div>
+                      <div className="text-sm text-gray-300">jane.smith@dantaro.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-green-900/30 text-green-300 rounded-full">
+                    Support Staff
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-green-900/30 text-green-300 rounded-full">
+                    Active
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  1 day ago
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button className="text-blue-400 hover:text-blue-300 mr-3">Edit</button>
+                  <button className="text-red-400 hover:text-red-300">Disable</button>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">MB</span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-400">Mike Brown</div>
+                      <div className="text-sm text-gray-500">mike.brown@dantaro.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-full">
+                    System Admin
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 py-1 text-xs bg-gray-700 text-gray-400 rounded-full">
+                    Suspended
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  1 week ago
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button className="text-green-400 hover:text-green-300 mr-3">Enable</button>
+                  <button className="text-red-400 hover:text-red-300">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <Section title="Role Permissions">
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h4 className="text-red-300 font-medium mb-2">Super Admin</h4>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Full system access</li>
+                <li>• User management</li>
+                <li>• System configuration</li>
+                <li>• Financial operations</li>
+              </ul>
+            </div>
+            
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h4 className="text-blue-300 font-medium mb-2">System Admin</h4>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Partner management</li>
+                <li>• Energy management</li>
+                <li>• Analytics access</li>
+                <li>• Basic configuration</li>
+              </ul>
+            </div>
+            
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h4 className="text-green-300 font-medium mb-2">Support Staff</h4>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Read-only access</li>
+                <li>• Customer support</li>
+                <li>• Basic analytics</li>
+                <li>• Ticket management</li>
+              </ul>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Recent Admin Activity">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div>
+                <div className="text-white text-sm">Partner created</div>
+                <div className="text-gray-400 text-xs">by John Doe</div>
+              </div>
+              <div className="text-gray-300 text-xs">2 hours ago</div>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div>
+                <div className="text-white text-sm">System settings updated</div>
+                <div className="text-gray-400 text-xs">by Super Admin</div>
+              </div>
+              <div className="text-gray-300 text-xs">5 hours ago</div>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div>
+                <div className="text-white text-sm">User suspended</div>
+                <div className="text-gray-400 text-xs">by Jane Smith</div>
+              </div>
+              <div className="text-gray-300 text-xs">1 day ago</div>
+            </div>
+          </div>
+        </Section>
+      </div>
+    </BasePage>
   );
 }
