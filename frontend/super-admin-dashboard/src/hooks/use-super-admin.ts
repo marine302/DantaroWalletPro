@@ -148,7 +148,7 @@ export function useMarketStats() {
   return { ...state, refetch: fetchData };
 }
 
-export function useEnergyPurchases(page: number = 1, limit: number = 20) {
+export function useEnergyPurchases() {
   const [state, setState] = useState<ApiState<{ purchases: EnergyPurchase[]; total: number }>>({
     data: null,
     loading: true,
@@ -158,12 +158,12 @@ export function useEnergyPurchases(page: number = 1, limit: number = 20) {
   const fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getEnergyPurchases(page, limit);
+      const data = await superAdminService.getEnergyPurchases();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch energy purchases' });
     }
-  }, [page, limit]);
+  }, []);
 
   const createPurchase = useCallback(async (purchase: { providerId: number; energyAmount: number; margin: number; }) => {
     try {

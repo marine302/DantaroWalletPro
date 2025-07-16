@@ -21,14 +21,14 @@ is_testing = getattr(settings, "TESTING", False)
 if "sqlite" in settings.DATABASE_URL:
     engine = create_async_engine(
         settings.DATABASE_URL,
-        echo=settings.DEBUG,  # SQL 로깅 (개발 환경에서만)
+        echo=False,  # SQL 로깅 비활성화
         pool_pre_ping=True,  # 연결 상태 체크
         poolclass=NullPool if is_testing else None,
     )
 else:
     engine = create_async_engine(
         settings.DATABASE_URL,
-        echo=settings.DEBUG,  # SQL 로깅 (개발 환경에서만)
+        echo=False,  # SQL 로깅 비활성화
         pool_size=settings.DB_POOL_SIZE,
         max_overflow=settings.DB_MAX_OVERFLOW,
         pool_pre_ping=True,  # 연결 상태 체크
@@ -114,6 +114,7 @@ from sqlalchemy.orm import sessionmaker
 # 동기 엔진 생성
 sync_engine = create_engine(
     settings.SYNC_DATABASE_URL,
+    echo=False,  # SQL 로깅 비활성화
     connect_args={"check_same_thread": False} if "sqlite" in settings.SYNC_DATABASE_URL else {},
 )
 

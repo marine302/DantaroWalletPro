@@ -42,3 +42,4 @@
  GET /integrated-dashboard 200 in 62ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 269ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET / 200 in 115ms

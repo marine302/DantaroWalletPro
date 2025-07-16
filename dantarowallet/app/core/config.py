@@ -90,7 +90,7 @@ class Settings(BaseSettings):
     WALLET_CONFIRMATIONS_REQUIRED: int = 1  # 필요한 블록 컨펌 수
 
     # Logging Configuration
-    LOG_LEVEL: str = "INFO"
+    LOG_LEVEL: str = "WARNING"
     LOG_FORMAT: str = "json"
 
     # CORS Configuration - 개발용으로 모든 origin 허용
