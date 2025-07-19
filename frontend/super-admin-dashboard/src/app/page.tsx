@@ -55,7 +55,7 @@ export default function Home() {
   } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => apiClient.getSystemHealth(),
-    refetchInterval: 30000,
+    refetchInterval: process.env.NODE_ENV === 'development' ? 60000 : 30000, // 개발환경에서는 1분으로 연장
     enabled: isAuthenticated,
     retry: 3,
   });

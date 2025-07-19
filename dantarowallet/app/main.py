@@ -39,10 +39,12 @@ async def lifespan(app: FastAPI):
     logger.info(f"📊 Debug mode: {settings.DEBUG}")
     logger.info(f"🌐 Environment: {settings.TRON_NETWORK}")
 
-    # 입금 모니터링 백그라운드 시작
-    if not deposit_monitor.is_monitoring:
+    # 입금 모니터링 백그라운드 시작 (개발환경에서는 비활성화)
+    if not deposit_monitor.is_monitoring and not settings.DEBUG:
         logger.info("🔍 Starting deposit monitoring...")
         asyncio.create_task(deposit_monitor.start_monitoring())
+    elif settings.DEBUG:
+        logger.info("🔧 Development mode: Deposit monitoring disabled")
 
     # FastAPI에게 "준비 완료" 신호 전달
     yield
