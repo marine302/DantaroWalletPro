@@ -39,7 +39,6 @@ export default function Home() {
   const {
     data: stats,
     error: statsError,
-    isLoading: statsLoading,
   } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => apiClient.getDashboardStats(),
@@ -51,7 +50,6 @@ export default function Home() {
   const {
     data: systemHealth,
     error: healthError,
-    isLoading: healthLoading,
   } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => apiClient.getSystemHealth(),

@@ -48,10 +48,10 @@ export default function ErrorLogger() {
   useEffect(() => {
     refreshErrors();
     
-    // Refresh errors every 5 seconds
-    const interval = setInterval(refreshErrors, 5000);
+    // Refresh errors every 5 seconds - 임시 비활성화 (개발 중 성능 문제로)
+    // const interval = setInterval(refreshErrors, 5000);
     
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
   
   return (

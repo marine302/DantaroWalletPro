@@ -57,11 +57,11 @@ export function RealtimeEnergyMonitor({ className }: RealtimeEnergyMonitorProps)
     }
     setData(initialData)
 
-    // 5초마다 새 데이터 생성
-    const interval = setInterval(generateData, 5000)
+    // 5초마다 새 데이터 생성 - 임시 비활성화 (개발 중 성능 문제로)
+    // const interval = setInterval(generateData, 5000)
     
     return () => {
-      clearInterval(interval)
+      // clearInterval(interval)
       setIsConnected(false)
     }
   }, [])

@@ -3,22 +3,7 @@ import {
   PaginatedResponse,
   Partner,
   PartnerConfig,
-  Pa  async createPartner(data: CreatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<Partner> = await this.client.post('/partners', data);
-    return response.data;
-  }
-
-  async updatePartner(id: number, data: UpdatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<Partner> = await this.client.put(`/partners/${id}`, data);
-    return response.data;
-  }
-
-  async deletePartner(id: number): Promise<void> {
-    await this.client.delete(`/partners/${id}`);
-  }
-
-  async getPartnerConfig(partnerId: number): Promise<PartnerConfig> {
-    const response: AxiosResponse<PartnerConfig> = await this.client.get(`/partners/${partnerId}/config`);tics,
+  PartnerDailyStatistics,
   EnergyPool,
   EnergyTransaction,
   FeeConfig,

@@ -31,8 +31,8 @@ export const useTronLinkStatus = () => {
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000); // 10초마다 갱신
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchStatus, 10000); // 임시 비활성화 (개발 중)
+    // return () => clearInterval(interval);
   }, []);
 
   return { data, loading, error };
@@ -86,8 +86,8 @@ export const useUserStats = () => {
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 30000); // 30초마다 갱신
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchStats, 30000); // 임시 비활성화 (개발 중)
+    // return () => clearInterval(interval);
   }, []);
 
   return { data, loading, error };
@@ -159,8 +159,8 @@ export const useEnergyPoolStatus = (partnerId: number = 1) => {
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 30000); // 30초마다 갱신
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchStatus, 30000); // 임시 비활성화 (개발 중)
+    // return () => clearInterval(interval);
   }, [partnerId]);
 
   return { data, loading, error };
@@ -211,7 +211,7 @@ export const useAnalyticsDashboard = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 60000); // 1분마다 갱신
+    // const interval = setInterval(fetchData, 60000); // 임시 비활성화 (개발 중) // 1분마다 갱신
     return () => clearInterval(interval);
   }, []);
 
@@ -288,7 +288,7 @@ export const useUserActivityAnalytics = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 60000); // 1분마다 갱신
+    // const interval = setInterval(fetchData, 60000); // 임시 비활성화 (개발 중) // 1분마다 갱신
     return () => clearInterval(interval);
   }, []);
 
@@ -315,7 +315,7 @@ export const useCostAnalytics = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 60000); // 1분마다 갱신
+    // const interval = setInterval(fetchData, 60000); // 임시 비활성화 (개발 중) // 1분마다 갱신
     return () => clearInterval(interval);
   }, []);
 
@@ -548,7 +548,7 @@ export const useEnergyPoolDetails = (partnerId: number = 1) => {
     };
 
     fetchDetails();
-    const interval = setInterval(fetchDetails, 30000); // 30초마다 갱신
+    // const interval = setInterval(fetchDetails, 30000); // 임시 비활성화 (개발 중) // 30초마다 갱신
     return () => clearInterval(interval);
   }, [partnerId]);
 
