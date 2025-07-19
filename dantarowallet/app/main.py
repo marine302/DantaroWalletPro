@@ -73,8 +73,8 @@ cors_origins = [
     f"http://127.0.0.1:{frontend_port}",
     f"https://localhost:{frontend_port}",
     # 기본 개발 포트들도 포함
-    "http://localhost:3000", "http://localhost:3001", "http://localhost:3010",
-    "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3010",
+    "http://localhost:3000", "http://localhost:3001", "http://localhost:3010", "http://localhost:3020",
+    "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3010", "http://127.0.0.1:3020",
 ]
 
 app.add_middleware(

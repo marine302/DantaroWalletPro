@@ -21,6 +21,12 @@ export default function Home() {
   const { t } = useI18n();
 
   useEffect(() => {
+    // 개발 환경에서는 인증 우회
+    if (process.env.NODE_ENV === 'development') {
+      setIsAuthenticated(true);
+      return;
+    }
+    
     // Check if user is authenticated
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -32,22 +38,26 @@ export default function Home() {
 
   const {
     data: stats,
+    error: statsError,
+    isLoading: statsLoading,
   } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => apiClient.getDashboardStats(),
     enabled: isAuthenticated,
-    retry: 1,
+    retry: 3,
     retryDelay: 1000,
   });
 
   const {
     data: systemHealth,
+    error: healthError,
+    isLoading: healthLoading,
   } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => apiClient.getSystemHealth(),
     refetchInterval: 30000,
     enabled: isAuthenticated,
-    retry: 1,
+    retry: 3,
   });
 
   const {
@@ -59,6 +69,24 @@ export default function Home() {
     enabled: isAuthenticated,
     retry: 1,
   });
+
+  // 개발 환경에서 API 오류 디버깅
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      if (statsError) {
+        console.error('Dashboard Stats Error:', statsError);
+      }
+      if (healthError) {
+        console.error('System Health Error:', healthError);
+      }
+      if (stats) {
+        console.log('Dashboard Stats:', stats);
+      }
+      if (systemHealth) {
+        console.log('System Health:', systemHealth);
+      }
+    }
+  }, [statsError, healthError, stats, systemHealth]);
 
   if (!isAuthenticated) {
     return (

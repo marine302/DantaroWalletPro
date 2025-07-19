@@ -46,7 +46,8 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
+        // 개발 환경에서는 401 에러 무시
+        if (error.response?.status === 401 && process.env.NODE_ENV !== 'development') {
           this.removeAuthToken();
           // Redirect to login page
           if (typeof window !== 'undefined') {
