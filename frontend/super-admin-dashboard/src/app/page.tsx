@@ -63,11 +63,13 @@ export default function Home() {
   const {
     data: partnersResponse,
     isLoading: partnersLoading,
+    error: partnersError,
   } = useQuery({
     queryKey: ['partners'],
     queryFn: () => apiClient.getPartners(1, 5),
     enabled: isAuthenticated,
-    retry: 1,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // 개발 환경에서 API 오류 디버깅
@@ -79,14 +81,20 @@ export default function Home() {
       if (healthError) {
         console.error('System Health Error:', healthError);
       }
+      if (partnersError) {
+        console.error('Partners Error:', partnersError);
+      }
       if (stats) {
         console.log('Dashboard Stats:', stats);
       }
       if (systemHealth) {
         console.log('System Health:', systemHealth);
       }
+      if (partnersResponse) {
+        console.log('Partners:', partnersResponse);
+      }
     }
-  }, [statsError, healthError, stats, systemHealth]);
+  }, [statsError, healthError, partnersError, stats, systemHealth, partnersResponse]);
 
   if (!isAuthenticated) {
     return (
