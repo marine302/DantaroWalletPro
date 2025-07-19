@@ -2,23 +2,26 @@
 
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
+import { useI18n } from '@/contexts/I18nContext';
 
 export default function FeesPage() {
+  const { t } = useI18n();
+  
   const headerActions = (
     <Button variant="primary">
-      Update Fee Structure
+      {t.fees.updateRates}
     </Button>
   );
 
   return (
     <BasePage 
-      title="Fee Management"
-      description="Configure and monitor transaction fees, partner commissions, and revenue sharing."
+      title={t.fees.title}
+      description={t.fees.description}
       headerActions={headerActions}
     >
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
-          title="Daily Revenue"
+          title={t.fees.totalRevenue}
           value="$12,430"
           icon="💰"
           trend="up"
@@ -32,7 +35,7 @@ export default function FeesPage() {
           description="This month"
         />
         <StatCard
-          title="Partner Commissions"
+          title={t.fees.partnerCommission}
           value="$87,432"
           icon="🤝"
           trend="up"

@@ -2,18 +2,21 @@
 
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
+import { useI18n } from '@/contexts/I18nContext';
 
 export default function AnalyticsPage() {
+  const { t } = useI18n();
+  
   const headerActions = (
     <Button variant="primary">
-      Generate Report
+      {t.analytics.downloadReport}
     </Button>
   );
 
   return (
     <BasePage 
-      title="Analytics & Reports"
-      description="Comprehensive analytics and reporting for platform performance and partner activities."
+      title={t.analytics.title}
+      description={t.analytics.description}
       headerActions={headerActions}
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">

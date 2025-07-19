@@ -2,22 +2,25 @@
 
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, FormField } from '@/components/ui/DarkThemeComponents';
+import { useI18n } from '@/contexts/I18nContext';
 
 export default function SettingsPage() {
+  const { t } = useI18n();
+  
   const headerActions = (
     <Button variant="secondary">
-      Save Settings
+      {t.settings.updateSettings}
     </Button>
   );
 
   return (
     <BasePage 
-      title="System Settings"
-      description="Configure global system settings, security policies, and platform parameters."
+      title={t.settings.title}
+      description={t.settings.description}
       headerActions={headerActions}
     >
       <div className="space-y-6">
-        <Section title="Platform Configuration">
+        <Section title={t.settings.systemConfig}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <FormField
               label="Platform Name"
@@ -44,7 +47,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <Section title="Security Settings">
+        <Section title={t.settings.security}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <FormField
               label="Session Timeout (minutes)"

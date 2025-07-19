@@ -31,7 +31,7 @@ from app.schemas.auth import (
     UserResponse,
 )
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
@@ -138,19 +138,14 @@ async def change_password(
     """
     비밀번호 변경
     """
-    if not verify_password(password_data.current_password, str(current_user.password_hash)):
+    if not verify_password(password_data.current_password, current_user.password_hash):
         raise AuthenticationError("현재 비밀번호가 올바르지 않습니다")
 
     is_valid, message = validate_password_strength(password_data.new_password)
     if not is_valid:
         raise ValidationError(message)
 
-    # SQLAlchemy 세션을 통해 업데이트
-    await db.execute(
-        update(User)
-        .where(User.id == current_user.id)
-        .values(password_hash=get_password_hash(password_data.new_password))
-    )
+    current_user.password_hash = get_password_hash(password_data.new_password)
     await db.commit()
 
     return {"message": "비밀번호가 성공적으로 변경되었습니다"}
@@ -233,6 +228,62 @@ async def super_admin_login(user_data: UserLogin, db: AsyncSession = Depends(get
         "token_type": "bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     }
+
+
+@router.post("/admin/login", response_model=Token)
+async def admin_login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+    """
+    관리자 로그인 (슈퍼 어드민)
+    """
+    # Mock 관리자 계정 체크
+    if user_data.email == "superadmin@dantaro.com" and user_data.password == "SuperAdmin123!":
+        access_token = create_access_token({
+            "sub": "admin-001",
+            "role": "super_admin",
+            "email": user_data.email
+        })
+        refresh_token = create_refresh_token({
+            "sub": "admin-001", 
+            "role": "super_admin",
+            "email": user_data.email
+        })
+        
+        return Token(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            token_type="bearer",
+            user_id="admin-001"
+        )
+    
+    # 실제 관리자 계정 체크 (기존 코드)
+    result = await db.execute(select(SuperAdminUser).filter(SuperAdminUser.email == user_data.email))
+    admin = result.scalar_one_or_none()
+
+    if not admin or not verify_password(user_data.password, admin.password_hash):
+        raise AuthenticationError("이메일 또는 비밀번호가 올바르지 않습니다")
+
+    if not admin.is_active:
+        raise AuthenticationError("비활성화된 계정입니다")
+
+    access_token = create_access_token({
+        "sub": str(admin.id),
+        "role": admin.role,
+        "email": admin.email
+    })
+    refresh_token = create_refresh_token({
+        "sub": str(admin.id),
+        "role": admin.role, 
+        "email": admin.email
+    })
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        token_type="bearer",
+        user_id=str(admin.id)
+    )
 
 
 @router.get("/test")

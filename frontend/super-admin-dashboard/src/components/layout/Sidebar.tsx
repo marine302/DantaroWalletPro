@@ -16,17 +16,7 @@ import {
   PresentationChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
-
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Partners', href: '/partners', icon: UsersIcon },
-  { name: 'Energy Management', href: '/energy', icon: BoltIcon },
-  { name: 'Fee Management', href: '/fees', icon: CurrencyDollarIcon },
-  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
-  { name: 'Integrated Dashboard', href: '/integrated-dashboard', icon: PresentationChartBarIcon },
-  { name: 'System Admins', href: '/admins', icon: ShieldCheckIcon },
-  { name: 'Settings', href: '/settings', icon: CogIcon },
-];
+import { useI18n } from '@/contexts/I18nContext';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -35,6 +25,19 @@ interface SidebarProps {
 
 export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useI18n();
+
+  // Navigation items with i18n support
+  const navigation = [
+    { name: t.nav.dashboard, href: '/', icon: HomeIcon },
+    { name: t.nav.partners, href: '/partners', icon: UsersIcon },
+    { name: t.nav.energy, href: '/energy', icon: BoltIcon },
+    { name: t.nav.fees, href: '/fees', icon: CurrencyDollarIcon },
+    { name: t.nav.analytics, href: '/analytics', icon: ChartBarIcon },
+    { name: t.nav.integratedDashboard, href: '/integrated-dashboard', icon: PresentationChartBarIcon },
+    { name: t.nav.admins, href: '/admins', icon: ShieldCheckIcon },
+    { name: t.nav.settings, href: '/settings', icon: CogIcon },
+  ];
 
   return (
     <>

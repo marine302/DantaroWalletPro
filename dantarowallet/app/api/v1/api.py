@@ -17,7 +17,7 @@ from app.api.v1.endpoints import (
     energy,  # Doc #25: 에너지 풀 고급 관리 시스템 - 오류 수정 완료
     energy_management,  # Doc #25: 파트너용 에너지 풀 CRUD 관리
     fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
-    partners,  # 파트너 관리 API 엔드포인트 - 오류 수정 완료
+    partners_simple,  # 간단한 파트너 관리 API
     sweep,  # Doc #27: 입금 Sweep 자동화 시스템
     stats,  # 통계 API 엔드포인트
     transactions,  # 거래 관리 API 엔드포인트 - 오류 수정 완료
@@ -49,7 +49,7 @@ api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_po
 api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Doc #27: 입금 Sweep 자동화 시스템
 api_router.include_router(stats.router, tags=["statistics"])  # 통계 API
 api_router.include_router(users.router, prefix="/users", tags=["users"])  # 사용자 관리 API
-api_router.include_router(partners.router, prefix="/partners", tags=["partners"])  # 파트너 관리 API - 오류 수정 완료
+api_router.include_router(partners_simple.router, prefix="/partners", tags=["partners"])  # 간단한 파트너 관리 API
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # 거래 관리 API - 오류 수정 완료
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
