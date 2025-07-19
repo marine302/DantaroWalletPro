@@ -36,16 +36,16 @@ let args;
 
 switch (scriptType) {
   case 'dev':
-    command = 'next';
-    args = ['dev', '--turbopack', '-p', frontendPort.toString()];
+    command = 'npx';
+    args = ['next', 'dev', '--turbopack', '-p', frontendPort.toString()];
     break;
   case 'start':
-    command = 'next';
-    args = ['start', '-p', frontendPort.toString()];
+    command = 'npx';
+    args = ['next', 'start', '-p', frontendPort.toString()];
     break;
   case 'build':
-    command = 'next';
-    args = ['build'];
+    command = 'npx';
+    args = ['next', 'build'];
     break;
   default:
     console.log('지원하지 않는 스크립트:', scriptType);
