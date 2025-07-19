@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const PORT = 8001;
+const PORT = 3001;
 
 // Middleware
 app.use(cors());
@@ -50,6 +50,45 @@ const mockSystemHealth = {
   uptime: "99.9%",
   last_check: "2024-07-18T10:30:00Z"
 };
+
+// Mock integrated dashboard data
+const generateMockDashboardData = (partnerId) => ({
+  wallet_overview: {
+    total_balance: 2500000 + (partnerId * 100000),
+    wallet_count: 25 + partnerId,
+    security_score: 90 + (partnerId % 10),
+    diversification_index: 0.80 + (partnerId * 0.01),
+    distribution: {
+      hot: { balance: 1000000 + (partnerId * 40000), percentage: 40 },
+      warm: { balance: 900000 + (partnerId * 36000), percentage: 36 },
+      cold: { balance: 600000 + (partnerId * 24000), percentage: 24 }
+    }
+  },
+  transaction_flow: {
+    total_count: 1250 + (partnerId * 50),
+    total_volume: 4500000 + (partnerId * 200000),
+    avg_amount: 3600 + (partnerId * 100),
+    trend: partnerId % 2 === 0 ? "increasing" : "stable"
+  },
+  energy_status: {
+    total_energy: 1500000 + (partnerId * 50000),
+    available_energy: 1200000 + (partnerId * 40000),
+    usage_rate: 75 + (partnerId % 15),
+    efficiency_score: 85 + (partnerId % 10)
+  },
+  user_analytics: {
+    total_users: 850 + (partnerId * 30),
+    active_users: 680 + (partnerId * 25),
+    new_users: 45 + partnerId,
+    retention_rate: 75.5 + (partnerId * 0.5)
+  },
+  revenue_metrics: {
+    total_revenue: 125000 + (partnerId * 5000),
+    commission_earned: 8750 + (partnerId * 350),
+    profit_margin: 15.2 + (partnerId * 0.3),
+    growth_rate: 12.8 + (partnerId * 0.2)
+  }
+});
 
 // Routes
 app.get('/api/v1/test', (req, res) => {
@@ -106,6 +145,20 @@ app.get('/api/v1/partners', (req, res) => {
     size: 20,
     pages: 1
   });
+});
+
+// Integrated Dashboard endpoints
+app.get('/api/integrated-dashboard/:partnerId', (req, res) => {
+  const partnerId = parseInt(req.params.partnerId) || 1;
+  const dashboardData = generateMockDashboardData(partnerId);
+  res.json(dashboardData);
+});
+
+// Legacy endpoint for compatibility
+app.get('/api/v1/integrated-dashboard/dashboard/:partnerId', (req, res) => {
+  const partnerId = parseInt(req.params.partnerId) || 1;
+  const dashboardData = generateMockDashboardData(partnerId);
+  res.json(dashboardData);
 });
 
 // Start server

@@ -95,6 +95,9 @@ class Settings(BaseSettings):
 
     # CORS Configuration - 개발용으로 모든 origin 허용
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
+    
+    # Frontend Port Configuration
+    FRONTEND_PORT: int = 3020  # 프론트엔드 포트 설정
 
     # 보안 설정
     ALLOWED_HOSTS: List[str] = ["*"]

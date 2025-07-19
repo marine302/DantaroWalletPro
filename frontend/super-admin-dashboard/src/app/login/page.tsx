@@ -17,8 +17,16 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
+    // 환경변수 디버깅
+    console.log('Environment variables:', {
+      API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+      NODE_ENV: process.env.NODE_ENV
+    });
+
     try {
+      console.log('Attempting login...');
       await apiClient.superAdminLogin({ email, password });
+      console.log('Login successful, redirecting...');
       router.push('/');
     } catch (err: unknown) {
       console.error('Login error:', err);

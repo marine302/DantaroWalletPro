@@ -76,8 +76,12 @@ export default function PartnersPage() {
     }
   };
 
+  const handleAddPartner = () => {
+    alert('파트너 추가 모달을 여기에 구현할 예정입니다.');
+  };
+
   const headerActions = (
-    <Button variant="primary">
+    <Button variant="primary" onClick={handleAddPartner}>
       {t.partners.addPartner}
     </Button>
   );

@@ -196,23 +196,52 @@ export interface TranslationMessages {
   integratedDashboard: {
     title: string;
     description: string;
-    partnerOverview: string;
-    walletStatus: string;
-    transactionFlow: string;
-    energyStatus: string;
-    userAnalytics: string;
-    revenueMetrics: string;
-    totalBalance: string;
-    walletCount: string;
-    securityScore: string;
-    diversificationIndex: string;
-    totalUsers: string;
-    activeUsers: string;
-    newUsers: string;
-    retentionRate: string;
     partnerId: string;
-    partnerDashboard: string;
-    walletDistribution: string;
+    fetchError: string;
+    noData: string;
+    sections: {
+      walletOverview: string;
+      transactionFlow: string;
+      energyStatus: string;
+      walletDistribution: string;
+      userAnalytics: string;
+      revenueMetrics: string;
+    };
+    walletOverview: {
+      totalBalance: string;
+      walletCount: string;
+      securityScore: string;
+      diversificationIndex: string;
+    };
+    transactionFlow: {
+      dailyTransactions: string;
+      totalVolume: string;
+      avgAmount: string;
+      trend: string;
+    };
+    energyStatus: {
+      totalEnergy: string;
+      availableEnergy: string;
+      usageRate: string;
+      efficiency: string;
+    };
+    walletDistribution: {
+      hotWallet: string;
+      warmWallet: string;
+      coldWallet: string;
+    };
+    userAnalytics: {
+      totalUsers: string;
+      activeUsers: string;
+      newUsers: string;
+      retentionRate: string;
+    };
+    revenueMetrics: {
+      totalRevenue: string;
+      commissionEarned: string;
+      profitMargin: string;
+      growthRate: string;
+    };
   };
   
   // 감사 및 컴플라이언스

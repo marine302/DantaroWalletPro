@@ -18,6 +18,7 @@ from app.api.v1.endpoints import (
     energy_management,  # Doc #25: 파트너용 에너지 풀 CRUD 관리
     fee_policy,  # Doc #26: 파트너사 수수료 및 정책 관리
     partners_simple,  # 간단한 파트너 관리 API
+    dashboard,  # 통합 대시보드 API
     sweep,  # Doc #27: 입금 Sweep 자동화 시스템
     stats,  # 통계 API 엔드포인트
     transactions,  # 거래 관리 API 엔드포인트 - 오류 수정 완료
@@ -54,12 +55,11 @@ api_router.include_router(transactions.router, prefix="/transactions", tags=["tr
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )
-api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # 통합 대시보드
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(admin_dashboard.router, prefix="/superadmin", tags=["admin_dashboard"])  # 슈퍼어드민 대시보드 통계 (인증 우회)
 api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
 api_router.include_router(external_energy.router, prefix="/external-energy", tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
-api_router.include_router(integrated_dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # Doc #37(34): 파트너사 종합 대시보드
 
 
 # 임시 테스트 엔드포인트

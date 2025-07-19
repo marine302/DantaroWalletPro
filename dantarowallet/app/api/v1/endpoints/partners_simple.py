@@ -57,7 +57,7 @@ MOCK_PARTNERS = [
     }
 ]
 
-@router.get("/partners")
+@router.get("/")
 async def get_partners(
     skip: int = 0,
     limit: int = 100,
@@ -84,7 +84,7 @@ async def get_partners(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/partners/{partner_id}")
+@router.get("/{partner_id}")
 async def get_partner(partner_id: str):
     """특정 파트너 상세 조회"""
     partner = next((p for p in MOCK_PARTNERS if p["id"] == partner_id), None)

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useTranslation } from '@/contexts/I18nContext';
+import { useI18n } from '@/contexts/I18nContext';
 import { Locale } from '@/types/i18n';
 
 interface LanguageSelectorProps {
@@ -9,7 +9,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ className = '' }: LanguageSelectorProps) {
-  const { locale, setLocale } = useTranslation();
+  const { locale, setLocale } = useI18n();
 
   const languages: { code: Locale; name: string; flag: string }[] = [
     { code: 'ko', name: '한국어', flag: '🇰🇷' },
@@ -37,7 +37,7 @@ export function LanguageSelector({ className = '' }: LanguageSelectorProps) {
 
 // Header용 간단한 언어 토글
 export function LanguageToggle() {
-  const { locale, setLocale } = useTranslation();
+  const { locale, setLocale } = useI18n();
 
   const toggleLanguage = () => {
     setLocale(locale === 'ko' ? 'en' : 'ko');
