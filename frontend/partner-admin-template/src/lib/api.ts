@@ -455,11 +455,6 @@ export const auditApi = {
   // AML/KYC 상태
   async getComplianceStatus() {
     return httpClient.get('/audit/compliance-status');
-  },
-
-  // 규제 보고서
-  async generateReport(type: string, period: string) {
-    return httpClient.post('/audit/reports', { type, period });
   }
 };
 
