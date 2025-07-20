@@ -17,6 +17,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { Permission } from '@/types/auth';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -26,18 +28,64 @@ interface SidebarProps {
 export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useI18n();
+  const { hasPermission } = useAuth();
 
-  // Navigation items with i18n support
+  // Navigation items with i18n support and permissions
   const navigation = [
-    { name: t.nav.dashboard, href: '/', icon: HomeIcon },
-    { name: t.nav.partners, href: '/partners', icon: UsersIcon },
-    { name: t.nav.energy, href: '/energy', icon: BoltIcon },
-    { name: t.nav.fees, href: '/fees', icon: CurrencyDollarIcon },
-    { name: t.nav.analytics, href: '/analytics', icon: ChartBarIcon },
-    { name: t.nav.integratedDashboard, href: '/integrated-dashboard', icon: PresentationChartBarIcon },
-    { name: t.nav.admins, href: '/admins', icon: ShieldCheckIcon },
-    { name: t.nav.settings, href: '/settings', icon: CogIcon },
+    { 
+      name: t.nav.dashboard, 
+      href: '/', 
+      icon: HomeIcon,
+      permission: 'analytics.view' as Permission
+    },
+    { 
+      name: t.nav.partners, 
+      href: '/partners', 
+      icon: UsersIcon,
+      permission: 'partners.view' as Permission
+    },
+    { 
+      name: t.nav.energy, 
+      href: '/energy', 
+      icon: BoltIcon,
+      permission: 'energy.view' as Permission
+    },
+    { 
+      name: t.nav.fees, 
+      href: '/fees', 
+      icon: CurrencyDollarIcon,
+      permission: 'finance.view' as Permission
+    },
+    { 
+      name: t.nav.analytics, 
+      href: '/analytics', 
+      icon: ChartBarIcon,
+      permission: 'analytics.view' as Permission
+    },
+    { 
+      name: t.nav.integratedDashboard, 
+      href: '/integrated-dashboard', 
+      icon: PresentationChartBarIcon,
+      permission: 'analytics.view' as Permission
+    },
+    { 
+      name: t.nav.admins, 
+      href: '/admins', 
+      icon: ShieldCheckIcon,
+      permission: 'users.view' as Permission
+    },
+    { 
+      name: t.nav.settings, 
+      href: '/settings', 
+      icon: CogIcon,
+      permission: 'system.manage_settings' as Permission
+    },
   ];
+
+  // Filter navigation items based on user permissions
+  const filteredNavigation = navigation.filter(item => 
+    hasPermission(item.permission)
+  );
 
   return (
     <>
@@ -91,7 +139,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
                       <li>
                         <ul role="list" className="-mx-2 space-y-1">
-                          {navigation.map((item) => (
+                          {filteredNavigation.map((item) => (
                             <li key={item.name}>
                               <Link
                                 href={item.href}
@@ -134,7 +182,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => (
+                  {filteredNavigation.map((item) => (
                     <li key={item.name}>
                       <Link
                         href={item.href}

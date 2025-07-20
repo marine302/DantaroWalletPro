@@ -4,8 +4,9 @@ import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { useI18n } from '@/contexts/I18nContext';
 import Link from "next/link";
+import { withRBAC } from '@/components/auth/withRBAC';
 
-export default function EnergyPage() {
+function EnergyPage() {
   const { t } = useI18n();
   
   const headerActions = (
@@ -159,3 +160,8 @@ export default function EnergyPage() {
     </BasePage>
   );
 }
+
+// Export protected component
+export default withRBAC(EnergyPage, { 
+  requiredPermissions: ['energy.view']
+});

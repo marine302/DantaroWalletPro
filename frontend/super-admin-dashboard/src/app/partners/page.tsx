@@ -6,8 +6,10 @@ import { Button, Section } from '@/components/ui/DarkThemeComponents';
 import { apiClient } from '@/lib/api';
 import { Partner } from '@/types';
 import { useTranslation } from '@/contexts/I18nContext';
+import { withRBAC } from '@/components/auth/withRBAC';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
-export default function PartnersPage() {
+function PartnersPage() {
   const { t } = useTranslation();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,12 +186,16 @@ export default function PartnersPage() {
                       {new Date(partner.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-blue-400 hover:text-blue-300 mr-3">
-                        {t.common.edit}
-                      </button>
-                      <button className="text-red-400 hover:text-red-300">
-                        {t.common.delete}
-                      </button>
+                      <PermissionGuard permission="partners.edit">
+                        <button className="text-blue-400 hover:text-blue-300 mr-3">
+                          {t.common.edit}
+                        </button>
+                      </PermissionGuard>
+                      <PermissionGuard permission="partners.delete">
+                        <button className="text-red-400 hover:text-red-300">
+                          {t.common.delete}
+                        </button>
+                      </PermissionGuard>
                     </td>
                   </tr>
                 ))}
@@ -201,3 +207,8 @@ export default function PartnersPage() {
     </BasePage>
   );
 }
+
+// Export protected component
+export default withRBAC(PartnersPage, { 
+  requiredPermissions: ['partners.view']
+});

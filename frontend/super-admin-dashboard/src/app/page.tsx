@@ -17,8 +17,10 @@ import { BasePage } from '@/components/ui/BasePage';
 import { RealtimeStatus } from '@/components/realtime/RealtimeStatus';
 import { RealtimeStats } from '@/components/realtime/RealtimeStats';
 import { RealtimeAlerts } from '@/components/realtime/RealtimeAlerts';
+import { ActivityLogViewer } from '@/components/auth/ActivityLogViewer';
+import { withRBAC } from '@/components/auth/withRBAC';
 
-export default function Home() {
+function Home() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { t } = useI18n();
@@ -280,7 +282,17 @@ export default function Home() {
             </div>
           )}
         </Section>
+
+        {/* Recent Activity Section */}
+        <Section title="최근 활동" className="mt-6">
+          <ActivityLogViewer limit={10} showFilters={false} />
+        </Section>
       </div>
     </BasePage>
   );
 }
+
+// Export protected component
+export default withRBAC(Home, { 
+  requiredPermissions: ['analytics.view']
+});

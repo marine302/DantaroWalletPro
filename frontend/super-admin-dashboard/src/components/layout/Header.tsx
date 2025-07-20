@@ -6,6 +6,8 @@ import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageSelector';
 import { useI18n } from '@/contexts/I18nContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -13,11 +15,18 @@ interface HeaderProps {
 
 export function Header({ setSidebarOpen }: HeaderProps) {
   const { t } = useI18n();
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
   
   const userNavigation = [
     { name: t.common.profile, href: '#' },
-    { name: t.settings.title, href: '#' },
-    { name: t.nav.logout, href: '#' },
+    { name: t.settings.title, href: '/settings' },
+    { name: t.nav.logout, href: '#', onClick: handleLogout },
   ];
 
   return (
@@ -51,7 +60,15 @@ export function Header({ setSidebarOpen }: HeaderProps) {
           <Menu as="div" className="relative">
             <Menu.Button className="-m-1.5 flex items-center p-1.5">
               <span className="sr-only">Open user menu</span>
-              <UserCircleIcon className="h-8 w-8 text-gray-300" aria-hidden="true" />
+              <div className="flex items-center">
+                <UserCircleIcon className="h-8 w-8 text-gray-300" aria-hidden="true" />
+                {user && (
+                  <div className="ml-3 hidden lg:block">
+                    <p className="text-sm font-medium text-gray-300">{user.name}</p>
+                    <p className="text-xs text-gray-400 capitalize">{user.role.replace('_', ' ')}</p>
+                  </div>
+                )}
+              </div>
             </Menu.Button>
             <Transition
               as={Fragment}
@@ -62,19 +79,19 @@ export function Header({ setSidebarOpen }: HeaderProps) {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-gray-800 py-2 shadow-lg ring-1 ring-gray-700 focus:outline-none">
+              <Menu.Items className="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-gray-800 py-2 shadow-lg ring-1 ring-gray-700 focus:outline-none">
                 {userNavigation.map((item) => (
                   <Menu.Item key={item.name}>
                     {({ active }) => (
-                      <a
-                        href={item.href}
+                      <button
+                        onClick={item.onClick || (() => {})}
                         className={cn(
                           active ? 'bg-gray-700' : '',
-                          'block px-3 py-1 text-sm leading-6 text-gray-300'
+                          'block w-full text-left px-3 py-1 text-sm leading-6 text-gray-300'
                         )}
                       >
                         {item.name}
-                      </a>
+                      </button>
                     )}
                   </Menu.Item>
                 ))}

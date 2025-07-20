@@ -1,56 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, User, AlertCircle } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('superadmin@dantaro.com');
-  const [password, setPassword] = useState('SuperAdmin123!');
+  const [email, setEmail] = useState('admin@dantaro.com');
+  const [password, setPassword] = useState('admin123');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login, isAuthenticated, user } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      router.push('/');
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // 환경변수 디버깅
-    console.log('Environment variables:', {
-      API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-      NODE_ENV: process.env.NODE_ENV
-    });
-
     try {
-      console.log('Attempting login...');
-      await apiClient.superAdminLogin({ email, password });
-      console.log('Login successful, redirecting...');
+      await login({ email, password });
       router.push('/');
-    } catch (err: unknown) {
+    } catch (err) {
+      setError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       console.error('Login error:', err);
-      const error = err as { 
-        response?: { 
-          data?: { message?: string };
-          status?: number;
-        };
-        message?: string;
-      };
-      
-      let errorMessage = 'Login failed. Please check your credentials.';
-      
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.status) {
-        errorMessage = `Login failed (${error.response.status}). Please check your credentials.`;
-      } else if (error.message) {
-        errorMessage = `Connection error: ${error.message}`;
-      }
-      
-      setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
     }
   };
 
