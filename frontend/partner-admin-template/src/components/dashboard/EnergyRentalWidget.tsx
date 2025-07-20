@@ -106,11 +106,11 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 로딩 상태
   if (isLoading || isLoadingRental || !rentalUsage) {
     return (
-      <Card className={`${className} text-foreground`}>
+      <Card className={`${className}`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <Zap className="w-5 h-5 text-yellow-500" />
-            <span className="text-foreground">에너지 렌탈 현황</span>
+            <span className="text-gray-900">에너지 렌탈 현황</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
@@ -124,11 +124,11 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 오류 상태
   if (error) {
     return (
-      <Card className={`${className} text-foreground`}>
+      <Card className={`${className}`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <Zap className="w-5 h-5 text-yellow-500" />
-            <span className="text-foreground">에너지 렌탈 현황</span>
+            <span className="text-gray-900">에너지 렌탈 현황</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
@@ -150,9 +150,9 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   const estimatedDaysRemaining = Math.floor(remainingEnergy / rentalUsage.daily_consumption)
 
   return (
-    <Card className={`${className} text-foreground`}>
+    <Card className={`${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
           <Zap className="w-5 h-5 text-yellow-500" />
           에너지 렌탈 현황
         </CardTitle>
@@ -166,15 +166,15 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
         {rentalUsage.plan_type === 'subscription' && (
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">월 할당량</span>
-              <span className="font-medium">
+              <span className="text-gray-600">월 할당량</span>
+              <span className="font-medium text-gray-900">
                 {formatNumber(rentalUsage.monthly_energy_quota)} 에너지
               </span>
             </div>
             
             <div className="space-y-2">
               <Progress value={usagePercentage} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-xs text-gray-500">
                 <span>{formatNumber(rentalUsage.monthly_used)} 사용</span>
                 <span>{usagePercentage.toFixed(1)}% 사용됨</span>
               </div>
@@ -182,13 +182,13 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
             
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">
-                <span className="text-muted-foreground">남은 에너지</span>
+                <span className="text-gray-600">남은 에너지</span>
                 <div className="font-medium text-green-600">
                   {formatNumber(remainingEnergy)}
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-muted-foreground">예상 소진일</span>
+                <span className="text-gray-600">예상 소진일</span>
                 <div className="font-medium text-blue-600">
                   {estimatedDaysRemaining}일 후
                 </div>
@@ -200,7 +200,7 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
         {/* 실시간 효율성 */}
         <div className="border-t pt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">에너지 효율성</span>
+            <span className="text-sm text-gray-600">에너지 효율성</span>
             <div className="flex items-center gap-1">
               <TrendingUp className="w-3 h-3 text-green-500" />
               <span className="text-sm font-medium text-green-600">
@@ -214,27 +214,27 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
         {/* 비용 정보 */}
         <div className="border-t pt-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">현재 단가</span>
-            <span className="font-medium">
+            <span className="text-gray-600">현재 단가</span>
+            <span className="font-medium text-gray-900">
               {rentalUsage.current_rate} TRX/에너지
             </span>
           </div>
           
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">일일 평균 소비량</span>
-            <span className="font-medium">
+            <span className="text-gray-600">일일 평균 소비량</span>
+            <span className="font-medium text-gray-900">
               {formatNumber(rentalUsage.daily_consumption)} 에너지
             </span>
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">이번 달 예상 비용</span>
+            <span className="text-gray-600">이번 달 예상 비용</span>
             <div className="text-right">
-              <div className="font-semibold text-lg flex items-center gap-1">
+              <div className="font-semibold text-lg flex items-center gap-1 text-gray-900">
                 <DollarSign className="w-4 h-4" />
                 {formatCurrency(rentalUsage.estimated_monthly_cost)}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-gray-500">
                 TRX 기준
               </div>
             </div>

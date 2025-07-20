@@ -1,5 +1,5 @@
 /**
- * 회원가입 페이지
+ * 회원가입 페이지 - 공통 컴포넌트 사용
  */
 
 'use client';
@@ -7,20 +7,33 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { 
+  AuthForm, 
+  AuthInput, 
+  AuthCheckbox, 
+  AuthSubmitButton, 
+  AuthLink 
+} from '../../components/auth';
 import type { RegisterData } from '../../types';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register, isLoading } = useAuth();
   
+  // 개발 환경에서는 임시 계정 정보를 기본값으로 설정
   const [formData, setFormData] = useState<RegisterData>({
-    email: '',
-    username: '',
-    password: '',
-    password_confirmation: '',
+    email: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_EMAIL || 'partner@dantarowallet.com')
+      : '',
+    username: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_USERNAME || 'dantaro_partner_admin')
+      : '',
+    password: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'DantaroPartner2024!')
+      : '',
+    password_confirmation: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'DantaroPartner2024!')
+      : '',
     terms_accepted: false,
     privacy_accepted: false
   });
@@ -116,185 +129,124 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">DantaroWallet</h1>
-          <p className="mt-2 text-sm text-gray-600">Partner Admin Dashboard</p>
+    <AuthForm
+      title="Create your account"
+      description="Sign up to access the partner admin dashboard"
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+      error={errors.general}
+    >
+      {/* 개발 환경에서만 데모 계정 정보 표시 */}
+      {process.env.NEXT_PUBLIC_ENV === 'development' && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+          <h4 className="text-sm font-medium text-green-800 mb-2">🧪 개발용 데모 계정 정보</h4>
+          <div className="text-xs text-green-700 space-y-1">
+            <p><strong>Email:</strong> {process.env.NEXT_PUBLIC_DEMO_EMAIL}</p>
+            <p><strong>Username:</strong> {process.env.NEXT_PUBLIC_DEMO_USERNAME}</p>
+            <p><strong>Password:</strong> {process.env.NEXT_PUBLIC_DEMO_PASSWORD}</p>
+            <p className="text-green-600 mt-2">* 위 정보가 자동으로 입력되어 있습니다</p>
+          </div>
         </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Create your account</CardTitle>
-            <CardDescription>
-              Sign up to access the partner admin dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                  {errors.general}
-                </div>
-              )}
+      <AuthInput
+        id="email"
+        name="email"
+        type="email"
+        label="Email address"
+        placeholder="Enter your email"
+        value={formData.email}
+        onChange={handleChange}
+        error={errors.email}
+        required
+        autoComplete="email"
+      />
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'border-red-300' : ''}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-600">{errors.email}</p>
-                )}
-              </div>
+      <AuthInput
+        id="username"
+        name="username"
+        type="text"
+        label="Username"
+        placeholder="Enter your username"
+        value={formData.username}
+        onChange={handleChange}
+        error={errors.username}
+        required
+        autoComplete="username"
+      />
 
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
-                </label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className={errors.username ? 'border-red-300' : ''}
-                  placeholder="Enter your username"
-                />
-                {errors.username && (
-                  <p className="mt-1 text-xs text-red-600">{errors.username}</p>
-                )}
-              </div>
+      <AuthInput
+        id="password"
+        name="password"
+        type="password"
+        label="Password"
+        placeholder="Enter your password"
+        value={formData.password}
+        onChange={handleChange}
+        error={errors.password}
+        required
+        autoComplete="new-password"
+      />
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={errors.password ? 'border-red-300' : ''}
-                  placeholder="Enter your password"
-                />
-                {errors.password && (
-                  <p className="mt-1 text-xs text-red-600">{errors.password}</p>
-                )}
-              </div>
+      <AuthInput
+        id="password_confirmation"
+        name="password_confirmation"
+        type="password"
+        label="Confirm Password"
+        placeholder="Confirm your password"
+        value={formData.password_confirmation}
+        onChange={handleChange}
+        error={errors.password_confirmation}
+        required
+        autoComplete="new-password"
+      />
 
-              <div>
-                <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
-                <Input
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  className={errors.password_confirmation ? 'border-red-300' : ''}
-                  placeholder="Confirm your password"
-                />
-                {errors.password_confirmation && (
-                  <p className="mt-1 text-xs text-red-600">{errors.password_confirmation}</p>
-                )}
-              </div>
+      <div className="space-y-2">
+        <AuthCheckbox
+          id="terms_accepted"
+          name="terms_accepted"
+          label={
+            <>
+              I accept the{' '}
+              <button type="button" className="text-blue-600 hover:text-blue-800">
+                Terms of Service
+              </button>
+            </>
+          }
+          checked={formData.terms_accepted}
+          onChange={handleChange}
+          error={errors.terms_accepted}
+        />
 
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input
-                    id="terms_accepted"
-                    name="terms_accepted"
-                    type="checkbox"
-                    checked={formData.terms_accepted}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="terms_accepted" className="ml-2 block text-sm text-gray-900">
-                    I accept the{' '}
-                    <button type="button" className="text-blue-600 hover:text-blue-800">
-                      Terms of Service
-                    </button>
-                  </label>
-                </div>
-                {errors.terms_accepted && (
-                  <p className="text-xs text-red-600">{errors.terms_accepted}</p>
-                )}
-
-                <div className="flex items-center">
-                  <input
-                    id="privacy_accepted"
-                    name="privacy_accepted"
-                    type="checkbox"
-                    checked={formData.privacy_accepted}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="privacy_accepted" className="ml-2 block text-sm text-gray-900">
-                    I accept the{' '}
-                    <button type="button" className="text-blue-600 hover:text-blue-800">
-                      Privacy Policy
-                    </button>
-                  </label>
-                </div>
-                {errors.privacy_accepted && (
-                  <p className="text-xs text-red-600">{errors.privacy_accepted}</p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Creating account...
-                  </>
-                ) : (
-                  'Create account'
-                )}
-              </Button>
-
-              <div className="text-center">
-                <div className="text-sm text-gray-600">
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => router.push('/login')}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Sign in
-                  </button>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="text-center text-xs text-gray-500">
-          <p>© 2024 DantaroWallet. All rights reserved.</p>
-        </div>
+        <AuthCheckbox
+          id="privacy_accepted"
+          name="privacy_accepted"
+          label={
+            <>
+              I accept the{' '}
+              <button type="button" className="text-blue-600 hover:text-blue-800">
+                Privacy Policy
+              </button>
+            </>
+          }
+          checked={formData.privacy_accepted}
+          onChange={handleChange}
+          error={errors.privacy_accepted}
+        />
       </div>
-    </div>
+
+      <AuthSubmitButton
+        isSubmitting={isSubmitting}
+        loadingText="Creating account..."
+      >
+        Create account
+      </AuthSubmitButton>
+
+      <AuthLink
+        text="Already have an account?"
+        linkText="Sign in"
+        onClick={() => router.push('/login')}
+      />
+    </AuthForm>
   );
 }

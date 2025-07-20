@@ -4,6 +4,7 @@
 
 import { apiClient } from '../api-client';
 import type { LoginCredentials, RegisterData, User, AuthResponse } from '../../types';
+import { mockAuthService, shouldUseMockData } from './mock.service';
 
 // JWT 토큰 저장/관리
 export class TokenManager {
@@ -46,6 +47,21 @@ export const authService = {
    * 로그인
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    // 개발 환경에서는 Mock 데이터 사용
+    if (shouldUseMockData()) {
+      const response = await mockAuthService.login(credentials.email, credentials.password);
+      
+      if (response.success) {
+        TokenManager.setTokens(
+          response.data.access_token,
+          response.data.refresh_token
+        );
+      }
+      
+      return response;
+    }
+
+    // 실제 API 호출
     const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
     
     if (response.data.success) {
@@ -62,6 +78,21 @@ export const authService = {
    * 회원가입
    */
   async register(data: RegisterData): Promise<AuthResponse> {
+    // 개발 환경에서는 Mock 데이터 사용
+    if (shouldUseMockData()) {
+      const response = await mockAuthService.register(data.email, data.username, data.password);
+      
+      if (response.success) {
+        TokenManager.setTokens(
+          response.data.access_token,
+          response.data.refresh_token
+        );
+      }
+      
+      return response;
+    }
+
+    // 실제 API 호출
     const response = await apiClient.post<AuthResponse>('/auth/register', data);
     
     if (response.data.success) {
@@ -112,6 +143,13 @@ export const authService = {
    * 현재 사용자 정보 조회
    */
   async getCurrentUser(): Promise<User> {
+    // 개발 환경에서는 Mock 데이터 사용
+    if (shouldUseMockData()) {
+      const { DEMO_PARTNER_ACCOUNT } = await import('./mock.service');
+      return DEMO_PARTNER_ACCOUNT;
+    }
+
+    // 실제 API 호출
     const response = await apiClient.get<{ data: User }>('/auth/me');
     return response.data.data;
   },

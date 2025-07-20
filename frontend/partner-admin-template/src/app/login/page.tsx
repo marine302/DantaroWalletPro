@@ -1,5 +1,5 @@
 /**
- * 로그인 페이지
+ * 로그인 페이지 - 공통 컴포넌트 사용
  */
 
 'use client';
@@ -7,18 +7,27 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { 
+  AuthForm, 
+  AuthInput, 
+  AuthCheckbox, 
+  AuthSubmitButton, 
+  AuthLink 
+} from '../../components/auth';
 import type { LoginCredentials } from '../../types';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useAuth();
   
+  // 개발 환경에서는 임시 계정 정보를 기본값으로 설정
   const [formData, setFormData] = useState<LoginCredentials>({
-    email: '',
-    password: '',
+    email: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_EMAIL || 'partner@dantarowallet.com')
+      : '',
+    password: process.env.NEXT_PUBLIC_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'DantaroPartner2024!')
+      : '',
     remember_me: false
   });
   
@@ -91,124 +100,81 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">DantaroWallet</h1>
-          <p className="mt-2 text-sm text-gray-600">Partner Admin Dashboard</p>
+    <AuthForm
+      title="Sign in to your account"
+      description="Enter your email and password to access the admin dashboard"
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+      error={errors.general}
+    >
+      {/* 개발 환경에서만 데모 계정 정보 표시 */}
+      {process.env.NEXT_PUBLIC_ENV === 'development' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+          <h4 className="text-sm font-medium text-blue-800 mb-2">🧪 개발용 데모 계정</h4>
+          <div className="text-xs text-blue-700 space-y-1">
+            <p><strong>Email:</strong> {process.env.NEXT_PUBLIC_DEMO_EMAIL}</p>
+            <p><strong>Password:</strong> {process.env.NEXT_PUBLIC_DEMO_PASSWORD}</p>
+            <p className="text-blue-600 mt-2">* 위 정보가 자동으로 입력되어 있습니다</p>
+          </div>
         </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign in to your account</CardTitle>
-            <CardDescription>
-              Enter your email and password to access the admin dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                  {errors.general}
-                </div>
-              )}
+      <AuthInput
+        id="email"
+        name="email"
+        type="email"
+        label="Email address"
+        placeholder="Enter your email"
+        value={formData.email}
+        onChange={handleChange}
+        error={errors.email}
+        required
+        autoComplete="email"
+      />
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'border-red-300' : ''}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-600">{errors.email}</p>
-                )}
-              </div>
+      <AuthInput
+        id="password"
+        name="password"
+        type="password"
+        label="Password"
+        placeholder="Enter your password"
+        value={formData.password}
+        onChange={handleChange}
+        error={errors.password}
+        required
+        autoComplete="current-password"
+      />
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={errors.password ? 'border-red-300' : ''}
-                  placeholder="Enter your password"
-                />
-                {errors.password && (
-                  <p className="mt-1 text-xs text-red-600">{errors.password}</p>
-                )}
-              </div>
+      <AuthCheckbox
+        id="remember_me"
+        name="remember_me"
+        label="Remember me"
+        checked={formData.remember_me}
+        onChange={handleChange}
+      />
 
-              <div className="flex items-center">
-                <input
-                  id="remember_me"
-                  name="remember_me"
-                  type="checkbox"
-                  checked={formData.remember_me}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
+      <AuthSubmitButton
+        isSubmitting={isSubmitting}
+        loadingText="Signing in..."
+      >
+        Sign in
+      </AuthSubmitButton>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign in'
-                )}
-              </Button>
-
-              <div className="text-center space-y-2">
-                <button
-                  type="button"
-                  onClick={() => router.push('/forgot-password')}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Forgot your password?
-                </button>
-                <div className="text-sm text-gray-600">
-                  Don&apos;t have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => router.push('/register')}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Sign up
-                  </button>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="text-center text-xs text-gray-500">
-          <p>© 2024 DantaroWallet. All rights reserved.</p>
-        </div>
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => router.push('/forgot-password')}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Forgot your password?
+        </button>
       </div>
-    </div>
+
+      <AuthLink
+        text="Don&apos;t have an account?"
+        linkText="Sign up"
+        onClick={() => router.push('/register')}
+      />
+    </AuthForm>
   );
 }
