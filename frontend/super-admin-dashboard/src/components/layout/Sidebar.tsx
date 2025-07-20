@@ -14,6 +14,7 @@ import {
   ChartBarIcon,
   ShieldCheckIcon,
   PresentationChartBarIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
@@ -80,6 +81,13 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       icon: CogIcon,
       permission: 'system.manage_settings' as Permission
     },
+    // 개발/테스트용 페이지 (개발 환경에서만 표시)
+    ...(process.env.NODE_ENV === 'development' ? [{
+      name: '🔔 알림 테스트', 
+      href: '/notification-test', 
+      icon: BellIcon,
+      permission: 'system.manage_settings' as Permission
+    }] : []),
   ];
 
   // Filter navigation items based on user permissions

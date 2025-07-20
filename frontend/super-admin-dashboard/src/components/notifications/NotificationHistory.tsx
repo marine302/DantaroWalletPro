@@ -1,0 +1,409 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { notificationManager } from '@/lib/notification-manager';
+import { useNotifications } from '@/hooks/useNotifications';
+import { 
+  INotification, 
+  NotificationPriority, 
+  NotificationChannel,
+  NotificationFilter 
+} from '@/types/notification';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+
+interface NotificationHistoryProps {
+  onClose?: () => void;
+}
+
+export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClose }) => {
+  const [history, setHistory] = useState<INotification[]>([]);
+  const [filters, setFilters] = useState<NotificationFilter>({
+    priorities: Object.values(NotificationPriority),
+    channels: Object.values(NotificationChannel),
+    dateRange: null,
+    readStatus: 'all',
+    searchQuery: ''
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+
+  useEffect(() => {
+    const unsubscribe = notificationManager.subscribeToHistory((newHistory) => {
+      setHistory(newHistory);
+    });
+
+    // 초기 히스토리 로드
+    setHistory(notificationManager.getNotificationHistory());
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    notificationManager.updateFilters(filters);
+  }, [filters]);
+
+  const handleFilterChange = (key: keyof NotificationFilter, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // 필터 변경시 첫 페이지로
+  };
+
+  const handleDateRangeChange = (type: 'start' | 'end', date: string) => {
+    const newDateRange = filters.dateRange || { start: new Date(), end: new Date() };
+    if (type === 'start') {
+      newDateRange.start = new Date(date);
+    } else {
+      newDateRange.end = new Date(date);
+    }
+    handleFilterChange('dateRange', newDateRange);
+  };
+
+  const clearDateFilter = () => {
+    handleFilterChange('dateRange', null);
+  };
+
+  const getPriorityColor = (priority: NotificationPriority) => {
+    switch (priority) {
+      case NotificationPriority.CRITICAL:
+        return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
+      case NotificationPriority.HIGH:
+        return 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300';
+      case NotificationPriority.MEDIUM:
+        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
+      case NotificationPriority.LOW:
+        return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      default:
+        return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
+
+  const getChannelIcon = (channel: NotificationChannel) => {
+    switch (channel) {
+      case NotificationChannel.SYSTEM:
+        return '⚙️';
+      case NotificationChannel.SECURITY:
+        return '🔒';
+      case NotificationChannel.TRADING:
+        return '💹';
+      case NotificationChannel.PARTNER:
+        return '🤝';
+      case NotificationChannel.COMPLIANCE:
+        return '📋';
+      default:
+        return '📢';
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(date));
+  };
+
+  // 페이지네이션 계산
+  const totalItems = history.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = history.slice(startIndex, endIndex);
+
+  const exportToCSV = () => {
+    const csvData = history.map(notification => ({
+      ID: notification.id,
+      Title: notification.title,
+      Message: notification.message,
+      Priority: notification.priority,
+      Channel: notification.channel,
+      Timestamp: formatDate(notification.timestamp),
+      Read: notification.read ? 'Yes' : 'No'
+    }));
+
+    const headers = Object.keys(csvData[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notification-history-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          알림 히스토리
+        </h2>
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            onClick={exportToCSV}
+            disabled={history.length === 0}
+          >
+            📊 CSV 내보내기
+          </Button>
+          {onClose && (
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 필터 섹션 */}
+      <Card className="p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          필터
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 검색 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              검색
+            </label>
+            <input
+              type="text"
+              placeholder="제목 또는 메시지 검색..."
+              value={filters.searchQuery}
+              onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          {/* 읽음 상태 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              읽음 상태
+            </label>
+            <select
+              value={filters.readStatus}
+              onChange={(e) => handleFilterChange('readStatus', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="all">전체</option>
+              <option value="read">읽음</option>
+              <option value="unread">읽지 않음</option>
+            </select>
+          </div>
+
+          {/* 우선순위 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              우선순위
+            </label>
+            <select
+              multiple
+              value={filters.priorities}
+              onChange={(e) => {
+                const selected = Array.from(e.target.selectedOptions, option => option.value as NotificationPriority);
+                handleFilterChange('priorities', selected);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              size={4}
+            >
+              {Object.values(NotificationPriority).map(priority => (
+                <option key={priority} value={priority} className="capitalize">
+                  {priority}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 채널 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              채널
+            </label>
+            <select
+              multiple
+              value={filters.channels}
+              onChange={(e) => {
+                const selected = Array.from(e.target.selectedOptions, option => option.value as NotificationChannel);
+                handleFilterChange('channels', selected);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              size={5}
+            >
+              {Object.values(NotificationChannel).map(channel => (
+                <option key={channel} value={channel} className="capitalize">
+                  {getChannelIcon(channel)} {channel.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 날짜 범위 */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              시작 날짜
+            </label>
+            <input
+              type="date"
+              value={filters.dateRange?.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
+              onChange={(e) => handleDateRangeChange('start', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              종료 날짜
+            </label>
+            <input
+              type="date"
+              value={filters.dateRange?.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
+              onChange={(e) => handleDateRangeChange('end', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <Button
+              variant="outline"
+              onClick={clearDateFilter}
+              disabled={!filters.dateRange}
+              className="w-full"
+            >
+              날짜 필터 지우기
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* 히스토리 목록 */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            알림 히스토리 ({totalItems}개)
+          </h3>
+          
+          {/* 페이지네이션 정보 */}
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {startIndex + 1}-{Math.min(endIndex, totalItems)} / {totalItems}
+          </div>
+        </div>
+
+        {currentItems.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            조건에 맞는 알림이 없습니다.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {currentItems.map((notification) => (
+              <div
+                key={notification.id}
+                className={`border rounded-lg p-4 transition-colors ${
+                  notification.read 
+                    ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' 
+                    : 'bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-lg">{getChannelIcon(notification.channel)}</span>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(notification.priority)}`}>
+                        {notification.priority.toUpperCase()}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(notification.timestamp)}
+                      </span>
+                      {!notification.read && (
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      )}
+                    </div>
+                    
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      {notification.title}
+                    </h4>
+                    
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                      {notification.message}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center space-x-2 ml-4">
+                    {!notification.read && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => notificationManager.markAsRead(notification.id)}
+                        className="text-xs"
+                      >
+                        읽음 처리
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center space-x-2 mt-6">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+            >
+              이전
+            </Button>
+            
+            <div className="flex space-x-1">
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                const isCurrentPage = page === currentPage;
+                const showPage = page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2);
+                
+                if (!showPage) {
+                  if (page === currentPage - 3 || page === currentPage + 3) {
+                    return <span key={page} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                }
+                
+                return (
+                  <Button
+                    key={page}
+                    variant={isCurrentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={isCurrentPage ? "bg-blue-600 text-white" : ""}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+            >
+              다음
+            </Button>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};
