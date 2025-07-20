@@ -1,0 +1,39 @@
+{
+  "ports": {
+    "frontend": 3020,
+    "mockHttp": 3001,
+    "mockWebSocket": 3002
+  },
+  "services": {
+    "frontend": {
+      "name": "Frontend Dev Server",
+      "command": "next",
+      "args": [
+        "dev"
+      ],
+      "env": {},
+      "enabled": true,
+      "healthCheck": "/api/dashboard"
+    },
+    "mockHttp": {
+      "name": "Mock HTTP Server",
+      "command": "node",
+      "args": [
+        "mock-server.js"
+      ],
+      "env": {},
+      "enabled": true,
+      "healthCheck": "/health"
+    },
+    "mockWebSocket": {
+      "name": "Mock WebSocket Server",
+      "command": "node",
+      "args": [
+        "mock-realtime-server.js"
+      ],
+      "env": {},
+      "enabled": true,
+      "healthCheck": null
+    }
+  }
+}

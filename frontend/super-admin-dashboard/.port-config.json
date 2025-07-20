@@ -1,0 +1,5 @@
+{
+  "frontend": 3020,
+  "mockHttp": 3001,
+  "mockWebSocket": 3002
+}

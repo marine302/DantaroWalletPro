@@ -8,6 +8,13 @@ export type Permission =
   | 'users.delete'
   | 'users.manage_roles'
   
+  // Admin Management
+  | 'admin.view'
+  | 'admin.create'
+  | 'admin.edit'
+  | 'admin.delete'
+  | 'admin.manage'
+  
   // Partner Management
   | 'partners.view'
   | 'partners.create'
@@ -38,6 +45,8 @@ export type Permission =
   | 'audit.view'
   | 'audit.export'
   | 'audit.manage_compliance'
+  | 'compliance.view'
+  | 'compliance.manage'
   
   // Analytics
   | 'analytics.view'

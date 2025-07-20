@@ -24,22 +24,21 @@ def upgrade():
     op.create_table('partner_fee_policies',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('partner_id', sa.String(length=36), nullable=False),
-        sa.Column('fee_type', sa.Enum('FLAT', 'PERCENTAGE', 'TIERED', 'DYNAMIC', name='feetype'), nullable=True),
+        sa.Column('fee_type', sa.String(length=10), nullable=True),
         sa.Column('base_fee_rate', sa.Numeric(precision=5, scale=4), nullable=True),
         sa.Column('min_fee_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('max_fee_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('withdrawal_fee_rate', sa.Numeric(precision=5, scale=4), nullable=True),
         sa.Column('internal_transfer_fee_rate', sa.Numeric(precision=5, scale=4), nullable=True),
-        sa.Column('vip_discount_rates', sa.JSON(), nullable=True),
+        sa.Column('vip_discount_rates', sa.Text(), nullable=True),
         sa.Column('promotion_active', sa.Boolean(), nullable=True),
         sa.Column('promotion_fee_rate', sa.Numeric(precision=5, scale=4), nullable=True),
-        sa.Column('promotion_end_date', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('promotion_end_date', sa.DateTime(), nullable=True),
         sa.Column('platform_share_rate', sa.Numeric(precision=5, scale=4), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['partner_id'], ['partners.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        comment='파트너사 수수료 정책'
+        sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_partner_fee_policies_id'), 'partner_fee_policies', ['id'], unique=False)
     op.create_index('ix_partner_fee_policies_partner_id', 'partner_fee_policies', ['partner_id'], unique=True)
@@ -52,10 +51,9 @@ def upgrade():
         sa.Column('max_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('fee_rate', sa.Numeric(precision=5, scale=4), nullable=False),
         sa.Column('fixed_fee', sa.Numeric(precision=18, scale=6), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
         sa.ForeignKeyConstraint(['fee_policy_id'], ['partner_fee_policies.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        comment='구간별 수수료 설정'
+        sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_fee_tiers_id'), 'fee_tiers', ['id'], unique=False)
     op.create_index('ix_fee_tiers_policy_amount', 'fee_tiers', ['fee_policy_id', 'min_amount'], unique=False)
@@ -64,23 +62,23 @@ def upgrade():
     op.create_table('partner_withdrawal_policies',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('partner_id', sa.String(length=36), nullable=False),
-        sa.Column('policy_type', sa.Enum('REALTIME', 'BATCH', 'HYBRID', 'MANUAL', name='withdrawalpolicy'), nullable=True),
+        sa.Column('policy_type', sa.String(length=20), nullable=True),
         sa.Column('realtime_enabled', sa.Boolean(), nullable=True),
         sa.Column('realtime_max_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('auto_approve_enabled', sa.Boolean(), nullable=True),
         sa.Column('auto_approve_max_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('batch_enabled', sa.Boolean(), nullable=True),
-        sa.Column('batch_schedule', sa.JSON(), nullable=True),
+        sa.Column('batch_schedule', sa.Text(), nullable=True),
         sa.Column('batch_min_amount', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('daily_limit_per_user', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('daily_limit_total', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('single_transaction_limit', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('whitelist_required', sa.Boolean(), nullable=True),
-        sa.Column('whitelist_addresses', sa.JSON(), nullable=True),
+        sa.Column('whitelist_addresses', sa.Text(), nullable=True),
         sa.Column('require_2fa', sa.Boolean(), nullable=True),
         sa.Column('confirmation_blocks', sa.Integer(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['partner_id'], ['partners.id'], ),
         sa.PrimaryKeyConstraint('id'),
         comment='파트너사 출금 정책'
@@ -92,7 +90,7 @@ def upgrade():
     op.create_table('partner_energy_policies',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('partner_id', sa.String(length=36), nullable=False),
-        sa.Column('default_policy', sa.Enum('WAIT_QUEUE', 'TRX_PAYMENT', 'PRIORITY_QUEUE', 'REJECT', name='energypolicy'), nullable=True),
+        sa.Column('default_policy', sa.String(length=20), nullable=True),
         sa.Column('trx_payment_enabled', sa.Boolean(), nullable=True),
         sa.Column('trx_payment_markup', sa.Numeric(precision=5, scale=4), nullable=True),
         sa.Column('trx_payment_max_fee', sa.Numeric(precision=18, scale=6), nullable=True),
@@ -100,14 +98,13 @@ def upgrade():
         sa.Column('queue_max_wait_hours', sa.Integer(), nullable=True),
         sa.Column('queue_notification_enabled', sa.Boolean(), nullable=True),
         sa.Column('priority_queue_enabled', sa.Boolean(), nullable=True),
-        sa.Column('vip_priority_levels', sa.JSON(), nullable=True),
+        sa.Column('vip_priority_levels', sa.Text(), nullable=True),
         sa.Column('energy_saving_enabled', sa.Boolean(), nullable=True),
         sa.Column('energy_saving_threshold', sa.Integer(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['partner_id'], ['partners.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        comment='파트너사 에너지 대응 정책'
+        sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_partner_energy_policies_id'), 'partner_energy_policies', ['id'], unique=False)
     op.create_index('ix_partner_energy_policies_partner_id', 'partner_energy_policies', ['partner_id'], unique=True)
@@ -121,13 +118,18 @@ def upgrade():
         sa.Column('min_volume', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('fee_discount_rate', sa.Numeric(precision=5, scale=4), nullable=True),
         sa.Column('withdrawal_limit_multiplier', sa.Numeric(precision=5, scale=2), nullable=True),
-        sa.Column('benefits', sa.JSON(), nullable=True),
-        sa.Column('upgrade_conditions', sa.JSON(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('benefits', sa.Text(), nullable=True),
+        sa.Column('upgrade_conditions', sa.Text(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['partner_id'], ['partners.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        comment='사용자 등급 관리'
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_partner_energy_policies_id'), 'partner_energy_policies', ['id'], unique=False)
+    op.create_index('ix_partner_energy_policies_partner_id', 'partner_energy_policies', ['partner_id'], unique=True)
+    
+    # Create user_tiers table
+    op.create_table('user_tiers',
     )
     op.create_index(op.f('ix_user_tiers_id'), 'user_tiers', ['id'], unique=False)
     op.create_index('ix_user_tiers_partner_level', 'user_tiers', ['partner_id', 'tier_level'], unique=False)
@@ -144,11 +146,10 @@ def upgrade():
         sa.Column('calculated_fee', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('platform_share', sa.Numeric(precision=18, scale=6), nullable=True),
         sa.Column('partner_share', sa.Numeric(precision=18, scale=6), nullable=True),
-        sa.Column('policy_details', sa.JSON(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('policy_details', sa.Text(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
         sa.ForeignKeyConstraint(['partner_id'], ['partners.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        comment='수수료 계산 로그'
+        sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_partner_policy_calculation_logs_id'), 'partner_policy_calculation_logs', ['id'], unique=False)
     op.create_index('ix_partner_policy_calculation_logs_partner_date', 'partner_policy_calculation_logs', ['partner_id', 'created_at'], unique=False)
@@ -183,8 +184,3 @@ def downgrade():
     op.drop_index('ix_partner_fee_policies_partner_id', table_name='partner_fee_policies')
     op.drop_index(op.f('ix_partner_fee_policies_id'), table_name='partner_fee_policies')
     op.drop_table('partner_fee_policies')
-    
-    # Drop enums
-    op.execute("DROP TYPE IF EXISTS energypolicy CASCADE")
-    op.execute("DROP TYPE IF EXISTS withdrawalpolicy CASCADE") 
-    op.execute("DROP TYPE IF EXISTS feetype CASCADE")

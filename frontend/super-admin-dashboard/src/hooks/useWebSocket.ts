@@ -44,7 +44,9 @@ export function useWebSocket(
   });
 
   const connect = useCallback(() => {
-    if (state.isConnecting || state.isConnected) return;
+    if (ws.current?.readyState === WebSocket.CONNECTING || ws.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
 
     setState(prev => ({ ...prev, isConnecting: true, error: null }));
 
@@ -98,11 +100,16 @@ export function useWebSocket(
         }
 
         // Auto-reconnect if not manually closed
-        if (event.code !== 1000 && state.reconnectCount < reconnectAttempts) {
-          setState(prev => ({ ...prev, reconnectCount: prev.reconnectCount + 1 }));
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, reconnectInterval);
+        if (event.code !== 1000) {
+          setState(prev => {
+            if (prev.reconnectCount < reconnectAttempts) {
+              reconnectTimeoutRef.current = setTimeout(() => {
+                connect();
+              }, reconnectInterval);
+              return { ...prev, reconnectCount: prev.reconnectCount + 1 };
+            }
+            return prev;
+          });
         }
       };
 
@@ -123,7 +130,7 @@ export function useWebSocket(
         isConnecting: false
       }));
     }
-  }, [url, reconnectAttempts, reconnectInterval, heartbeatInterval, state.isConnecting, state.isConnected, state.reconnectCount]);
+  }, [url, reconnectAttempts, reconnectInterval, heartbeatInterval]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -175,7 +182,7 @@ export function useWebSocket(
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+  }, [url]); // connect와 disconnect dependency 제거
 
   return {
     ...state,

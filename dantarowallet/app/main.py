@@ -55,15 +55,184 @@ async def lifespan(app: FastAPI):
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
 
 
+# FastAPI 태그 메타데이터 - 각 엔드포인트 그룹의 용도를 명확히 정의
+tags_metadata = [
+    # === Super Admin Dashboard 전용 ===
+    {
+        "name": "admin",
+        "description": "**🔐 Super Admin Dashboard** - Administrative operations for super administrators",
+        "externalDocs": {
+            "description": "Frontend: /frontend/super-admin-dashboard/",
+            "url": "http://localhost:3020"
+        }
+    },
+    {
+        "name": "admin_dashboard",
+        "description": "**📊 Super Admin Dashboard** - Dashboard statistics and system health monitoring",
+        "externalDocs": {
+            "description": "Frontend: /frontend/super-admin-dashboard/",
+            "url": "http://localhost:3020"
+        }
+    },
+    {
+        "name": "admin_fees",
+        "description": "**💰 Super Admin Dashboard** - Fee configuration and revenue management",
+    },
+    {
+        "name": "admin_energy",
+        "description": "**⚡ Super Admin Dashboard** - Energy pool administration and monitoring",
+    },
+    {
+        "name": "admin_partners",
+        "description": "**🤝 Super Admin Dashboard** - Partner management and performance tracking",
+    },
+    {
+        "name": "audit-compliance",
+        "description": "**🔍 Super Admin Dashboard** - Transaction auditing and compliance monitoring",
+        "externalDocs": {
+            "description": "Frontend: /app/audit-compliance/page.tsx",
+            "url": "http://localhost:3020/audit-compliance"
+        }
+    },
+    {
+        "name": "integrated_dashboard",
+        "description": "**📈 Super Admin Dashboard** - Comprehensive partner analytics dashboard",
+        "externalDocs": {
+            "description": "Frontend: /app/integrated-dashboard/page.tsx", 
+            "url": "http://localhost:3020/integrated-dashboard"
+        }
+    },
+    {
+        "name": "withdrawal_management",
+        "description": "**💸 Super Admin Dashboard** - Advanced withdrawal policies and batch processing",
+    },
+    {
+        "name": "sweep",
+        "description": "**🧹 Super Admin Dashboard** - Deposit sweep automation and master wallet management",
+    },
+    {
+        "name": "partner_onboarding",
+        "description": "**🚀 Super Admin Dashboard** - Partner onboarding automation and progress tracking",
+    },
+    
+    # === Partner Admin Template 전용 ===
+    {
+        "name": "tronlink",
+        "description": "**🔗 Partner Admin Template** - TronLink wallet integration for partner users",
+        "externalDocs": {
+            "description": "Frontend: /frontend/partner-admin-template/",
+            "url": "http://localhost:3030"
+        }
+    },
+    {
+        "name": "energy_management",
+        "description": "**⚡ Partner Admin Template** - Energy pool CRUD operations for partners",
+    },
+    {
+        "name": "fee_policy",
+        "description": "**💰 Partner Admin Template** - Partner-specific fee policies and tier management",
+    },
+    
+    # === 공통 사용 (양쪽 프론트엔드) ===
+    {
+        "name": "authentication",
+        "description": "**🔐 Common** - User authentication and authorization (both frontends)",
+    },
+    {
+        "name": "balance",
+        "description": "**💰 Common** - Internal balance management (different from on-chain wallet balance)",
+    },
+    {
+        "name": "wallet",
+        "description": "**👝 Common** - User wallet management and on-chain balance operations",
+    },
+    {
+        "name": "deposit",
+        "description": "**📥 Common** - Deposit monitoring and processing",
+    },
+    {
+        "name": "withdrawal",
+        "description": "**📤 Common** - Basic withdrawal operations",
+    },
+    {
+        "name": "energy",
+        "description": "**⚡ Common** - Energy monitoring and analytics (different purposes per frontend)",
+    },
+    {
+        "name": "external_energy",
+        "description": "**🔌 Common** - External energy provider integration",
+    },
+    
+    # === 시스템/분석 ===
+    {
+        "name": "analytics",
+        "description": "**📊 Analytics** - Transaction analytics and anomaly detection",
+    },
+    {
+        "name": "statistics",
+        "description": "**📈 Statistics** - General system statistics and metrics",
+    },
+    {
+        "name": "transactions",
+        "description": "**💳 Management** - Transaction management and monitoring",
+    },
+    {
+        "name": "users",
+        "description": "**👥 Management** - User management and activity tracking",
+    },
+    {
+        "name": "partners",
+        "description": "**🤝 Management** - Basic partner CRUD operations",
+    },
+    
+    # === 시스템 ===
+    {
+        "name": "health",
+        "description": "**🏥 System** - Health check endpoints",
+    },
+    {
+        "name": "root",
+        "description": "**🏠 System** - Root API information",
+    },
+    {
+        "name": "auth-pages",
+        "description": "**📄 Web Pages** - Authentication web pages",
+    },
+    {
+        "name": "web-dashboard",
+        "description": "**🌐 Web Pages** - Dashboard web pages",
+    },
+]
+
 # FastAPI 앱 생성
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Hybrid USDT wallet system with multi-tenant support",
+    description="""
+## 🏦 DantaroWallet Pro - Multi-Tenant USDT Wallet System
+
+Advanced hybrid wallet system with comprehensive admin and partner management capabilities.
+
+### 🎯 Frontend Applications:
+- **Super Admin Dashboard** (Port 3020): Complete system administration
+- **Partner Admin Template** (Port 3030): Partner-specific operations
+
+### 📋 API Categories:
+- **Admin APIs**: Super admin exclusive operations
+- **Partner APIs**: Partner admin template functions  
+- **Common APIs**: Shared across both frontends
+- **System APIs**: Health checks and system information
+
+### 🔧 Development:
+- Use `/health` for system status
+- API docs available at `/api/v1/docs` (development only)
+- OpenAPI spec at `/api/v1/openapi.json`
+    """,
     # DEBUG 모드에서만 API 문서 노출
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json" if settings.DEBUG else None,
     docs_url=f"{settings.API_V1_PREFIX}/docs" if settings.DEBUG else None,
     redoc_url=f"{settings.API_V1_PREFIX}/redoc" if settings.DEBUG else None,
+    openapi_tags=tags_metadata,
     lifespan=lifespan,
 )
 

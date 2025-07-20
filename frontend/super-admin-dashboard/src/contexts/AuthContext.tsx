@@ -170,9 +170,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading: false
     });
   };
-      isLoading: false
-    });
-  };
 
   const refreshToken = async (): Promise<void> => {
     try {
@@ -222,8 +219,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     canAccessRoute: (route: string) => canAccessRoute(state.user, route),
     refreshToken,
     getUserPermissions: () => getUserPermissions(state.user)
-  };
-    refreshToken
   };
 
   return (
@@ -277,7 +272,7 @@ export function withPermission<P extends object>(
       );
     }
 
-    if (!checkPermission(requiredPermission)) {
+    if (!checkPermission(requiredPermission as Permission)) {
       return (
         <div className="flex justify-center items-center min-h-screen">
           <div className="text-center">

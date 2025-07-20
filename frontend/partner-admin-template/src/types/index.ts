@@ -136,3 +136,133 @@ export interface AlertSetting {
   notifyEmail: boolean
   notifyApp: boolean
 }
+
+// 에너지 관리 타입
+export interface EnergyPoolInfo {
+  id: string
+  name: string
+  total_capacity: number
+  available_capacity: number
+  used_capacity: number
+  price_per_unit: number
+  status: 'active' | 'maintenance' | 'depleted'
+  created_at: string
+  last_updated: string
+  rental_count: number
+  revenue: number
+}
+
+export interface EnergyStats {
+  total_pools: number
+  total_capacity: number
+  total_used: number
+  total_available: number
+  utilization_rate: number
+  total_revenue: number
+  active_rentals: number
+  avg_price_per_unit: number
+}
+
+export interface EnergyTransaction {
+  id: string
+  user_id: string
+  user_name: string
+  pool_id: string
+  pool_name: string
+  amount: number
+  price: number
+  total_cost: number
+  duration_hours: number
+  status: 'active' | 'completed' | 'expired'
+  created_at: string
+  expires_at: string
+}
+
+export interface EnergySettings {
+  default_price_per_unit: number
+  max_rental_hours: number
+  auto_refill_enabled: boolean
+  dynamic_pricing_enabled: boolean
+  auto_maintenance_enabled: boolean
+}
+
+// 인증 관련 타입
+export interface LoginCredentials {
+  email: string
+  password: string
+  remember_me?: boolean
+}
+
+export interface RegisterData {
+  email: string
+  username: string
+  password: string
+  password_confirmation: string
+  terms_accepted: boolean
+  privacy_accepted: boolean
+}
+
+export interface AuthResponse {
+  success: boolean
+  message: string
+  data: {
+    access_token: string
+    refresh_token: string
+    user: User
+    expires_in: number
+  }
+}
+
+export interface AuthUser extends User {
+  role: 'admin' | 'partner' | 'user'
+  permissions: string[]
+  last_password_change?: string
+  two_factor_enabled: boolean
+}
+
+export interface PasswordChangeRequest {
+  current_password: string
+  new_password: string
+  new_password_confirmation: string
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  password: string
+  password_confirmation: string
+}
+
+// API 응답 공통 타입
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T
+  status_code: number
+  errors?: Record<string, string[]>
+  pagination?: {
+    current_page: number
+    total_pages: number
+    total_count: number
+    per_page: number
+  }
+}
+
+// 에러 관련 타입
+export interface ApiError {
+  status_code: number
+  message: string
+  errors?: Record<string, string[]>
+  timestamp: string
+  path: string
+}
+
+export interface ValidationError {
+  field: string
+  message: string
+}
+
+// 대시보드 전용 인터페이스

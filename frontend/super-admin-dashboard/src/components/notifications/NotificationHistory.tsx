@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { notificationManager } from '@/lib/notification-manager';
 import { useNotifications } from '@/hooks/useNotifications';
 import { 
-  INotification, 
+  Notification, 
   NotificationPriority, 
   NotificationChannel,
   NotificationFilter 
@@ -17,7 +17,7 @@ interface NotificationHistoryProps {
 }
 
 export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClose }) => {
-  const [history, setHistory] = useState<INotification[]>([]);
+  const [history, setHistory] = useState<Notification[]>([]);
   const [filters, setFilters] = useState<NotificationFilter>({
     priorities: Object.values(NotificationPriority),
     channels: Object.values(NotificationChannel),

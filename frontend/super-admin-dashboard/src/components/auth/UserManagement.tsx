@@ -89,7 +89,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-white">사용자 관리</h2>
         <PermissionGuard permission="users.create">
-          <Button variant="primary">
+          <Button variant="default">
             사용자 추가
           </Button>
         </PermissionGuard>
@@ -286,7 +286,7 @@ function UserEditModal({ user, onSave, onCancel }: UserEditModalProps) {
             <Button type="button" variant="secondary" onClick={onCancel}>
               취소
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="default">
               저장
             </Button>
           </div>

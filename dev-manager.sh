@@ -45,9 +45,10 @@ function show_help() {
     echo "  test            API 연결 테스트"
     echo ""
     echo "🎯 개별 제어:"
-    echo "  backend         백엔드만 시작"
-    echo "  super           Super Admin 프론트엔드만 시작"
-    echo "  partner         Partner Admin 프론트엔드만 시작"
+    echo "  backend         백엔드만 시작 (포트 8000)"
+    echo "  backend-only    백엔드 개발 모드 (프론트엔드 건드리지 않음)"
+    echo "  super           Super Admin 프론트엔드만 시작 (포트 3020)"
+    echo "  partner         Partner Admin 프론트엔드만 시작 (포트 3030)"
     echo ""
     echo "🤖 AI 개발자용:"
     echo "  guide           영구 개발 가이드 보기"
@@ -55,8 +56,9 @@ function show_help() {
     echo ""
     echo "💡 예시:"
     echo "  $0 auto         # 완전 자동화 (추천)"
+    echo "  $0 backend-only # 백엔드만 개발 (간단함)"
     echo "  $0 setup        # 처음 설정"
-    echo "  $0 start        # 서버들 시작"
+    echo "  $0 status       # 상태 확인"
     echo "  $0 health       # 환경 검사"
 }
 
@@ -597,6 +599,56 @@ function show_ai_memo() {
 }
 
 # =============================================================================
+# 백엔드 전용 개발 모드
+# =============================================================================
+
+function start_backend_only_mode() {
+    log_header "🎯 백엔드 개발 모드"
+    
+    echo "백엔드 개발을 위해 다음을 수행합니다:"
+    echo "1. 백엔드 서버 시작/확인"
+    echo "2. 백엔드 개발 환경 안내"
+    echo "3. 프론트엔드는 건드리지 않음"
+    echo ""
+    
+    # 백엔드 서버만 시작
+    start_backend_server
+    
+    # 백엔드 개발 환경 안내
+    show_backend_only_urls
+    
+    log_success "백엔드 개발 환경이 준비되었습니다!"
+    echo ""
+    echo -e "${YELLOW}💡 참고:${NC} 프론트엔드 서버는 별도로 관리됩니다:"
+    echo "   ./dev-manager.sh status     # 전체 상태 확인"
+    echo "   ./dev-manager.sh super      # Super Admin 시작"
+    echo "   ./dev-manager.sh partner    # Partner Admin 시작"
+}
+
+function stop_frontend_servers() {
+    # 이 함수는 사용하지 않습니다 - 프론트엔드는 수동으로 관리
+    log_warning "이 기능은 비활성화되었습니다. 프론트엔드는 개별적으로 관리해주세요."
+    echo "   터미널에서 Ctrl+C로 중지하거나"
+    echo "   ./dev-manager.sh status로 상태를 확인하세요"
+}
+
+function show_backend_only_urls() {
+    echo ""
+    echo -e "${GREEN}🎯 백엔드 개발 환경${NC}"
+    echo -e "   🔧 API 문서: ${CYAN}http://localhost:8000/api/v1/docs${NC}"
+    echo -e "   ❤️ Health 체크: ${CYAN}http://localhost:8000/health${NC}"
+    echo -e "   📋 OpenAPI JSON: ${CYAN}http://localhost:8000/api/v1/openapi.json${NC}"
+    echo -e "   🌐 Root: ${CYAN}http://localhost:8000${NC}"
+    echo ""
+    echo -e "${GREEN}🚀 개발 팁:${NC}"
+    echo -e "   📝 코드 편집: code ."
+    echo -e "   🧪 API 테스트: curl http://localhost:8000/health"
+    echo -e "   🔍 로그 확인: 백엔드 터미널 창 참조"
+    echo -e "   📊 상태 확인: ./dev-manager.sh status"
+    echo ""
+}
+
+# =============================================================================
 # 메인 명령어 처리
 # =============================================================================
 
@@ -618,6 +670,9 @@ case "$1" in
         ;;
     "backend")
         start_backend_server
+        ;;
+    "backend-only")
+        start_backend_only_mode
         ;;
     "super")
         start_super_admin_server

@@ -186,8 +186,8 @@ class ActivityLogger {
       dashboard: '대시보드'
     };
 
-    const action = actionMap[log.action] || log.action;
-    const resource = resourceMap[log.resource] || log.resource;
+    const action = actionMap[log.action as ActivityAction] || log.action;
+    const resource = resourceMap[log.resource as ActivityResource] || log.resource;
 
     let message = `${log.userName}님이 ${resource}를 ${action}`;
 

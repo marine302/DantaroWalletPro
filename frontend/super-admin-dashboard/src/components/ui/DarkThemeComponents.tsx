@@ -118,24 +118,38 @@ export const FormField: React.FC<FormFieldProps> = ({
 interface ButtonProps {
   children: React.ReactNode
   onClick?: () => void
-  variant?: 'primary' | 'secondary'
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline'
   className?: string
+  disabled?: boolean
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
   children, 
   onClick, 
   variant = 'primary',
-  className = '' 
+  className = '',
+  disabled = false
 }) => {
-  const baseClasses = variant === 'primary' 
-    ? createDarkClasses.button.primary()
-    : createDarkClasses.button.secondary()
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'primary':
+        return createDarkClasses.button.primary()
+      case 'secondary':
+        return createDarkClasses.button.secondary()
+      case 'danger':
+        return 'px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+      case 'outline':
+        return 'px-4 py-2 rounded-lg border border-gray-600 bg-transparent text-gray-200 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+      default:
+        return createDarkClasses.button.primary()
+    }
+  }
     
   return (
     <button
       onClick={onClick}
-      className={`${baseClasses} ${className}`}
+      disabled={disabled}
+      className={`${getVariantClasses()} ${className}`}
     >
       {children}
     </button>

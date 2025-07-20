@@ -2,9 +2,10 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Permission } from '@/types/auth';
 
 interface PermissionGuardProps {
-  permission: string;
+  permission: Permission;
   children: ReactNode;
   fallback?: ReactNode;
   hideIfNoAccess?: boolean;

@@ -1,11 +1,4 @@
 const WebSocket = require('ws');
-const express = require('express');
-const cors = require('cors');
-
-// HTTP 서버 설정
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // Mock 데이터 생성 함수들
 function generateSystemStats() {
@@ -90,30 +83,31 @@ function generateTransaction() {
   };
 }
 
-// HTTP API 엔드포인트
-app.get('/api/dashboard/stats', (req, res) => {
-  res.json({
-    systemStats: generateSystemStats(),
-    dashboardStats: generateDashboardStats(),
-    energyMarket: generateEnergyMarket()
-  });
-});
-
-const httpPort = 3001;
-app.listen(httpPort, () => {
-  console.log(`🚀 Mock HTTP Server running on port ${httpPort}`);
-});
-
 // WebSocket 서버 설정
-const wss = new WebSocket.Server({ port: 3002 });
+const PORT = process.env.PORT || 3002;
 
-console.log('🔌 Mock WebSocket Server running on port 3002');
+console.log(`🔌 Starting WebSocket Server on port ${PORT}...`);
+
+const wss = new WebSocket.Server({ 
+  port: PORT,
+  perMessageDeflate: false,
+  clientTracking: true
+});
+
+wss.on('listening', () => {
+  console.log(`🔌 Mock WebSocket Server running on port ${PORT}`);
+  console.log(`📡 Waiting for client connections...`);
+});
+
+wss.on('error', (error) => {
+  console.error('🚨 WebSocket Server Error:', error);
+});
 
 // 연결된 클라이언트들
 const clients = new Set();
 
 wss.on('connection', (ws) => {
-  console.log('Client connected');
+  console.log('✅ Client connected to WebSocket server');
   clients.add(ws);
 
   // 연결 시 초기 데이터 전송
@@ -148,12 +142,12 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('Client disconnected');
+    console.log('❌ Client disconnected from WebSocket server');
     clients.delete(ws);
   });
 
   ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
+    console.error('🚨 WebSocket client error:', error);
     clients.delete(ws);
   });
 });
@@ -166,6 +160,8 @@ function broadcastToClients(type, data) {
     timestamp: new Date().toISOString()
   });
 
+  console.log(`📡 Broadcasting ${type} to ${clients.size} clients`);
+  
   clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);

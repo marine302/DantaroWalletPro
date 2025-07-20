@@ -8,7 +8,6 @@ import { LanguageToggle } from '@/components/ui/LanguageSelector';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { NewNotificationBell } from '@/components/notifications/NewNotificationBell';
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -49,7 +48,6 @@ export function Header({ setSidebarOpen }: HeaderProps) {
           <LanguageToggle />
           
           {/* Notifications */}
-          <NewNotificationBell />
 
           {/* Separator */}
           <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-700" aria-hidden="true" />

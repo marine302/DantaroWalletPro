@@ -1,6 +1,5 @@
 'use client';
 
-import { useWebSocket } from '@/hooks/useWebSocket';
 import { realtimeManager } from '@/lib/realtime-manager';
 import { AlertCircle, Clock, Wifi, WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -10,44 +9,39 @@ interface RealtimeStatusProps {
 }
 
 export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
-  // Mock WebSocket URL을 개발 중에 사용
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
-  const wsUrl = useMockData
-    ? 'ws://localhost:3002'
-    : process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws';
-
-  const { isConnected, isConnecting, error, reconnectCount, subscribe } = useWebSocket(wsUrl);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [dataCount, setDataCount] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Subscribe to all realtime data types and forward to realtime manager
+    // Subscribe to all realtime data types
     const unsubscribers = [
-      subscribe('systemStats', (data) => {
-        realtimeManager.updateData('systemStats', data);
+      realtimeManager.subscribe('systemStats', (data) => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
+        setIsConnected(true);
+        setError(null);
       }),
-      subscribe('dashboardStats', (data) => {
-        realtimeManager.updateData('dashboardStats', data);
+      realtimeManager.subscribe('dashboardStats', (data) => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
+        setIsConnected(true);
+        setError(null);
       }),
-      subscribe('alert', (data) => {
-        // Handle single alert - add to existing alerts array
-        const currentAlerts = realtimeManager.getData('alerts');
-        const alertsArray = Array.isArray(currentAlerts) ? currentAlerts : [];
-        const newAlerts = [data, ...alertsArray.slice(0, 9)]; // Keep last 10 alerts
-        realtimeManager.updateData('alerts', newAlerts);
+      realtimeManager.subscribe('alerts', (data) => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
+        setIsConnected(true);
+        setError(null);
       }),
-      subscribe('energyMarket', (data) => {
-        realtimeManager.updateData('energyMarket', data);
+      realtimeManager.subscribe('energyMarket', (data) => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
+        setIsConnected(true);
+        setError(null);
       }),
-      subscribe('transaction', (data) => {
+      realtimeManager.subscribe('transactions', (data) => {
         // Handle single transaction - add to existing transactions array
         const currentTransactions = realtimeManager.getData('transactions');
         const transactionsArray = Array.isArray(currentTransactions) ? currentTransactions : [];
@@ -55,24 +49,24 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
         realtimeManager.updateData('transactions', newTransactions);
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
+        setIsConnected(true);
+        setError(null);
       })
     ];
 
     return () => {
       unsubscribers.forEach(unsubscribe => unsubscribe());
     };
-  }, [subscribe]);
+  }, []); // dependency 제거
 
   const getStatusColor = () => {
     if (isConnected) return 'text-green-400';
-    if (isConnecting) return 'text-yellow-400';
     if (error) return 'text-red-400';
     return 'text-gray-400';
   };
 
   const getStatusText = () => {
     if (isConnected) return 'Connected';
-    if (isConnecting) return 'Connecting...';
     if (error) return 'Disconnected';
     return 'Offline';
   };
@@ -110,12 +104,6 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
             <span>Updates: {dataCount}</span>
           </div>
         </div>
-      )}
-
-      {reconnectCount > 0 && (
-        <span className="text-xs text-orange-400">
-          Reconnects: {reconnectCount}
-        </span>
       )}
 
       {error && (

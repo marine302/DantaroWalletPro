@@ -3,12 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node port-manager.js dev",
-    "build": "node port-manager.js build",
-    "start": "node port-manager.js start",
+    "dev": "./manage-services.sh start",
+    "start": "./manage-services.sh start",
+    "stop": "./manage-services.sh stop",
+    "restart": "./manage-services.sh restart",
+    "status": "./manage-services.sh status",
+    "logs": "./manage-services.sh logs",
+    "build": "next build",
     "lint": "next lint",
-    "mock-server": "node mock-realtime-server.js",
-    "dev:with-mock": "concurrently \"npm run mock-server\" \"npm run dev\"",
+    "mock-only": "node unified-service-manager.js start",
+    "frontend-only": "node port-manager.js dev",
+    "dev:frontend-only": "node port-manager.js dev",
+    "dev:mock-only": "node unified-service-manager.js start",
     "check-ports": "node port-manager.js check"
   },
   "dependencies": {

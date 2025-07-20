@@ -120,11 +120,11 @@ export function NotificationBell() {
                     key={notification.id}
                     className={cn(
                       'relative p-3 rounded-lg border border-gray-700 cursor-pointer transition-colors',
-                      notification.isRead 
+                      notification.read 
                         ? 'bg-gray-900 opacity-75' 
                         : 'bg-gray-800 hover:bg-gray-750'
                     )}
-                    onClick={() => !notification.isRead && markAsRead(notification.id)}
+                    onClick={() => !notification.read && markAsRead(notification.id)}
                   >
                     {/* Priority indicator */}
                     <div className={cn(
@@ -142,25 +142,25 @@ export function NotificationBell() {
                             </span>
                             <p className={cn(
                               'text-sm font-medium truncate',
-                              notification.isRead ? 'text-gray-400' : 'text-white'
+                              notification.read ? 'text-gray-400' : 'text-white'
                             )}>
                               {notification.title}
                             </p>
                           </div>
                           <p className={cn(
                             'text-xs mt-1 line-clamp-2',
-                            notification.isRead ? 'text-gray-500' : 'text-gray-300'
+                            notification.read ? 'text-gray-500' : 'text-gray-300'
                           )}>
                             {notification.message}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {formatTimestamp(notification.timestamp)}
+                            {notification.timestamp.toLocaleString('ko-KR')}
                           </p>
                         </div>
 
                         {/* Actions */}
                         <div className="flex space-x-1 ml-2">
-                          {!notification.isRead && (
+                          {!notification.read && (
                             <button
                               onClick={(e) => handleMarkAsRead(e, notification.id)}
                               className="p-1 text-gray-400 hover:text-green-400"

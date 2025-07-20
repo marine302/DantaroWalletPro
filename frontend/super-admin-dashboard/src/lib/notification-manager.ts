@@ -1,9 +1,10 @@
 import { 
-  INotification, 
+  Notification as INotification, 
   NotificationPriority, 
   NotificationChannel,
   NotificationSettings,
-  NotificationFilter 
+  NotificationFilter,
+  NotificationStats
 } from '@/types/notification';
 
 interface NotificationStore {
@@ -25,8 +26,35 @@ class NotificationManager {
     this.store = {
       active: [],
       history: [],
-      settings: this.getDefaultSettings(),
-      filters: this.getDefaultFilters()
+      settings: {
+        enabled: true,
+        soundEnabled: true,
+        pushEnabled: false,
+        emailEnabled: false,
+        priorities: {
+          [NotificationPriority.CRITICAL]: true,
+          [NotificationPriority.HIGH]: true,
+          [NotificationPriority.MEDIUM]: true,
+          [NotificationPriority.LOW]: false
+        },
+        channels: {
+          [NotificationChannel.SYSTEM]: true,
+          [NotificationChannel.SECURITY]: true,
+          [NotificationChannel.TRADING]: true,
+          [NotificationChannel.PARTNER]: true,
+          [NotificationChannel.COMPLIANCE]: true
+        },
+        maxActiveNotifications: 10,
+        autoMarkAsRead: false,
+        historyRetentionDays: 30
+      },
+      filters: {
+        priorities: Object.values(NotificationPriority),
+        channels: Object.values(NotificationChannel),
+        dateRange: null,
+        readStatus: 'all' as const,
+        searchQuery: ''
+      }
     };
     this.listeners = new Set();
     this.historyListeners = new Set();
@@ -148,14 +176,14 @@ class NotificationManager {
    * Add a new notification
    */
   public addNotification(notification: Omit<INotification, 'id' | 'timestamp' | 'read'>): INotification {
-    if (!this.store.settings.enabled) return notification as INotification;
+    if (!this.store.settings.enabled) return notification as any as INotification;
 
     const newNotification: INotification = {
       ...notification,
       id: this.generateId(),
       timestamp: new Date(),
       read: false
-    };
+    } as INotification;
 
     // Check if this priority is enabled
     if (!this.store.settings.priorities[notification.priority]) {
@@ -365,6 +393,59 @@ class NotificationManager {
   }
 
   /**
+   * Get notification statistics
+   */
+  public getStats(): NotificationStats {
+    const active = this.store.active;
+    const stats: NotificationStats = {
+      total: active.length,
+      unread: active.filter(n => !n.read).length,
+      critical: active.filter(n => n.priority === NotificationPriority.CRITICAL).length,
+      high: active.filter(n => n.priority === NotificationPriority.HIGH).length,
+      medium: active.filter(n => n.priority === NotificationPriority.MEDIUM).length,
+      low: active.filter(n => n.priority === NotificationPriority.LOW).length,
+      byChannel: {
+        [NotificationChannel.SYSTEM]: active.filter(n => n.channel === NotificationChannel.SYSTEM).length,
+        [NotificationChannel.SECURITY]: active.filter(n => n.channel === NotificationChannel.SECURITY).length,
+        [NotificationChannel.TRADING]: active.filter(n => n.channel === NotificationChannel.TRADING).length,
+        [NotificationChannel.PARTNER]: active.filter(n => n.channel === NotificationChannel.PARTNER).length,
+        [NotificationChannel.COMPLIANCE]: active.filter(n => n.channel === NotificationChannel.COMPLIANCE).length,
+      }
+    };
+    
+    return stats;
+  }
+
+  /**
+   * Delete a notification
+   */
+  public deleteNotification(notificationId: string): void {
+    this.store.active = this.store.active.filter(n => n.id !== notificationId);
+    this.store.history = this.store.history.filter(n => n.id !== notificationId);
+    this.notifyListeners();
+  }
+
+  /**
+   * Request notification permission (browser notifications)
+   */
+  public async requestPermission(): Promise<NotificationPermission> {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return 'denied';
+    }
+
+    if (Notification.permission === 'granted') {
+      return 'granted';
+    }
+
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission;
+    }
+
+    return 'denied';
+  }
+
+  /**
    * Subscribe to notification changes
    */
   public subscribe(callback: (notifications: INotification[]) => void): () => void {
@@ -407,3 +488,28 @@ class NotificationManager {
 }
 
 export const notificationManager = NotificationManager.getInstance();
+
+// Helper functions for convenience
+export function addNotification(notification: Omit<INotification, 'id' | 'timestamp' | 'read'>): INotification {
+  return notificationManager.addNotification(notification);
+}
+
+export function markAsRead(notificationId: string): void {
+  notificationManager.markAsRead(notificationId);
+}
+
+export function getNotifications(): INotification[] {
+  return notificationManager.getActiveNotifications();
+}
+
+export function getNotificationHistory(): INotification[] {
+  return notificationManager.getNotificationHistory();
+}
+
+export function getSettings(): NotificationSettings {
+  return notificationManager.getSettings();
+}
+
+export function updateSettings(settings: Partial<NotificationSettings>): void {
+  notificationManager.updateSettings(settings);
+}

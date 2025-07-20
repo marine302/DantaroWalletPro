@@ -70,19 +70,19 @@ function AdminsPage() {
           title="전체 사용자"
           value={totalUsersCount.toString()}
           icon="👥"
-          trend={{ value: 0, isPositive: true }}
+          trend="neutral"
         />
         <StatCard
           title="활성 사용자"
           value={activeUsersCount.toString()}
           icon="✅"
-          trend={{ value: 0, isPositive: true }}
+          trend="neutral"
         />
         <StatCard
           title="관리자 계정"
           value={adminUsersCount.toString()}
           icon="🔐"
-          trend={{ value: 0, isPositive: true }}
+          trend="neutral"
         />
       </div>
 

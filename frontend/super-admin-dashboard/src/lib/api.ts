@@ -22,8 +22,13 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
-    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
+    // 개발 모드에서는 Mock 서버 사용
+    const baseURL = process.env.NODE_ENV === 'development' 
+      ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001")
+      : (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1");
+    
     console.log('API Base URL:', baseURL);
+    console.log('Environment:', process.env.NODE_ENV);
     
     this.client = axios.create({
       baseURL,

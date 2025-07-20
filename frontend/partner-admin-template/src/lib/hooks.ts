@@ -1,5 +1,5 @@
 /**
- * API 훅들 - React Query 기반 실제 구현
+ * API 훅들 - React Query 기반 구현 (중복 제거 완료)
  * 참고 문서: Doc-24~31 모든 API 연동
  */
 'use client';
@@ -8,13 +8,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   tronlinkApi, 
   partnerApi, 
-  energyApi, 
-  withdrawalApi, 
-  onboardingApi, 
-  auditApi,
-  authApi,
-  energyRentalApi 
+  energyApi,
+  authApi
 } from './api';
+
+// 새로운 API 서비스 imports
+import { UserService } from './services/user.service';
+import { WithdrawalService } from './services/withdrawal.service';
+import { EnergyService } from './services/energy.service';
+import { AnalyticsService } from './services/analytics.service';
+import { realtimeManager, RealtimeMessage, RealtimeHookOptions } from './realtime';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 // =============================================================================
 // 인증 관련 훅들
@@ -36,7 +40,7 @@ export const useTronLinkStatus = () => {
   return useQuery({
     queryKey: ['tronlink', 'status'],
     queryFn: tronlinkApi.getStatus,
-    refetchInterval: 30000, // 30초마다 상태 확인
+    refetchInterval: 30000,
   });
 };
 
@@ -83,7 +87,7 @@ export const usePartnerStats = () => {
   return useQuery({
     queryKey: ['partner', 'stats'],
     queryFn: partnerApi.getStats,
-    refetchInterval: 60000, // 1분마다 갱신
+    refetchInterval: 60000,
   });
 };
 
@@ -98,7 +102,7 @@ export const useUserStats = () => {
   return useQuery({
     queryKey: ['partner', 'user-stats'],
     queryFn: partnerApi.getUserStats,
-    refetchInterval: 300000, // 5분마다 갱신
+    refetchInterval: 300000,
   });
 };
 
@@ -122,7 +126,7 @@ export const useEnergyMonitoring = (partnerId: number) => {
     queryKey: ['energy', 'monitoring', partnerId],
     queryFn: () => energyApi.getMonitoringData(partnerId),
     enabled: !!partnerId,
-    refetchInterval: 10000, // 10초마다 실시간 모니터링
+    refetchInterval: 10000,
   });
 };
 
@@ -173,29 +177,142 @@ export const useStakeForEnergy = () => {
 };
 
 // =============================================================================
-// 에너지 렌탈 서비스 훅들 (Doc-31)
+// 사용자 관리 훅들 (확장)
 // =============================================================================
 
-export const useEnergyRentalOverview = () => {
+export const useUsersAdvanced = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['energy', 'rental', 'overview'],
-    queryFn: energyRentalApi.getOverview,
-    refetchInterval: 60000, // 1분마다 업데이트
+    queryKey: ['users', 'advanced', params],
+    queryFn: () => UserService.getUsers(params),
+    keepPreviousData: true,
   });
 };
 
-export const useEnergyRentalPools = () => {
+export const useUser = (id: string) => {
   return useQuery({
-    queryKey: ['energy', 'rental', 'pools'],
-    queryFn: energyRentalApi.getPools,
-    refetchInterval: 30000, // 30초마다 업데이트
+    queryKey: ['users', id],
+    queryFn: () => UserService.getUser(id),
+    enabled: !!id,
   });
 };
 
-export const useEnergyRentalTransactions = (page = 1, limit = 20) => {
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: UserService.createUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => 
+      UserService.updateUser(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['users', id] });
+    },
+  });
+};
+
+// =============================================================================
+// 출금 관리 훅들 (확장)
+// =============================================================================
+
+export const useWithdrawals = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['energy', 'rental', 'transactions', { page, limit }],
-    queryFn: () => energyRentalApi.getTransactions(page, limit),
+    queryKey: ['withdrawals', params],
+    queryFn: () => WithdrawalService.getWithdrawals(params),
+    keepPreviousData: true,
+  });
+};
+
+export const useWithdrawal = (id: string) => {
+  return useQuery({
+    queryKey: ['withdrawals', id],
+    queryFn: () => WithdrawalService.getWithdrawal(id),
+    enabled: !!id,
+  });
+};
+
+export const useApproveWithdrawal = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, adminNotes }: { id: string; adminNotes?: string }) =>
+      WithdrawalService.approveWithdrawal(id, adminNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
+    },
+  });
+};
+
+export const useRejectWithdrawal = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, reason, adminNotes }: { id: string; reason: string; adminNotes?: string }) =>
+      WithdrawalService.rejectWithdrawal(id, reason, adminNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
+    },
+  });
+};
+
+export const useWithdrawalStats = () => {
+  return useQuery({
+    queryKey: ['withdrawals', 'stats'],
+    queryFn: WithdrawalService.getWithdrawalStats,
+    refetchInterval: 30000,
+  });
+};
+
+// =============================================================================
+// 에너지 관리 훅들 (확장)
+// =============================================================================
+
+export const useEnergyPools = () => {
+  return useQuery({
+    queryKey: ['energy', 'pools'],
+    queryFn: EnergyService.getEnergyPools,
+    refetchInterval: 30000,
+  });
+};
+
+export const useEnergyPoolsAdvanced = () => {
+  return useQuery({
+    queryKey: ['energy', 'pools', 'advanced'],
+    queryFn: EnergyService.getEnergyPools,
+    refetchInterval: 30000,
+  });
+};
+
+export const useEnergyTransactionsAdvanced = (params: Record<string, unknown> = {}) => {
+  return useQuery({
+    queryKey: ['energy', 'transactions', 'advanced', params],
+    queryFn: () => EnergyService.getEnergyTransactions(params),
+    keepPreviousData: true,
+  });
+};
+
+export const useEnergyStats = () => {
+  return useQuery({
+    queryKey: ['energy', 'stats'],
+    queryFn: EnergyService.getEnergyStats,
+    refetchInterval: 60000,
+  });
+};
+
+export const useRealTimeEnergyData = () => {
+  return useQuery({
+    queryKey: ['energy', 'realtime'],
+    queryFn: EnergyService.getRealTimeEnergyData,
+    refetchInterval: 5000,
   });
 };
 
@@ -203,242 +320,192 @@ export const useCreateEnergyPool = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ name, stake_amount, rental_rate }: { 
-      name: string; 
-      stake_amount: number; 
-      rental_rate: number 
-    }) => energyRentalApi.createPool({ name, stake_amount, rental_rate }),
+    mutationFn: EnergyService.createEnergyPool,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
-    },
-  });
-};
-
-export const useUpdateEnergyPool = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ poolId, updates }: { poolId: string; updates: Record<string, unknown> }) =>
-      energyRentalApi.updatePool(poolId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
-    },
-  });
-};
-
-export const useDeleteEnergyPool = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (poolId: string) => energyRentalApi.deletePool(poolId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
-    },
-  });
-};
-
-export const useEnergyRentalAnalytics = (period = '30d') => {
-  return useQuery({
-    queryKey: ['energy', 'rental', 'analytics', period],
-    queryFn: () => energyRentalApi.getAnalytics(period),
-  });
-};
-
-// =============================================================================
-// 출금 관리 훅들 (Doc-28)
-// =============================================================================
-
-export const useWithdrawalRequests = (page = 1, limit = 20, status?: string) => {
-  return useQuery({
-    queryKey: ['withdrawal', 'requests', { page, limit, status }],
-    queryFn: () => withdrawalApi.getRequests(page, limit, status),
-  });
-};
-
-// 출금 정책 관리 훅들 (Doc-28 고급 기능)
-export const useWithdrawalPolicies = () => {
-  return useQuery({
-    queryKey: ['withdrawal', 'policies'],
-    queryFn: withdrawalApi.getPolicies,
-  });
-};
-
-export const useWithdrawalPolicy = () => {
-  return useQuery({
-    queryKey: ['withdrawal', 'policy'],
-    queryFn: withdrawalApi.getPolicy,
-  });
-};
-
-export const useUpdateWithdrawalPolicy = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ policyId, updates }: { policyId: string; updates: Record<string, unknown> }) =>
-      withdrawalApi.updatePolicy(policyId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
-      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policy'] });
-    },
-  });
-};
-
-export const useCreateWithdrawalPolicy = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (policyData: Record<string, unknown>) =>
-      withdrawalApi.createPolicy(policyData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
-    },
-  });
-};
-
-export const useDeleteWithdrawalPolicy = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (policyId: string) => withdrawalApi.deletePolicy(policyId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
+      queryClient.invalidateQueries({ queryKey: ['energy', 'pools'] });
     },
   });
 };
 
 // =============================================================================
-// 온보딩 자동화 훅들 (Doc-29)
+// 분석 및 대시보드 훅들
 // =============================================================================
 
-export const useOnboardingProgress = () => {
+export const useDashboardStats = () => {
   return useQuery({
-    queryKey: ['onboarding', 'progress'],
-    queryFn: onboardingApi.getProgress,
-    refetchInterval: 60000, // 1분마다 진행률 업데이트
+    queryKey: ['analytics', 'dashboard'],
+    queryFn: AnalyticsService.getDashboardStats,
+    refetchInterval: 30000,
   });
 };
 
-export const useOnboardingSteps = () => {
+export const useUserAnalytics = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['onboarding', 'steps'],
-    queryFn: onboardingApi.getSteps,
+    queryKey: ['analytics', 'users', params],
+    queryFn: () => AnalyticsService.getUserAnalytics(params),
+    keepPreviousData: true,
   });
 };
 
-export const useOnboardingChecklist = () => {
+export const useTransactionAnalytics = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['onboarding', 'checklist'],
-    queryFn: onboardingApi.getChecklist,
+    queryKey: ['analytics', 'transactions', params],
+    queryFn: () => AnalyticsService.getTransactionAnalytics(params),
+    keepPreviousData: true,
   });
 };
 
-export const useCompleteOnboardingStep = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ stepId, data }: { stepId: string; data?: Record<string, unknown> }) =>
-      onboardingApi.completeStep(stepId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-    },
-  });
-};
-
-// =============================================================================
-// 감사 및 컴플라이언스 훅들 (Doc-30)
-// =============================================================================
-
-export const useAuditLogs = (options: {
-  search?: string;
-  period?: string;
-  risk_level?: string;
-  page?: number;
-  limit?: number;
-} = {}) => {
+export const useRevenueAnalytics = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['audit', 'logs', options],
-    queryFn: () => auditApi.getLogs(options),
-    refetchInterval: 30000, // 30초마다 업데이트
+    queryKey: ['analytics', 'revenue', params],
+    queryFn: () => AnalyticsService.getRevenueAnalytics(params),
+    keepPreviousData: true,
   });
 };
 
-export const useComplianceReports = () => {
+export const usePerformanceAnalytics = (params: Record<string, unknown> = {}) => {
   return useQuery({
-    queryKey: ['audit', 'compliance', 'reports'],
-    queryFn: auditApi.getComplianceReports,
-  });
-};
-
-export const useSecurityEvents = (options: {
-  event_type?: string;
-  severity?: string;
-  status?: string;
-} = {}) => {
-  return useQuery({
-    queryKey: ['audit', 'security', 'events', options],
-    queryFn: () => auditApi.getSecurityEvents(options),
-    refetchInterval: 15000, // 15초마다 업데이트
-  });
-};
-
-export const useGenerateComplianceReport = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ type, period }: { type: string; period: string }) =>
-      auditApi.generateReport(type, period),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audit', 'compliance'] });
-    },
-  });
-};
-
-export const useUpdateSecurityEvent = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ eventId, updates }: { eventId: string; updates: Record<string, unknown> }) =>
-      auditApi.updateSecurityEvent(eventId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audit', 'security'] });
-    },
+    queryKey: ['analytics', 'performance', params],
+    queryFn: () => AnalyticsService.getPerformanceAnalytics(params),
+    keepPreviousData: true,
   });
 };
 
 // =============================================================================
-// 종합 분석 훅들 (복합 데이터)
+// 실시간 데이터 훅들
 // =============================================================================
 
-export const useComprehensiveAnalytics = (partnerId: number) => {
-  const energyAnalytics = useEnergyAnalytics(partnerId);
-  const partnerStats = usePartnerStats();
-  const withdrawalRequests = useWithdrawalRequests(1, 10);
-  
+export function useRealtime<T>(options: RealtimeHookOptions) {
+  const [data, setData] = useState<T | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const subscriptionRef = useRef<string | null>(null);
+
+  const handleMessage = useCallback((message: RealtimeMessage<T>) => {
+    setData(message.payload);
+  }, []);
+
+  useEffect(() => {
+    const setupConnection = async () => {
+      try {
+        if (options.useSSE) {
+          await realtimeManager.sse.connect(
+            options.sseEndpoint || '/api/events',
+            [options.channel]
+          );
+          subscriptionRef.current = realtimeManager.sse.subscribe(options.channel, handleMessage);
+          setConnected(true);
+        } else {
+          if (options.autoConnect !== false) {
+            await realtimeManager.ws.connect();
+          }
+          subscriptionRef.current = realtimeManager.ws.subscribe(options.channel, handleMessage);
+          setConnected(realtimeManager.ws.isConnected);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Connection failed');
+        setConnected(false);
+      }
+    };
+
+    setupConnection();
+
+    return () => {
+      if (subscriptionRef.current) {
+        if (options.useSSE) {
+          realtimeManager.sse.unsubscribe(subscriptionRef.current);
+        } else {
+          realtimeManager.ws.unsubscribe(subscriptionRef.current);
+        }
+      }
+    };
+  }, [options.channel, options.autoConnect, options.useSSE, options.sseEndpoint, handleMessage]);
+
+  const reconnect = useCallback(async () => {
+    try {
+      if (!options.useSSE) {
+        await realtimeManager.ws.connect();
+        setConnected(realtimeManager.ws.isConnected);
+        setError(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Reconnection failed');
+    }
+  }, [options.useSSE]);
+
+  const send = useCallback((message: Record<string, unknown>) => {
+    if (!options.useSSE && realtimeManager.ws.isConnected) {
+      realtimeManager.ws.send(message);
+    }
+  }, [options.useSSE]);
+
   return {
-    energy: energyAnalytics,
-    partner: partnerStats,
-    withdrawals: withdrawalRequests,
-    isLoading: energyAnalytics.isLoading || partnerStats.isLoading || withdrawalRequests.isLoading,
-    isError: energyAnalytics.isError || partnerStats.isError || withdrawalRequests.isError,
+    data,
+    connected,
+    error,
+    reconnect,
+    send
   };
-};
+}
 
 // =============================================================================
-// 대시보드 메인 데이터 훅
+// 유틸리티 훅들
 // =============================================================================
 
-export const useDashboardData = (partnerId: number) => {
-  const tronlinkStatus = useTronLinkStatus();
-  const partnerStats = usePartnerStats();
-  const energyDashboard = useEnergyDashboard(partnerId);
-  const recentWithdrawals = useWithdrawalRequests(1, 5);
-  
-  return {
-    tronlink: tronlinkStatus,
-    stats: partnerStats,
-    energy: energyDashboard,
-    withdrawals: recentWithdrawals,
-    isLoading: tronlinkStatus.isLoading || partnerStats.isLoading || energyDashboard.isLoading,
-    isError: tronlinkStatus.isError || partnerStats.isError || energyDashboard.isError,
-  };
-};
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const item = window.localStorage.getItem(key);
+        return item ? JSON.parse(item) : initialValue;
+      }
+      return initialValue;
+    } catch (error) {
+      console.error(`Error reading localStorage key "${key}":`, error);
+      return initialValue;
+    }
+  });
+
+  const setValue = useCallback((value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      }
+    } catch (error) {
+      console.error(`Error setting localStorage key "${key}":`, error);
+    }
+  }, [key, storedValue]);
+
+  const removeValue = useCallback(() => {
+    try {
+      setStoredValue(initialValue);
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error(`Error removing localStorage key "${key}":`, error);
+    }
+  }, [key, initialValue]);
+
+  return [storedValue, setValue, removeValue] as const;
+}
+
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}

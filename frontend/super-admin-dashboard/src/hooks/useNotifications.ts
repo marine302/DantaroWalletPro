@@ -11,6 +11,7 @@ import {
   Notification, 
   NotificationPriority, 
   NotificationType, 
+  NotificationChannel,
   NotificationSettings,
   NotificationStats 
 } from '@/types/notification';
@@ -28,7 +29,7 @@ export function useNotifications() {
     });
 
     // Initial load
-    setNotifications(notificationManager.getNotifications());
+    setNotifications(getNotificationsFromManager());
     setSettings(notificationManager.getSettings());
     setStats(notificationManager.getStats());
 
@@ -36,7 +37,7 @@ export function useNotifications() {
   }, []);
 
   // Add notification
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     return addNotificationToManager(notification);
   }, []);
 
@@ -61,13 +62,8 @@ export function useNotifications() {
   }, []);
 
   // Get filtered notifications
-  const getNotifications = useCallback((filters?: {
-    type?: NotificationType;
-    priority?: NotificationPriority;
-    unreadOnly?: boolean;
-    limit?: number;
-  }) => {
-    return getNotificationsFromManager(filters);
+  const getFilteredNotifications = useCallback(() => {
+    return getNotificationsFromManager();
   }, []);
 
   // Update settings
@@ -83,9 +79,89 @@ export function useNotifications() {
 
   // Convenience getters
   const unreadCount = stats?.unread || 0;
-  const recentCount = stats?.recentCount || 0;
-  const unreadNotifications = notifications.filter(n => !n.isRead);
-  const criticalNotifications = notifications.filter(n => n.priority === 'critical' && !n.isRead);
+  const unreadNotifications = notifications.filter(n => !n.read);
+  const criticalNotifications = notifications.filter(n => n.priority === NotificationPriority.CRITICAL && !n.read);
+
+  // Quick notification creators
+  const addSystemNotification = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.SYSTEM,
+      type: 'info',
+      priority: NotificationPriority.LOW
+    });
+  }, [addNotification]);
+
+  const addSecurityAlert = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.SECURITY,
+      type: 'warning',
+      priority: NotificationPriority.MEDIUM
+    });
+  }, [addNotification]);
+
+  const addCriticalAlert = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.SYSTEM,
+      type: 'error',
+      priority: NotificationPriority.HIGH
+    });
+  }, [addNotification]);
+
+  const addSecurityBreach = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.SECURITY,
+      type: 'error',
+      priority: NotificationPriority.CRITICAL
+    });
+  }, [addNotification]);
+
+  const addUserNotification = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.PARTNER,
+      type: 'info',
+      priority: NotificationPriority.LOW
+    });
+  }, [addNotification]);
+
+  const addPartnerUpdate = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.PARTNER,
+      type: 'info',
+      priority: NotificationPriority.MEDIUM
+    });
+  }, [addNotification]);
+
+  const addEnergyAlert = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.TRADING,
+      type: 'warning',
+      priority: NotificationPriority.MEDIUM
+    });
+  }, [addNotification]);
+
+  const addEmergencyAlert = useCallback((title: string, message: string) => {
+    return addNotification({
+      title,
+      message,
+      channel: NotificationChannel.SECURITY,
+      type: 'error',
+      priority: NotificationPriority.CRITICAL
+    });
+  }, [addNotification]);
 
   return {
     // Data
@@ -97,7 +173,6 @@ export function useNotifications() {
     
     // Counts
     unreadCount,
-    recentCount,
     
     // Actions
     addNotification,
@@ -105,96 +180,18 @@ export function useNotifications() {
     markAllAsRead,
     deleteNotification,
     clearAll,
-    getNotifications,
+    getFilteredNotifications,
     updateSettings,
-    requestPermission
-  };
-}
-
-// Hook for creating system notifications
-export function useSystemNotifications() {
-  const { addNotification } = useNotifications();
-
-  const notifySuccess = useCallback((title: string, message: string) => {
-    addNotification({
-      title,
-      message,
-      type: 'system',
-      priority: 'low'
-    });
-  }, [addNotification]);
-
-  const notifyWarning = useCallback((title: string, message: string) => {
-    addNotification({
-      title,
-      message,
-      type: 'system',
-      priority: 'medium'
-    });
-  }, [addNotification]);
-
-  const notifyError = useCallback((title: string, message: string) => {
-    addNotification({
-      title,
-      message,
-      type: 'system',
-      priority: 'high'
-    });
-  }, [addNotification]);
-
-  const notifyCritical = useCallback((title: string, message: string) => {
-    addNotification({
-      title,
-      message,
-      type: 'security',
-      priority: 'critical'
-    });
-  }, [addNotification]);
-
-  const notifyUserAction = useCallback((action: string, userName: string) => {
-    addNotification({
-      title: '사용자 활동',
-      message: `${userName}님이 ${action}을(를) 수행했습니다.`,
-      type: 'user',
-      priority: 'low'
-    });
-  }, [addNotification]);
-
-  const notifyPartnerUpdate = useCallback((partnerName: string, action: string) => {
-    addNotification({
-      title: '파트너 업데이트',
-      message: `${partnerName} 파트너가 ${action}되었습니다.`,
-      type: 'partner',
-      priority: 'medium'
-    });
-  }, [addNotification]);
-
-  const notifyEnergyTransaction = useCallback((amount: number, type: 'buy' | 'sell') => {
-    addNotification({
-      title: '에너지 거래',
-      message: `${amount}kWh 에너지가 ${type === 'buy' ? '구매' : '판매'}되었습니다.`,
-      type: 'energy',
-      priority: 'medium'
-    });
-  }, [addNotification]);
-
-  const notifySecurityAlert = useCallback((message: string) => {
-    addNotification({
-      title: '보안 경고',
-      message,
-      type: 'security',
-      priority: 'critical'
-    });
-  }, [addNotification]);
-
-  return {
-    notifySuccess,
-    notifyWarning,
-    notifyError,
-    notifyCritical,
-    notifyUserAction,
-    notifyPartnerUpdate,
-    notifyEnergyTransaction,
-    notifySecurityAlert
+    requestPermission,
+    
+    // Quick creators
+    addSystemNotification,
+    addSecurityAlert,
+    addCriticalAlert,
+    addSecurityBreach,
+    addUserNotification,
+    addPartnerUpdate,
+    addEnergyAlert,
+    addEmergencyAlert
   };
 }

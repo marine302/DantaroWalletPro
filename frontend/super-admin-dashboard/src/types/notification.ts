@@ -1,64 +1,91 @@
-export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
+// Notification priority levels (enum for runtime values)
+export enum NotificationPriority {
+  CRITICAL = 'critical',
+  HIGH = 'high',
+  MEDIUM = 'medium',
+  LOW = 'low'
+}
 
-export type NotificationType = 
-  | 'system'
-  | 'security'
-  | 'transaction'
-  | 'partner'
-  | 'user'
-  | 'energy'
-  | 'audit'
-  | 'maintenance';
+// Notification channels (enum for runtime values)
+export enum NotificationChannel {
+  SYSTEM = 'system',
+  SECURITY = 'security',
+  TRADING = 'trading',
+  PARTNER = 'partner',
+  COMPLIANCE = 'compliance'
+}
 
+// Notification types
+export type NotificationType = 'info' | 'warning' | 'error' | 'success';
+
+// Action interface for notification buttons
+export interface NotificationAction {
+  label: string;
+  action: () => void;
+}
+
+// Main notification interface
 export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: NotificationType;
   priority: NotificationPriority;
-  timestamp: string;
-  isRead: boolean;
-  userId?: string;
-  metadata?: any;
+  channel: NotificationChannel;
+  type: NotificationType;
+  timestamp: Date;
+  read: boolean;
   actions?: NotificationAction[];
-  expiresAt?: string;
 }
 
-export interface NotificationAction {
-  id: string;
-  label: string;
-  action: 'approve' | 'reject' | 'view' | 'dismiss' | 'redirect';
-  url?: string;
-  variant?: 'primary' | 'secondary' | 'danger';
-}
-
+// Notification settings interface
 export interface NotificationSettings {
-  userId: string;
-  emailNotifications: boolean;
-  pushNotifications: boolean;
+  enabled: boolean;
   soundEnabled: boolean;
-  priorities: {
-    low: boolean;
-    medium: boolean;
-    high: boolean;
-    critical: boolean;
-  };
-  types: {
-    system: boolean;
-    security: boolean;
-    transaction: boolean;
-    partner: boolean;
-    user: boolean;
-    energy: boolean;
-    audit: boolean;
-    maintenance: boolean;
-  };
+  pushEnabled: boolean;
+  emailEnabled: boolean;
+  priorities: Record<NotificationPriority, boolean>;
+  channels: Record<NotificationChannel, boolean>;
+  maxActiveNotifications: number;
+  autoMarkAsRead: boolean;
+  historyRetentionDays: number;
 }
 
+// Filter interface for notification queries
+export interface NotificationFilter {
+  priorities: NotificationPriority[];
+  channels: NotificationChannel[];
+  dateRange: { start: Date; end: Date } | null;
+  readStatus: 'all' | 'read' | 'unread';
+  searchQuery: string;
+}
+
+// Statistics interface
 export interface NotificationStats {
   total: number;
   unread: number;
-  byPriority: Record<NotificationPriority, number>;
-  byType: Record<NotificationType, number>;
-  recentCount: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  byChannel: Record<NotificationChannel, number>;
+}
+
+// Sound configuration
+export interface NotificationSoundConfig {
+  enabled: boolean;
+  volume: number;
+  sounds: Record<NotificationPriority, string>;
+}
+
+// Type guards for runtime type checking
+export function isNotificationPriority(value: string): value is NotificationPriority {
+  return Object.values(NotificationPriority).includes(value as NotificationPriority);
+}
+
+export function isNotificationChannel(value: string): value is NotificationChannel {
+  return Object.values(NotificationChannel).includes(value as NotificationChannel);
+}
+
+export function isNotificationType(value: string): value is NotificationType {
+  return ['info', 'warning', 'error', 'success'].includes(value);
 }

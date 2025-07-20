@@ -13,9 +13,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // 🔒 포트 고정 설정 - DantaroWallet 표준 준수
-  experimental: {
-    serverExternalPackages: [],
-  },
   
   // 🛠️ 개발 서버 설정
   ...(process.env.NODE_ENV === 'development' && {

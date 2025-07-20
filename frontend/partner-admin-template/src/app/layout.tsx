@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TronWalletProvider } from "@/contexts/TronWalletContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
 import "./globals.css";
 
@@ -30,9 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReactQueryProvider>
-          <TronWalletProvider>
-            {children}
-          </TronWalletProvider>
+          <AuthProvider>
+            <TronWalletProvider>
+              {children}
+            </TronWalletProvider>
+          </AuthProvider>
         </ReactQueryProvider>
       </body>
     </html>
