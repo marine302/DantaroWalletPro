@@ -20,8 +20,7 @@ export function AuthForm({
   title, 
   description, 
   children, 
-  onSubmit, 
-  isSubmitting = false, 
+  onSubmit,
   error 
 }: AuthFormProps) {
   return (

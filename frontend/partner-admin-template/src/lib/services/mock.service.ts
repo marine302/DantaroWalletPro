@@ -177,7 +177,7 @@ export const mockAuthService = {
     }
   },
 
-  async register(email: string, username: string, password: string): Promise<AuthResponse> {
+  async register(email: string, username: string): Promise<AuthResponse> {
     // Mock 회원가입 성공 응답
     const newUser: AuthUser = {
       ...DEMO_PARTNER_ACCOUNT,

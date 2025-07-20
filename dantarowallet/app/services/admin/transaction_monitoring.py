@@ -75,18 +75,30 @@ class TransactionMonitoringService:
         # TransactionMonitorResponse 객체로 변환
         transaction_items = []
         for tx in transactions:
+            # SQLAlchemy Row 객체의 속성값을 안전하게 추출
+            tx_id = getattr(tx, 'id', 0)
+            tx_user_id = getattr(tx, 'user_id', 0)
+            tx_amount = getattr(tx, 'amount', 0)
+            tx_asset = getattr(tx, 'asset', '')
+            tx_created_at = getattr(tx, 'created_at', datetime.now())
+            tx_hash_value = getattr(tx, 'tx_hash', None)
+            tx_reference_id = getattr(tx, 'reference_id', None)
+            tx_type = getattr(tx, 'type', '')
+            tx_direction = getattr(tx, 'direction', '')
+            tx_status = getattr(tx, 'status', '')
+            
             transaction_items.append(TransactionMonitorResponse(
-                id=tx.id,
-                user_id=tx.user_id,
-                user_email=f"user_{tx.user_id}@example.com",  # 임시 이메일
-                transaction_type=str(tx.type),
-                direction=str(tx.direction),
-                amount=tx.amount,
-                asset=tx.asset,
-                status=str(tx.status),
-                created_at=tx.created_at,
-                tx_hash=tx.tx_hash,
-                reference_id=tx.reference_id
+                id=tx_id,
+                user_id=tx_user_id,
+                user_email=f"user_{tx_user_id}@example.com",  # 임시 이메일
+                transaction_type=str(tx_type),
+                direction=str(tx_direction),
+                amount=Decimal(str(tx_amount)) if tx_amount is not None else Decimal('0'),
+                asset=str(tx_asset),
+                status=str(tx_status),
+                created_at=tx_created_at,
+                tx_hash=str(tx_hash_value) if tx_hash_value is not None else None,
+                reference_id=str(tx_reference_id) if tx_reference_id is not None else None
             ))
         
         # 페이지네이션 응답 생성

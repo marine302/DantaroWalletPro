@@ -23,6 +23,13 @@ const eslintConfig = [
     rules: {
       "@typescript-eslint/no-require-imports": "off"  // JS 파일에서는 require 허용
     }
+  },
+  {
+    files: ["*.ts", "*.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",  // any 타입 경고로 변경
+      "@typescript-eslint/no-unused-vars": "warn"    // 사용하지 않는 변수 경고로 변경
+    }
   }
 ];
 

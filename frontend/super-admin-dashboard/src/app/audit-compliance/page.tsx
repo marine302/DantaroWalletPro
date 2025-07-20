@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import { withRBAC } from '@/components/auth/withRBAC';
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-import { withRBAC } from '@/components/auth/withRBAC';
-import { useI18n } from '@/contexts/I18nContext';
+import { useState } from 'react';
 
 // 타입 정의
 interface AuditLog {
@@ -31,8 +30,6 @@ interface ComplianceMetrics {
 }
 
 function AuditCompliancePage() {
-  const { t } = useI18n();
-  
   const [metrics] = useState<ComplianceMetrics>({
     totalAudits: 156,
     passedAudits: 142,
@@ -126,7 +123,7 @@ function AuditCompliancePage() {
   );
 
   return (
-    <BasePage 
+    <BasePage
       title="감사 및 컴플라이언스"
       description="시스템 감사, 컴플라이언스 모니터링 및 규정 준수를 관리합니다"
       headerActions={headerActions}
@@ -187,25 +184,25 @@ function AuditCompliancePage() {
       <Section title="감사 로그">
         {/* 필터 버튼 */}
         <div className="flex gap-2 mb-4">
-          <Button 
+          <Button
             variant={filter === 'all' ? 'primary' : 'secondary'}
             onClick={() => setFilter('all')}
           >
             전체
           </Button>
-          <Button 
+          <Button
             variant={filter === 'success' ? 'primary' : 'secondary'}
             onClick={() => setFilter('success')}
           >
             성공
           </Button>
-          <Button 
+          <Button
             variant={filter === 'failed' ? 'primary' : 'secondary'}
             onClick={() => setFilter('failed')}
           >
             실패
           </Button>
-          <Button 
+          <Button
             variant={filter === 'warning' ? 'primary' : 'secondary'}
             onClick={() => setFilter('warning')}
           >
@@ -308,6 +305,6 @@ function AuditCompliancePage() {
 }
 
 // Export protected component
-export default withRBAC(AuditCompliancePage, { 
+export default withRBAC(AuditCompliancePage, {
   requiredPermissions: ['audit.view', 'compliance.view']
 });
