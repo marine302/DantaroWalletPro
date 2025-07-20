@@ -263,7 +263,7 @@ export const ko: TranslationMessages = {
   
   auditCompliance: {
     title: '감사 및 컴플라이언스',
-    description: '시스템 감사 로그 및 컴플라이언스를 관리합니다.',
+    description: '시스템 감사, 컴플라이언스 모니터링 및 규정 준수를 관리합니다',
     auditLog: '감사 로그',
     suspiciousActivities: '의심스러운 활동',
     complianceCheck: '컴플라이언스 체크',
@@ -273,6 +273,66 @@ export const ko: TranslationMessages = {
     complianceMetrics: '컴플라이언스 메트릭',
     auditTrail: '감사 추적',
     securityIncidents: '보안 사고',
+    realtimeTransactionMonitor: '실시간 트랜잭션 모니터링',
+    emergencyBlockingPanel: '긴급 차단 패널',
+    auditLogSearch: '감사 로그 검색',
+    
+    // 메트릭 관련
+    totalAudits: '전체 감사',
+    passedAudits: '통과',
+    failedAudits: '실패',
+    pendingReviews: '검토 대기',
+    complianceScore: '컴플라이언스 점수',
+    criticalAlerts: '중요 알림',
+    monthlyReports: '월간 보고서',
+    lastAuditTime: '마지막 감사',
+    
+    // 버튼/액션
+    generateReport: '보고서 생성',
+    executeAudit: '감사 실행',
+    monitorTab: '모니터링',
+    emergencyTab: '긴급대응',
+    searchTab: '검색',
+    reportsTab: '보고서',
+    
+    // 설명
+    totalAuditsDesc: '총 감사 건수',
+    passedAuditsDesc: '성공한 감사',
+    failedAuditsDesc: '실패한 감사',
+    pendingReviewsDesc: '검토 대기 중',
+    complianceScoreDesc: '전체 컴플라이언스 점수',
+    criticalAlertsDesc: '중요도 높은 알림',
+    monthlyReportsDesc: '월간 보고서 수',
+    lastAuditTimeDesc: '최근 감사 실행 시간',
+    
+    // 상태
+    riskLevel: '위험도',
+    low: '낮음',
+    medium: '보통',
+    high: '높음',
+    critical: '위험',
+    
+    // 필터
+    allLogs: '전체 로그',
+    successLogs: '성공',
+    failedLogs: '실패',
+    warningLogs: '경고',
+    
+    // 테이블 헤더
+    time: '시간',
+    user: '사용자',
+    action: '액션',
+    resource: '리소스',
+    status: '상태',
+    ipAddress: 'IP 주소',
+    details: '세부사항',
+    
+    // 컴플라이언스 도구
+    complianceTools: '컴플라이언스 도구',
+    amlReport: 'AML 보고서',
+    transactionMonitoring: '거래 모니터링',
+    complianceCheckTool: '컴플라이언스 체크',
+    suspiciousTransactionReport: '의심거래 보고',
   },
   
   partnerOnboarding: {

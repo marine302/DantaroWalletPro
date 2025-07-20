@@ -263,7 +263,7 @@ export const en: TranslationMessages = {
   
   auditCompliance: {
     title: 'Audit & Compliance',
-    description: 'Manage system audit logs and compliance.',
+    description: 'Manage system audit, compliance monitoring and regulatory compliance',
     auditLog: 'Audit Log',
     suspiciousActivities: 'Suspicious Activities',
     complianceCheck: 'Compliance Check',
@@ -273,6 +273,66 @@ export const en: TranslationMessages = {
     complianceMetrics: 'Compliance Metrics',
     auditTrail: 'Audit Trail',
     securityIncidents: 'Security Incidents',
+    realtimeTransactionMonitor: 'Real-time Transaction Monitor',
+    emergencyBlockingPanel: 'Emergency Blocking Panel',
+    auditLogSearch: 'Audit Log Search',
+    
+    // Metrics
+    totalAudits: 'Total Audits',
+    passedAudits: 'Passed',
+    failedAudits: 'Failed',
+    pendingReviews: 'Pending',
+    complianceScore: 'Compliance Score',
+    criticalAlerts: 'Critical Alerts',
+    monthlyReports: 'Monthly Reports',
+    lastAuditTime: 'Last Audit',
+    
+    // Buttons/Actions
+    generateReport: 'Generate Report',
+    executeAudit: 'Execute Audit',
+    monitorTab: 'Monitor',
+    emergencyTab: 'Emergency',
+    searchTab: 'Search',
+    reportsTab: 'Reports',
+    
+    // Descriptions
+    totalAuditsDesc: 'Total audit count',
+    passedAuditsDesc: 'Successful audits',
+    failedAuditsDesc: 'Failed audits',
+    pendingReviewsDesc: 'Pending review',
+    complianceScoreDesc: 'Overall compliance score',
+    criticalAlertsDesc: 'High priority alerts',
+    monthlyReportsDesc: 'Monthly report count',
+    lastAuditTimeDesc: 'Recent audit execution time',
+    
+    // Status
+    riskLevel: 'Risk Level',
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    critical: 'Critical',
+    
+    // Filters
+    allLogs: 'All Logs',
+    successLogs: 'Success',
+    failedLogs: 'Failed',
+    warningLogs: 'Warning',
+    
+    // Table Headers
+    time: 'Time',
+    user: 'User',
+    action: 'Action',
+    resource: 'Resource',
+    status: 'Status',
+    ipAddress: 'IP Address',
+    details: 'Details',
+    
+    // Compliance Tools
+    complianceTools: 'Compliance Tools',
+    amlReport: 'AML Report',
+    transactionMonitoring: 'Transaction Monitoring',
+    complianceCheckTool: 'Compliance Check',
+    suspiciousTransactionReport: 'Suspicious Transaction Report',
   },
   
   partnerOnboarding: {
