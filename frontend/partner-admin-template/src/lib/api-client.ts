@@ -49,11 +49,6 @@ export class ApiClient {
     this.authToken = undefined;
   }
 
-  // 인증 토큰 제거
-  clearAuthToken() {
-    this.authToken = undefined;
-  }
-
   // 기본 요청 헤더 생성
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {

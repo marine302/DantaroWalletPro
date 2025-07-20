@@ -266,3 +266,9 @@ export interface ValidationError {
 }
 
 // 대시보드 전용 인터페이스
+export interface ChartData {
+  name: string
+  value: number
+  date?: string
+  label?: string
+}

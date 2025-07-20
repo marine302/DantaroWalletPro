@@ -149,7 +149,7 @@ export default function LoginPage() {
         id="remember_me"
         name="remember_me"
         label="Remember me"
-        checked={formData.remember_me}
+        checked={formData.remember_me || false}
         onChange={handleChange}
       />
 
