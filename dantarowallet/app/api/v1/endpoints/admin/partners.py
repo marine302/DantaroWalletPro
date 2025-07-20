@@ -17,7 +17,7 @@ from app.schemas.partner import (
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["파트너사 관리"])
+router = APIRouter(tags=["admin_partners"])
 
 
 @router.get("/", response_model=List[PartnerResponse])

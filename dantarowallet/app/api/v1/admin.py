@@ -24,7 +24,7 @@ from app.services.backup_service import BackupService
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter(tags=["관리자"])
+router = APIRouter(tags=["admin"])
 
 
 @router.get("/stats", response_model=SystemStatsResponse)
@@ -311,6 +311,6 @@ async def get_system_health(
 from app.api.v1.endpoints.admin import energy, fees, partners
 
 # 하위 라우터 등록
-router.include_router(energy.router, prefix="/energy", tags=["에너지 풀 관리"])
-router.include_router(fees.router, prefix="/fees", tags=["수수료 관리"])  
-router.include_router(partners.router, prefix="/partners", tags=["파트너사 관리"])
+router.include_router(energy.router, prefix="/energy")  # Uses admin_energy tag from router
+router.include_router(fees.router, prefix="/fees")  # Uses admin_fees tag from router
+router.include_router(partners.router, prefix="/partners")  # Uses admin_partners tag from router

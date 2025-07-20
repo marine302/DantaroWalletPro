@@ -27,7 +27,7 @@ from app.models.user import User
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter()
+router = APIRouter(tags=["admin_energy"])
 
 
 # 의존성 함수들

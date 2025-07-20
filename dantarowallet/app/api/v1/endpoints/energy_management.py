@@ -22,7 +22,7 @@ from app.models.energy_pool import EnergyPoolModel, EnergyUsageLog, EnergyPriceH
 from app.models.partner import Partner
 from app.models.user import User
 
-router = APIRouter(prefix="/energy-management", tags=["Partner Energy Management"])
+router = APIRouter(prefix="/energy-management", tags=["energy_management"])
 
 # ============== Pydantic 스키마 ===============
 

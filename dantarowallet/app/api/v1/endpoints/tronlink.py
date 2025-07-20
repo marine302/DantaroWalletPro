@@ -26,7 +26,7 @@ from app.models.partner import Partner
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["TronLink 연동"])
+router = APIRouter(tags=["tronlink"])
 
 
 @router.post("/connect", response_model=TronLinkConnectResponse)

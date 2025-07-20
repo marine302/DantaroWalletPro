@@ -18,7 +18,7 @@ from app.schemas.fee import (
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["수수료 관리"])
+router = APIRouter(tags=["admin_fees"])
 
 
 @router.post("/configs", response_model=FeeConfig)
