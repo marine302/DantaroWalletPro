@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Users, DollarSign, Zap, Activity, TrendingUp } from 'lucide-react';
+import { Users, DollarSign, Zap, Activity, TrendingUp, Monitor } from 'lucide-react';
 import { 
   StatCard, 
   Section,
@@ -14,6 +14,9 @@ import { apiClient } from '@/lib/api';
 import { getStatusColor, safeFormatNumber, safeCurrency } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
 import { BasePage } from '@/components/ui/BasePage';
+import { RealtimeStatus } from '@/components/realtime/RealtimeStatus';
+import { RealtimeStats } from '@/components/realtime/RealtimeStats';
+import { RealtimeAlerts } from '@/components/realtime/RealtimeAlerts';
 
 export default function Home() {
   const router = useRouter();
@@ -123,50 +126,91 @@ export default function Home() {
       title={t.dashboard.title}
       description={t.dashboard.description}
     >
-      <div className="space-y-6">
-        {/* System Health Status */}
-        {systemHealth && (
-          <div className="flex justify-end">
-            <div className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md ${
-              systemHealth.status === 'healthy' 
-                ? 'text-green-300 bg-green-900/30 border-green-600' 
-                : systemHealth.status === 'warning'
-                ? 'text-yellow-300 bg-yellow-900/30 border-yellow-600'
-                : 'text-red-300 bg-red-900/30 border-red-600'
-            }`}>
-              <Activity className="h-4 w-4 mr-2" />
-              {t.dashboard.systemHealth} {systemHealth.status === 'healthy' ? t.dashboard.healthy : t.dashboard.critical}
-            </div>
-          </div>
-        )}
-
-        {/* Main Stats Grid */}
-        <div className={gridLayouts.statsGrid}>
-          <StatCard
-            title={t.dashboard.totalPartners}
-            value={safeFormatNumber(displayStats.total_partners)}
-            icon={<Users className="h-5 w-5" />}
-          />
-          <StatCard
-            title={t.dashboard.activePartners}
-            value={safeFormatNumber(displayStats.active_partners)}
-            icon={<TrendingUp className="h-5 w-5" />}
-            trend="up"
-          />
-          <StatCard
-            title={t.dashboard.totalRevenue}
-            value={safeCurrency(displayStats.total_revenue)}
-            icon={<DollarSign className="h-5 w-5" />}
-            trend="up"
-          />
-          <StatCard
-            title={t.dashboard.availableEnergy}
-            value={safeFormatNumber(displayStats.available_energy)}
-            icon={<Zap className="h-5 w-5" />}
-          />
+      <div className="space-y-8">
+        {/* Realtime Status Header */}
+        <div className="mb-6">
+          <RealtimeStatus />
         </div>
 
-        {/* Secondary Stats Grid */}
+        {/* Realtime Monitoring Dashboard */}
+        <Section title="실시간 모니터링" className="mb-8">
+          <div className="space-y-6">
+            {/* Realtime Stats */}
+            <RealtimeStats />
+            
+            {/* Realtime Alerts and Transactions */}
+            <RealtimeAlerts maxAlerts={8} showTransactions={true} />
+          </div>
+        </Section>
+
+        {/* System Health Overview */}
+        {systemHealth && (
+          <Section title="시스템 상태" className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className={`p-4 rounded-lg border ${
+                systemHealth.status === 'healthy' 
+                  ? 'bg-green-900/30 border-green-600' 
+                  : systemHealth.status === 'warning'
+                  ? 'bg-yellow-900/30 border-yellow-600'
+                  : 'bg-red-900/30 border-red-600'
+              }`}>
+                <div className="flex items-center">
+                  <Activity className="h-5 w-5 mr-2" />
+                  <span className="font-medium">전체 시스템 상태</span>
+                </div>
+                <p className="text-2xl font-bold mt-2">
+                  {systemHealth.status === 'healthy' ? '정상' : systemHealth.status === 'warning' ? '주의' : '위험'}
+                </p>
+              </div>
+              
+              <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <div className="flex items-center">
+                  <Monitor className="h-5 w-5 mr-2 text-blue-400" />
+                  <span className="font-medium">서비스 상태</span>
+                </div>
+                <p className="text-2xl font-bold mt-2 text-green-400">운영 중</p>
+              </div>
+              
+              <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <div className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-purple-400" />
+                  <span className="font-medium">응답 시간</span>
+                </div>
+                <p className="text-2xl font-bold mt-2 text-blue-400">
+                  {systemHealth.response_time || '< 100ms'}
+                </p>
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* Legacy Dashboard Stats (for backup/comparison) */}
+        <Section title="통계 요약" className="mb-8">
+          <div className={gridLayouts.statsGrid}>
+            <StatCard
+              title={t.dashboard.totalPartners}
+              value={safeFormatNumber(displayStats.total_partners)}
+              icon={<Users className="h-5 w-5" />}
+            />
+            <StatCard
+              title={t.dashboard.activePartners}
+              value={safeFormatNumber(displayStats.active_partners)}
+              icon={<TrendingUp className="h-5 w-5" />}
+              trend="up"
+            />
+            <StatCard
+              title={t.dashboard.totalRevenue}
+              value={safeCurrency(displayStats.total_revenue)}
+              icon={<DollarSign className="h-5 w-5" />}
+              trend="up"
+            />
+            <StatCard
+              title={t.dashboard.availableEnergy}
+              value={safeFormatNumber(displayStats.available_energy)}
+              icon={<Zap className="h-5 w-5" />}
+            />
+          </div>
+        </Section>
         <div className={gridLayouts.statsGrid}>
           <StatCard
             title={t.dashboard.dailyVolume}

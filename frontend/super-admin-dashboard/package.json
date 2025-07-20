@@ -6,7 +6,10 @@
     "dev": "node port-manager.js dev",
     "build": "node port-manager.js build",
     "start": "node port-manager.js start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mock-server": "node mock-realtime-server.js",
+    "dev:with-mock": "concurrently \"npm run mock-server\" \"npm run dev\"",
+    "check-ports": "node port-manager.js check"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -15,6 +18,7 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
+    "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
@@ -24,7 +28,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.1.0",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

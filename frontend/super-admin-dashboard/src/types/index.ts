@@ -125,6 +125,7 @@ export interface SystemHealth {
   last_check: string;
   uptime: number;
   errors_count: number;
+  response_time?: string;
 }
 
 // API Response types
