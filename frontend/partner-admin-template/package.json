@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node port-manager.js dev",
+    "build": "node port-manager.js build",
+    "start": "node port-manager.js start",
     "lint": "next lint"
   },
   "dependencies": {
