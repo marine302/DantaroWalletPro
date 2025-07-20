@@ -1,19 +1,54 @@
 {
+  // TypeScript 및 JavaScript 최적화
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.disableAutomaticTypeAcquisition": true,
   "typescript.suggest.autoImports": false,
   "typescript.updateImportsOnFileMove.enabled": "never",
   "typescript.preferences.quoteStyle": "double",
   "typescript.inlayHints.enabled": "off",
-  "typescript.tsserver.maxTsServerMemory": 1024,
+  "typescript.tsserver.maxTsServerMemory": 512,
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.tsserver.watchOptions": {
-    "watchFile": "useFsEventsOnParentDirectory"
+    "watchFile": "useFsEventsOnParentDirectory",
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/.next",
+      "**/dist"
+    ]
   },
   "typescript.validate.enable": false,
+  "typescript.surveys.enabled": false,
+  "typescript.suggest.completeFunctionCalls": false,
+  "typescript.suggest.enabled": false,
+  "typescript.tsc.autoDetect": "off",
+  "typescript.workspaceSymbols.enabled": false,
+  "typescript.suggest.includeCompletionsForImportStatements": false,
+  "typescript.suggest.includeCompletionsWithSnippetText": false,
+  "typescript.suggest.includeCompletionsForModuleExports": false,
+  "typescript.workspaceSymbols.scope": "currentProject",
   "javascript.validate.enable": false,
+  "javascript.suggest.enabled": false,
+  "javascript.suggest.autoImports": false,
+  
+  // 에디터 성능 최적화
   "editor.semanticTokenColorCustomizations": {},
   "editor.inlayHints.enabled": "off",
+  "editor.formatOnSave": false,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+  "editor.codeActionsOnSave": {},
+  "editor.quickSuggestions": {
+    "other": false,
+    "comments": false,
+    "strings": false
+  },
+  "editor.suggestOnTriggerCharacters": false,
+  "editor.parameterHints.enabled": false,
+  "editor.semanticHighlighting.enabled": false,
+  "editor.hover.enabled": false,
+  "editor.wordBasedSuggestions": "off",
+  
+  // 파일 감시 및 검색 최적화
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
@@ -26,7 +61,13 @@
     "**/archive": true,
     "**/*.log": true,
     "**/frontend/dantaro-wallet-ui": true,
-    "**/temp_logs_backup": true
+    "**/temp_logs_backup": true,
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
   },
   "files.watcherExclude": {
     "**/node_modules/**": true,
@@ -42,7 +83,16 @@
     "**/cleanup_archive/**": true,
     "**/venv_new/**": true,
     "**/archive/**": true,
-    "**/*.log": true
+    "**/*.log": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.svn/**": true,
+    "**/.hg/**": true,
+    "**/CVS/**": true,
+    "**/bower_components/**": true,
+    "**/build/**": true,
+    "**/.vscode/**": true,
+    "**/.idea/**": true
   },
   "files.exclude": {
     "**/node_modules": true,
@@ -58,37 +108,81 @@
     "**/cleanup_archive": true,
     "**/venv_new": true,
     "**/archive": true,
-    "**/*.log": true
+    "**/*.log": true,
+    "**/temp_logs_backup": true,
+    "**/.DS_Store": true,
+    "**/*.pyc": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/Thumbs.db": true,
+    "**/bower_components": true,
+    "**/build": true
   },
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {},
-  "extensions.autoUpdate": false,
-  "git.autofetch": false,
-  "git.autoStash": false,
-  "eslint.enable": false,
-  "editor.quickSuggestions": {
-    "other": true,
-    "comments": false,
-    "strings": false
-  },
-  "editor.suggestOnTriggerCharacters": false,
-  "editor.parameterHints.enabled": false,
-  "files.hotExit": "off",
+  
+  // 자동 저장 및 파일 관리 최적화
   "files.autoSave": "off",
+  "files.autoSaveDelay": 10000,
+  "files.hotExit": "off",
+  "files.trimTrailingWhitespace": false,
+  "files.insertFinalNewline": false,
+  "files.trimFinalNewlines": false,
+  "files.useExperimentalFileWatcher": false,
+  "files.watcherExcludeBySize": true,
+  "files.maxMemoryForLargeFilesMB": 16,
+  "files.participants.timeout": 1000,
+  "files.readonlyFromPermissions": false,
+  "files.simpleDialog.enable": true,
+  
+  // 검색 최적화
   "search.followSymlinks": false,
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true,
+  
+  // Git 및 확장 최적화
   "git.enabled": false,
+  "git.autofetch": false,
+  "git.autoStash": false,
   "git.autoRepositoryDetection": false,
+  "extensions.autoUpdate": false,
+  
+  // 기타 성능 최적화
+  "eslint.enable": false,
+  "npm.autoDetect": "off",
+  "grunt.autoDetect": "off",
+  "gulp.autoDetect": "off",
+  "jake.autoDetect": "off",
   "workbench.settings.enableNaturalLanguageSearch": false,
   "telemetry.telemetryLevel": "off",
   "workbench.enableExperiments": false,
-  "typescript.surveys.enabled": false,
-  "typescript.suggest.completeFunctionCalls": false,
-  "typescript.suggest.enabled": false,
-  // 파일 감시 시스템 최적화 (성능 향상)
-  "files.useExperimentalFileWatcher": false,
-  "files.watcherExcludeBySize": true,
-  "search.useRipgrep": true,
-  "search.maintainFileSearchCache": false
+  "workbench.startupEditor": "none",
+  "workbench.tips.enabled": false,
+  "workbench.welcomePage.walkthroughs.openOnInstall": false,
+  "update.enableWindowsBackgroundUpdates": false,
+  "update.showReleaseNotes": false,
+  "problems.showCurrentInStatus": false,
+  "breadcrumbs.enabled": false,
+  "outline.showFiles": false,
+  "outline.showModules": false,
+  "outline.showNamespaces": false,
+  "outline.showPackages": false,
+  "outline.showClasses": false,
+  "outline.showMethods": false,
+  "outline.showProperties": false,
+  "outline.showFields": false,
+  "outline.showConstructors": false,
+  "outline.showEnums": false,
+  "outline.showInterfaces": false,
+  "outline.showFunctions": false,
+  "outline.showVariables": false,
+  "outline.showConstants": false,
+  "outline.showStrings": false,
+  "outline.showNumbers": false,
+  "outline.showBooleans": false,
+  "outline.showArrays": false,
+  "outline.showObjects": false,
+  "outline.showKeys": false,
+  "outline.showNull": false,
+  "workbench.tree.renderIndentGuides": "none",
+  "workbench.tree.indent": 8
 }
