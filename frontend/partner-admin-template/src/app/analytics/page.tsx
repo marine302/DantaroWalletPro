@@ -87,10 +87,9 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
   const partnerId = 1; // TODO: 실제 파트너 ID 가져오기
   
-  // 실제 API 데이터 사용
-  const analyticsResult = useComprehensiveAnalytics(partnerId);
-  
-  const { isLoading, isError } = analyticsResult;
+  // 백엔드 API가 없으므로 폴백 데이터 직접 사용
+  // const analyticsResult = useComprehensiveAnalytics(partnerId);
+  // const { isLoading, isError } = analyticsResult;
 
   // 새로고침 함수
   const handleRefresh = () => {
@@ -155,38 +154,39 @@ export default function AnalyticsPage() {
     }
   };
 
-  // 로딩 상태
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex items-center space-x-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span className="text-lg">분석 데이터를 불러오는 중...</span>
-        </div>
-      </div>
-    );
-  }
+  // 로딩 상태 (백엔드 API 없으므로 바로 폴백 데이터 사용)
+  // if (isLoading && !showFallback) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="flex items-center space-x-2">
+  //         <Loader2 className="h-6 w-6 animate-spin" />
+  //         <span className="text-lg">분석 데이터를 불러오는 중...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // 오류 상태
-  if (isError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
-          <h2 className="text-xl font-semibold text-red-600">데이터 로딩 오류</h2>
-          <p className="text-gray-600">분석 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            다시 시도
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // 백엔드 API가 없으므로 에러 체크 비활성화
+  // if (isError) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="text-center space-y-4">
+  //         <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+  //         <h2 className="text-xl font-semibold text-red-600">데이터 로딩 오류</h2>
+  //         <p className="text-gray-600">분석 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.</p>
+  //         <Button onClick={() => window.location.reload()} variant="outline">
+  //           <RefreshCw className="h-4 w-4 mr-2" />
+  //           다시 시도
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <Sidebar>
-      <div className="space-y-6 text-foreground">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as '7d' | '30d' | '90d' | '1y')}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-foreground"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100"
           >
             <option value="7d">최근 7일</option>
             <option value="30d">최근 30일</option>
@@ -219,11 +219,11 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">총 수익</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">총 수익</CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {formatCurrency(currentData.revenue.total)}
             </div>
             <div className="flex items-center text-xs">
@@ -236,11 +236,11 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">총 비용</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">총 비용</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {formatCurrency(currentData.costs.total)}
             </div>
             <div className="flex items-center text-xs">
@@ -253,11 +253,11 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">순이익</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">순이익</CardTitle>
             <BarChart3 className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {formatCurrency(currentData.profit.total)}
             </div>
             <div className="flex items-center text-xs">
@@ -270,11 +270,11 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">거래량</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100">거래량</CardTitle>
             <Activity className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {formatCurrency(currentData.transactions.volume)}
             </div>
             <div className="flex items-center text-xs">
@@ -290,7 +290,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-foreground">수익 구성</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">수익 구성</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -299,7 +299,7 @@ export default function AnalyticsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-300">{item.name}</span>
                     <div className="text-right">
-                      <span className="font-medium text-foreground">{formatCurrency(item.value)}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(item.value)}</span>
                       <span className="text-xs text-gray-500 ml-2">({item.percentage.toFixed(1)}%)</span>
                     </div>
                   </div>
@@ -326,7 +326,7 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-foreground">비용 구성</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">비용 구성</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -335,7 +335,7 @@ export default function AnalyticsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-300">{item.name}</span>
                     <div className="text-right">
-                      <span className="font-medium text-foreground">{formatCurrency(item.value)}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(item.value)}</span>
                       <span className="text-xs text-gray-500 ml-2">({item.percentage.toFixed(1)}%)</span>
                     </div>
                   </div>
@@ -365,22 +365,22 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-foreground">사용자 통계</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">사용자 통계</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex justify-between items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">총 사용자</p>
-                  <p className="text-2xl font-bold text-foreground">{currentData.users.total.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentData.users.total.toLocaleString()}</p>
                 </div>
                 <Users className="w-8 h-8 text-blue-500" />
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex justify-between items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">활성 사용자</p>
-                  <p className="text-2xl font-bold text-foreground">{currentData.users.active.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentData.users.active.toLocaleString()}</p>
                 </div>
                 <div className="text-right">
                   <Badge className="bg-green-100 text-green-800">
@@ -409,22 +409,22 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-foreground">거래 통계</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">거래 통계</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex justify-between items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">총 거래 수</p>
-                  <p className="text-2xl font-bold text-foreground">{currentData.transactions.total.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentData.transactions.total.toLocaleString()}</p>
                 </div>
                 <Activity className="w-8 h-8 text-green-500" />
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex justify-between items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">총 거래량</p>
-                  <p className="text-2xl font-bold text-foreground">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {formatCurrency(currentData.transactions.volume)}
                   </p>
                 </div>
@@ -457,13 +457,13 @@ export default function AnalyticsPage() {
       {/* 시계열 데이터 요약 (차트는 나중에 추가) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-foreground">일별 트렌드 ({getPeriodLabel(period)})</CardTitle>
+          <CardTitle className="text-gray-900 dark:text-gray-100">일별 트렌드 ({getPeriodLabel(period)})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium">차트 컴포넌트가 구현될 예정입니다</p>
-            <p className="text-sm">수익, 비용, 사용자, 거래량의 시계열 차트가 표시됩니다</p>
+          <div className="text-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+            <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <p className="text-lg font-medium text-gray-600 dark:text-gray-300">차트 컴포넌트 준비 중</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">수익, 비용, 사용자, 거래량의 시계열 차트가 표시됩니다</p>
           </div>
         </CardContent>
       </Card>
