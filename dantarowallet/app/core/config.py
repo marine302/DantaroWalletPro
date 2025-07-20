@@ -43,8 +43,13 @@ class Settings(BaseSettings):
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 0
 
-    # Redis Configuration
-    REDIS_URL: str = "redis://localhost:6379/0"  # 개발용 기본값
+    # Redis Configuration - 포트 설정 사용
+    @property 
+    def REDIS_URL_DYNAMIC(self) -> str:
+        """동적 Redis URL 생성"""
+        return f"redis://localhost:{self.REDIS_PORT}/0"
+    
+    REDIS_URL: str = "redis://localhost:6379/0"  # 기본값 (호환성 유지)
 
     # TRON Network Configuration
     TRON_NETWORK: str = "nile"  # nile for testnet, mainnet for production
@@ -99,6 +104,33 @@ class Settings(BaseSettings):
     # Port Configuration
     BACKEND_PORT: int = 8000  # 백엔드 서버 포트 (기본 8000)
     FRONTEND_PORT: int = 3020  # 프론트엔드 포트 설정
+    
+    # 개발용 추가 포트들
+    DEV_FRONTEND_PORTS: List[int] = [3000, 3001, 3010, 3020]  # 개발시 사용할 프론트엔드 포트들
+    REDIS_PORT: int = 6379  # Redis 포트
+    DATABASE_PORT: int = 5432  # PostgreSQL 포트 (운영시)
+    
+    # 동적 CORS origins 생성
+    @property
+    def DYNAMIC_CORS_ORIGINS(self) -> List[str]:
+        """동적으로 CORS origins 생성"""
+        origins = []
+        
+        # 현재 프론트엔드 포트
+        origins.extend([
+            f"http://localhost:{self.FRONTEND_PORT}",
+            f"http://127.0.0.1:{self.FRONTEND_PORT}",
+            f"https://localhost:{self.FRONTEND_PORT}",
+        ])
+        
+        # 개발용 포트들
+        for port in self.DEV_FRONTEND_PORTS:
+            origins.extend([
+                f"http://localhost:{port}",
+                f"http://127.0.0.1:{port}",
+            ])
+            
+        return origins
 
     # 보안 설정
     ALLOWED_HOSTS: List[str] = ["*"]

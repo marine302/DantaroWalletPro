@@ -28,7 +28,22 @@ export function RealtimeEnergyMonitor({ className }: RealtimeEnergyMonitorProps)
   useEffect(() => {
     setIsConnected(true)
     
-    const generateData = () => {
+    // 초기 데이터 생성
+    const initialData: EnergyUsageData[] = []
+    for (let i = 19; i >= 0; i--) {
+      const time = new Date(Date.now() - i * 5000)
+      initialData.push({
+        time: time.toLocaleTimeString(),
+        usage: Math.floor(Math.random() * 1000) + 500,
+        cost: (Math.random() * 0.5 + 0.2),
+        efficiency: Math.floor(Math.random() * 20) + 80
+      })
+    }
+    setData(initialData)
+    setLastUpdate(new Date())
+
+    // 실시간 업데이트 (5초마다)
+    const interval = setInterval(() => {
       const now = new Date()
       const newPoint: EnergyUsageData = {
         time: now.toLocaleTimeString(),
@@ -42,26 +57,10 @@ export function RealtimeEnergyMonitor({ className }: RealtimeEnergyMonitorProps)
         return newData.slice(-20) // 최근 20개 포인트만 유지
       })
       setLastUpdate(now)
-    }
+    }, 5000)
 
-    // 초기 데이터 생성
-    const initialData: EnergyUsageData[] = []
-    for (let i = 19; i >= 0; i--) {
-      const time = new Date(Date.now() - i * 5000)
-      initialData.push({
-        time: time.toLocaleTimeString(),
-        usage: Math.floor(Math.random() * 1000) + 500,
-        cost: (Math.random() * 0.5 + 0.2),
-        efficiency: Math.floor(Math.random() * 20) + 80
-      })
-    }
-    setData(initialData)
-
-    // 5초마다 새 데이터 생성 - 임시 비활성화 (개발 중 성능 문제로)
-    // const interval = setInterval(generateData, 5000)
-    
     return () => {
-      // clearInterval(interval)
+      clearInterval(interval)
       setIsConnected(false)
     }
   }, [])

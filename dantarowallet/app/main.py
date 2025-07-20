@@ -68,16 +68,8 @@ app = FastAPI(
 )
 
 
-# CORS 설정 미들웨어 - 설정 파일의 포트를 사용
-frontend_port = settings.FRONTEND_PORT
-cors_origins = [
-    f"http://localhost:{frontend_port}",
-    f"http://127.0.0.1:{frontend_port}",
-    f"https://localhost:{frontend_port}",
-    # 기본 개발 포트들도 포함
-    "http://localhost:3000", "http://localhost:3001", "http://localhost:3010", "http://localhost:3020",
-    "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3010", "http://127.0.0.1:3020",
-]
+# CORS 설정 미들웨어 - 동적 포트 설정 사용
+cors_origins = settings.DYNAMIC_CORS_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,

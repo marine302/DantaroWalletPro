@@ -99,12 +99,12 @@ class ApiClient {
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response: AxiosResponse<DashboardStats> = await this.client.get('/superadmin/dashboard/stats');
+    const response: AxiosResponse<DashboardStats> = await this.client.get('/admin/dashboard/stats');
     return response.data;
   }
 
   async getSystemHealth(): Promise<SystemHealth> {
-    const response: AxiosResponse<SystemHealth> = await this.client.get('/superadmin/system-health');
+    const response: AxiosResponse<SystemHealth> = await this.client.get('/admin/system/health');
     return response.data;
   }
 

@@ -6,7 +6,11 @@
 
 // 기본 설정
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-const API_VERSION = '/api/v1';
+const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || '/api/v1';
+const IS_DEVELOPMENT = process.env.NEXT_PUBLIC_ENV === 'development';
+
+// 로그 레벨 설정
+const LOG_LEVEL = process.env.NEXT_PUBLIC_LOG_LEVEL || 'info';
 
 // API 오류 타입
 class ApiError extends Error {
@@ -45,7 +49,12 @@ class HttpClient {
     data?: Record<string, unknown>
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    console.log(`Making ${method} request to:`, url);
+    
+    // 개발 환경에서만 상세 로깅
+    if (IS_DEVELOPMENT && LOG_LEVEL === 'debug') {
+      console.log(`Making ${method} request to:`, url);
+      if (data) console.log('Request data:', data);
+    }
     
     try {
       const response = await fetch(url, {
