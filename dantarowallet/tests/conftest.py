@@ -133,28 +133,43 @@ async def admin_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str
 async def test_user(db: AsyncSession) -> Any:
     """테스트용 일반 사용자 ORM 객체 반환"""
     from app.models.user import User
+    from sqlalchemy import select
+    from app.core.security import get_password_hash
 
+    # 기존 사용자 확인
     result = await db.execute(
-        User.__table__.select().where(User.email == "test@example.com")
+        select(User).where(User.email == "test@example.com")
     )
-    row = result.first()
-    if row:
-        return await db.get(User, row[0])
-    return None
+    test_user = result.scalar_one_or_none()
+    
+    # 사용자가 없으면 생성
+    if not test_user:
+        password_hash = get_password_hash("TestPassword123!")
+        test_user = User(
+            email="test@example.com",
+            password_hash=password_hash,
+            is_active=True,
+            is_admin=False,
+            is_verified=True,
+        )
+        db.add(test_user)
+        await db.commit()
+        await db.refresh(test_user)
+    
+    return test_user
 
 
 @pytest_asyncio.fixture
 async def test_admin_user(db: AsyncSession) -> Any:
     """테스트용 관리자 ORM 객체 반환"""
     from app.models.user import User
+    from sqlalchemy import select
 
     result = await db.execute(
-        User.__table__.select().where(User.email == "admin@example.com")
+        select(User).where(User.email == "admin@example.com")
     )
-    row = result.first()
-    if row:
-        return await db.get(User, row[0])
-    return None
+    admin_user = result.scalar_one_or_none()
+    return admin_user
 
 
 # 테스트 데이터 자동 정리 (예시: 사용자, 지갑, 거래 등)
@@ -181,7 +196,12 @@ async def truncate_all_tables():
 
         # 테이블 순서를 역순으로 정렬하여 종속성 문제 방지
         for table in reversed(Base.metadata.sorted_tables):
-            await conn.execute(sqlalchemy.text(f"DELETE FROM {table.name}"))
+            try:
+                await conn.execute(sqlalchemy.text(f"DELETE FROM {table.name}"))
+            except Exception as e:
+                # 테이블이 존재하지 않는 경우 무시
+                if "no such table" not in str(e):
+                    raise
 
         # 외래 키 제약 조건 다시 활성화
         await conn.execute(sqlalchemy.text("PRAGMA foreign_keys = ON"))

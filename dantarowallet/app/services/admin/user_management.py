@@ -150,14 +150,18 @@ class UserManagementService:
 
     async def get_user_risk_analysis(self, user_id: int) -> UserRiskAnalysisResponse:
         """사용자 위험도 분석"""
-        # 기존 AdminService의 get_user_risk_analysis 로직 구현
+        # 사용자 정보 조회
+        user = await self.db.get(User, user_id)
+        email = user.email if user else f"user_{user_id}@example.com"
+        
         # 간단한 구현 예시
         return UserRiskAnalysisResponse(
             user_id=user_id,
+            email=email,
             risk_score=0,
             risk_level="LOW",
-            risk_factors=[],
-            transaction_patterns={},
-            recommendations=[],
-            updated_at=datetime.now()
+            main_reason="No suspicious activity detected",
+            recent_large_transactions=0,
+            high_frequency_periods=0,
+            last_activity=datetime.now()
         )

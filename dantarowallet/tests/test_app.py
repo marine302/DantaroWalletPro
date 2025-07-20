@@ -1,3 +1,4 @@
+from httpx import AsyncClient, ASGITransport
 """
 기본 애플리케이션 기능 테스트.
 미들웨어, 핵심 엔드포인트 및 오류 처리를 검증합니다.

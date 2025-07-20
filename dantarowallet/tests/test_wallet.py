@@ -5,11 +5,11 @@
 import json
 
 import pytest
+from httpx import AsyncClient, ASGITransport
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models import Wallet
 from app.services.wallet_service import WalletService
 from fastapi import status
-from httpx import AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 

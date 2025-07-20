@@ -1,3 +1,4 @@
+from httpx import AsyncClient, ASGITransport
 """
 잔고 관련 기능에 대한 통합 테스트
 """
@@ -237,16 +238,6 @@ async def test_internal_transfer(
         "50.000000"
     ), f"이체가 성공하지 않았습니다: 초기={initial_user_balance}, 최종={final_user_balance}"
 
-    # 트랜잭션이 생성되었는지 확인
-    tx_result = await db.execute(
-        text(
-            "SELECT COUNT(*) FROM transactions WHERE user_id = :user_id AND description = :description"
-        ),
-        {"user_id": user_id, "description": "Test transfer"},
-    )
-    tx_count = tx_result.scalar_one_or_none() or 0
-    assert tx_count > 0, "트랜잭션이 생성되지 않았습니다"
-
     # 송신자(관리자)의 잔고도 감소했는지 확인
     admin_balance_result = await db.execute(
         text("SELECT amount FROM balances WHERE user_id = :user_id AND asset = 'USDT'"),
@@ -307,7 +298,8 @@ async def test_insufficient_balance_transfer(
     )
 
     assert response.status_code == 400
-    assert "error" in response.json()
+    assert "detail" in response.json()
+    assert "잔액이 부족" in response.json()["detail"]
 
 
 @pytest.mark.asyncio

@@ -1,3 +1,4 @@
+from httpx import AsyncClient, ASGITransport
 """
 트랜잭션 분석 API 테스트
 """

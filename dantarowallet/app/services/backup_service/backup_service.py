@@ -18,9 +18,10 @@ logger = setup_logging()
 class BackupService:
     """백업 서비스 클래스"""
     
-    def __init__(self):
+    def __init__(self, db=None):
         self.backup_dir = Path("backups")
         self.backup_dir.mkdir(exist_ok=True)
+        self.db = db  # 데이터베이스 세션 저장
     
     async def create_database_backup(self, backup_name: Optional[str] = None) -> str:
         """데이터베이스 백업 생성"""
@@ -68,15 +69,18 @@ class BackupService:
         """백업 파일 목록 조회"""
         try:
             backups = []
+            backup_id = 1
             for backup_file in self.backup_dir.glob("*.db"):
                 stat = backup_file.stat()
                 backups.append({
-                    "name": backup_file.name,
-                    "path": str(backup_file),
-                    "size": stat.st_size,
-                    "created_at": datetime.fromtimestamp(stat.st_ctime),
-                    "modified_at": datetime.fromtimestamp(stat.st_mtime)
+                    "id": backup_id,
+                    "backup_type": "manual",  # 실제 DB가 없으므로 기본값
+                    "file_path": str(backup_file),
+                    "file_size": stat.st_size,
+                    "status": "completed",
+                    "created_at": datetime.fromtimestamp(stat.st_ctime).isoformat()
                 })
+                backup_id += 1
             
             return sorted(backups, key=lambda x: x["created_at"], reverse=True)
             
@@ -98,4 +102,54 @@ class BackupService:
                 
         except Exception as e:
             logger.error(f"❌ 백업 파일 삭제 실패: {e}")
+            return False
+    
+    async def create_backup(self, backup_type: str, description: Optional[str] = None) -> dict:
+        """백업 생성 - API 호환성을 위한 래퍼 메소드"""
+        try:
+            backup_name = await self.create_database_backup()
+            file_size = 0
+            if backup_name and os.path.exists(backup_name):
+                file_size = os.path.getsize(backup_name)
+                
+            return {
+                "id": 1,  # 실제 DB가 없으므로 임시 ID
+                "file_path": backup_name,
+                "file_size": file_size,
+                "status": "completed",
+                "backup_type": backup_type,
+                "description": description or "Manual backup",
+                "created_at": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"❌ 백업 생성 실패: {e}")
+            return {
+                "id": 0,
+                "file_path": None,
+                "file_size": 0,
+                "status": "failed",
+                "error": str(e)
+            }
+    
+    async def restore_backup(self, file_path: str) -> bool:
+        """백업 복원 - API 호환성을 위한 래퍼 메소드"""
+        return await self.restore_database_from_backup(file_path)
+        
+    async def restore_database_from_backup(self, backup_path: str) -> bool:
+        """데이터베이스 백업 복원 - API 호환성을 위한 메소드"""
+        try:
+            if not os.path.exists(backup_path):
+                logger.error(f"❌ 백업 파일이 존재하지 않습니다: {backup_path}")
+                return False
+            
+            # 현재 DB 백업
+            current_backup = await self.create_database_backup("current_backup.db")
+            
+            # 백업 복원
+            shutil.copy2(backup_path, "dev.db")
+            logger.info(f"✅ 데이터베이스 복원 완료: {backup_path}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ 백업 복원 실패: {e}")
             return False

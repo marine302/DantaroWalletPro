@@ -29,10 +29,10 @@ class TransactionMonitoringService:
         status: Optional[str] = None,
         direction: Optional[str] = None,
         hours: int = 24,
-    ) -> TransactionMonitorResponse:
+        user_id: Optional[int] = None,
+    ) -> PaginatedTransactionsResponse:
         """트랜잭션 모니터링 데이터 조회"""
         
-        # 시간 범위 설정
         time_filter = datetime.now() - timedelta(hours=hours)
         
         # 기본 쿼리
@@ -72,24 +72,27 @@ class TransactionMonitoringService:
         result = await self.db.execute(query)
         transactions = result.scalars().all()
         
-        # 통계 정보 계산
-        stats_query = select(
-            func.count(Transaction.id).label('total_count'),
-            func.sum(Transaction.amount).label('total_volume'),
-            func.avg(Transaction.amount).label('avg_amount')
-        ).filter(Transaction.created_at >= time_filter)
+        # TransactionMonitorResponse 객체로 변환
+        transaction_items = []
+        for tx in transactions:
+            transaction_items.append(TransactionMonitorResponse(
+                id=tx.id,
+                user_id=tx.user_id,
+                user_email=f"user_{tx.user_id}@example.com",  # 임시 이메일
+                transaction_type=str(tx.type),
+                direction=str(tx.direction),
+                amount=tx.amount,
+                asset=tx.asset,
+                status=str(tx.status),
+                created_at=tx.created_at,
+                tx_hash=tx.tx_hash,
+                reference_id=tx.reference_id
+            ))
         
-        if conditions:
-            stats_query = stats_query.filter(and_(*conditions))
-            
-        stats_result = await self.db.execute(stats_query)
-        stats = stats_result.first()
-        
-        return TransactionMonitorResponse(
-            transactions=transactions,
-            total_count=stats.total_count if stats else 0,
-            total_volume=stats.total_volume if stats and stats.total_volume else Decimal("0"),
-            avg_amount=stats.avg_amount if stats and stats.avg_amount else Decimal("0"),
+        # 페이지네이션 응답 생성
+        return PaginatedTransactionsResponse(
+            items=transaction_items,
+            total=total,
             page=page,
             size=size,
             has_next=offset + size < total,
@@ -124,14 +127,14 @@ class TransactionMonitoringService:
         for tx in large_transactions.scalars():
             suspicious_activities.append(
                 SuspiciousActivityResponse(
-                    id=f"large_tx_{tx.id}",
-                    type="LARGE_TRANSACTION",
-                    severity="MEDIUM",
-                    description=f"Large transaction: {tx.amount}",
-                    user_id=tx.user_id,
-                    transaction_id=tx.id,
-                    detected_at=tx.created_at,
-                    status="PENDING"
+                    user_id=getattr(tx, 'user_id', 0),
+                    user_email=f"user_{getattr(tx, 'user_id', 0)}@example.com",  # 임시 이메일
+                    activity_type="LARGE_TRANSACTION",
+                    risk_score=7,  # 중간 위험도
+                    description=f"Large transaction: {getattr(tx, 'amount', 0)}",
+                    detected_at=getattr(tx, 'created_at', datetime.utcnow()),
+                    amount=getattr(tx, 'amount', None),
+                    transaction_count=1
                 )
             )
         

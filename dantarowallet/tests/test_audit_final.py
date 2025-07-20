@@ -2,6 +2,7 @@
 감사 및 컴플라이언스 시스템 통합 테스트
 """
 import asyncio
+import pytest
 from datetime import datetime
 from app.services.audit.audit_service import AuditService
 from app.services.audit.compliance_service import ComplianceService
@@ -9,6 +10,7 @@ from app.services.audit.ml_anomaly_service import MLAnomalyDetectionService
 from app.models.audit import AuditEventType
 from app.core.database import get_db_session
 
+@pytest.mark.asyncio
 async def test_audit_service():
     """감사 서비스 테스트"""
     print("=== 감사 서비스 테스트 ===")
@@ -51,6 +53,7 @@ async def test_audit_service():
     finally:
         audit_service.close()
 
+@pytest.mark.asyncio
 async def test_compliance_service():
     """컴플라이언스 서비스 테스트"""
     print("\n=== 컴플라이언스 서비스 테스트 ===")
@@ -107,6 +110,7 @@ async def test_compliance_service():
     finally:
         compliance_service.close()
 
+@pytest.mark.asyncio
 async def test_ml_anomaly_service():
     """ML 이상 탐지 서비스 테스트"""
     print("\n=== ML 이상 탐지 서비스 테스트 ===")

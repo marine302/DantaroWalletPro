@@ -142,9 +142,17 @@ class DashboardService:
             current_balance = record.balance or Decimal("0")
             change = current_balance - previous_balance
 
+            # 날짜를 datetime으로 변환
+            if isinstance(record.date, str):
+                # 문자열 날짜를 datetime으로 변환
+                date_obj = datetime.strptime(record.date, "%Y-%m-%d")
+            else:
+                # 이미 datetime 객체인 경우
+                date_obj = record.date
+
             response.append(
                 BalanceHistoryResponse(
-                    date=record.date, balance=current_balance, change=change
+                    date=date_obj, balance=current_balance, change=change
                 )
             )
 

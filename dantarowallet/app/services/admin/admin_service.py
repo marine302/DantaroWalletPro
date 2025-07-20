@@ -72,10 +72,11 @@ class AdminService:
         status: Optional[str] = None,
         direction: Optional[str] = None,
         hours: int = 24,
-    ) -> TransactionMonitorResponse:
+        user_id: Optional[int] = None,
+    ) -> PaginatedTransactionsResponse:
         """트랜잭션 모니터링 데이터 조회"""
         return await self._transaction_monitoring.get_transaction_monitor(
-            page, size, status, direction, hours
+            page, size, status, direction, hours, user_id
         )
 
     async def get_suspicious_activities(
@@ -84,6 +85,7 @@ class AdminService:
         size: int = 20,
         severity: Optional[str] = None,
         hours: int = 24,
+        limit: int = 20,
     ) -> List[SuspiciousActivityResponse]:
         """의심스러운 활동 조회"""
         return await self._transaction_monitoring.get_suspicious_activities(
