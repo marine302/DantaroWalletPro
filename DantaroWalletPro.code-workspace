@@ -1,0 +1,28 @@
+{
+    "folders": [
+        {
+            "name": "🖥️ Backend (DantaroWallet)",
+            "path": "./dantarowallet"
+        },
+        {
+            "name": "🎨 Frontend - Super Admin",
+            "path": "./frontend/super-admin-dashboard"
+        },
+        {
+            "name": "👥 Frontend - Partner Admin",
+            "path": "./frontend/partner-admin-template"
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "./dantarowallet/.venv/bin/python",
+        "typescript.preferences.includePackageJsonAutoImports": "off"
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.flake8",
+            "bradlc.vscode-tailwindcss",
+            "esbenp.prettier-vscode"
+        ]
+    }
+}

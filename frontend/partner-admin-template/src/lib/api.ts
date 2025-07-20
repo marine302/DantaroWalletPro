@@ -198,6 +198,11 @@ export const partnerApi = {
     return httpClient.get(`/partners/users?page=${page}&limit=${limit}`);
   },
 
+  // 사용자 통계
+  async getUserStats() {
+    return httpClient.get('/partners/user-stats');
+  },
+
   // 사용자 생성
   async createUser(userData: {
     email: string;

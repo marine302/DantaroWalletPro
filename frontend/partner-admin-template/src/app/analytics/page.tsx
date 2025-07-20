@@ -85,10 +85,12 @@ interface BreakdownItem {
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
+  const partnerId = 1; // TODO: 실제 파트너 ID 가져오기
   
-  // 실제 API 데이터 사용 (현재는 타입 불일치로 fallback 사용)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: _analyticsData, loading, error } = useComprehensiveAnalytics(period);
+  // 실제 API 데이터 사용
+  const analyticsResult = useComprehensiveAnalytics(partnerId);
+  
+  const { isLoading, isError } = analyticsResult;
 
   // 새로고침 함수
   const handleRefresh = () => {
@@ -154,7 +156,7 @@ export default function AnalyticsPage() {
   };
 
   // 로딩 상태
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex items-center space-x-2">
@@ -166,14 +168,13 @@ export default function AnalyticsPage() {
   }
 
   // 오류 상태
-  if (error) {
+  if (isError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
           <h2 className="text-xl font-semibold text-red-600">데이터 로딩 오류</h2>
           <p className="text-gray-600">분석 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.</p>
-          <p className="text-sm text-gray-500">오류: {error.message}</p>
           <Button onClick={() => window.location.reload()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             다시 시도

@@ -13,12 +13,22 @@ from fastapi.middleware.cors import CORSMiddleware
 # 현재 디렉토리를 Python 패스에 추가
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# 설정 가져오기
+try:
+    from app.core.config import settings
+    cors_origins = settings.DYNAMIC_CORS_ORIGINS
+    dashboard_port = 8002  # 대시보드 전용 포트
+except ImportError:
+    # 설정 파일을 못 찾을 경우 기본값 사용
+    cors_origins = ["http://localhost:3010", "http://localhost:3000", "http://127.0.0.1:3010"]
+    dashboard_port = 8002
+
 app = FastAPI(title="DantaroWallet Dashboard API", version="1.0.0")
 
-# CORS 설정
+# CORS 설정 - 동적 설정 사용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3010", "http://localhost:3000", "http://127.0.0.1:3010"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -81,9 +91,17 @@ async def get_system_health():
 
 if __name__ == "__main__":
     print("🚀 Starting DantaroWallet Dashboard API Server...")
-    print("📍 Server: http://localhost:8002")
-    print("🧪 Test: http://localhost:8002/api/v1/test") 
-    print("📊 Stats: http://localhost:8002/api/v1/admin/dashboard/stats")
+    print(f"📍 Server: http://localhost:{dashboard_port}")
+    print(f"🧪 Test: http://localhost:{dashboard_port}/api/v1/test") 
+    print(f"📊 Stats: http://localhost:{dashboard_port}/api/v1/admin/dashboard/stats")
+    print(f"🔗 CORS Origins: {cors_origins}")
+    
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=dashboard_port,
+        log_level="info"
+    )
     
     uvicorn.run(
         app,

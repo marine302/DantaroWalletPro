@@ -21,6 +21,10 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
+// import { 
+//   useEnergyDashboard, 
+//   useEnergyPoolStatus
+// } from '@/lib/hooks'
 
 interface EnergyPool {
   id: string
@@ -66,16 +70,31 @@ export default function EnergyPage() {
   const [activeTab, setActiveTab] = useState<'pools' | 'transactions' | 'settings'>('pools')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
-
-  // TODO: 에너지 관련 API 훅 구현 후 연결
-  // const { data: poolData, loading: poolLoading, error: poolError } = useEnergyPool();
-  // const { data: statsData, loading: statsLoading, error: statsError } = useEnergyStats();
   
-  // 현재는 폴백 데이터만 사용
-  const poolLoading = false;
-  const statsLoading = false;
-  const poolError = null;
-  const statsError = null;
+  // TODO: 실제 파트너 ID를 가져와야 함 (인증된 사용자의 파트너 ID)
+  // const partnerId = 1; // 임시로 1 사용
+  
+  // 실제 API 훅 사용 (백엔드 연결 후 활성화)
+  // const { 
+  //   data: dashboardData, 
+  //   isLoading: dashboardLoading, 
+  //   isError: dashboardError 
+  // } = useEnergyDashboard(partnerId);
+  
+  // const { 
+  //   data: poolStatusData, 
+  //   isLoading: poolStatusLoading, 
+  //   isError: poolStatusError 
+  // } = useEnergyPoolStatus(partnerId);
+  
+  // 나머지 API 훅들은 필요시 사용
+  // const { data: monitoringData } = useEnergyMonitoring(partnerId);
+  // const { data: transactionsData } = useEnergyTransactions(partnerId, 1, 20);
+  // const stakeForEnergyMutation = useStakeForEnergy();
+  
+  // 현재는 로딩 없이 진행 (백엔드 연결 전)
+  const isLoading = false;
+  const hasError = false;
 
   // 폴백 데이터
   const fallbackPools: EnergyPool[] = [
@@ -202,7 +221,11 @@ export default function EnergyPage() {
     }
   ];
 
-  // 데이터 매핑 (현재는 폴백 데이터만 사용)
+  // 실제 데이터 사용 (백엔드 연결 후 활성화)
+  // const pools = poolStatusData?.pools || fallbackPools;
+  // const stats = dashboardData?.stats || fallbackStats;
+  
+  // 현재는 fallback 데이터 사용 (백엔드 연결 전)
   const pools = fallbackPools;
   const stats = fallbackStats;
   const transactions = fallbackTransactions;
@@ -231,8 +254,32 @@ export default function EnergyPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const loading = poolLoading || statsLoading
-  const error = poolError || statsError
+  // 로딩 및 에러 처리
+  if (isLoading) {
+    return (
+      <Sidebar>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">에너지 데이터를 불러오는 중...</span>
+          </div>
+        </div>
+      </Sidebar>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <Sidebar>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+            <span className="ml-2 text-red-600">데이터를 불러오는 중 오류가 발생했습니다.</span>
+          </div>
+        </div>
+      </Sidebar>
+    );
+  }
 
   return (
     <Sidebar>
@@ -263,7 +310,7 @@ export default function EnergyPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">총 에너지 용량</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : stats.total_capacity.toLocaleString()}
+                  {stats.total_capacity.toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500">Energy Units</p>
               </div>
@@ -278,7 +325,7 @@ export default function EnergyPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">이용률</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : `${stats.utilization_rate.toFixed(1)}%`}
+                  {`${stats.utilization_rate.toFixed(1)}%`}
                 </p>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                   <div 
@@ -298,7 +345,7 @@ export default function EnergyPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">활성 대여</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : stats.active_rentals.toLocaleString()}
+                  {stats.active_rentals.toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500">건</p>
               </div>
@@ -313,7 +360,7 @@ export default function EnergyPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">총 수익</p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : formatCurrency(stats.total_revenue, 'TRX')}
+                  {formatCurrency(stats.total_revenue, 'TRX')}
                 </p>
                 <p className="text-xs text-gray-500">평균 {stats.avg_price_per_unit.toFixed(6)} TRX/Unit</p>
               </div>
@@ -387,15 +434,7 @@ export default function EnergyPage() {
 
             {/* 풀 그리드 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loading ? (
-                <div className="col-span-full flex justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                </div>
-              ) : error ? (
-                <div className="col-span-full text-center py-8 text-red-600">
-                  에너지 풀 데이터를 불러오는데 실패했습니다.
-                </div>
-              ) : filteredPools.length === 0 ? (
+              {filteredPools.length === 0 ? (
                 <div className="col-span-full text-center py-8 text-gray-500">
                   조건에 맞는 에너지 풀이 없습니다.
                 </div>

@@ -30,6 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# logs
+*.log
+dev.log
+frontend.log
+
 # env files (can opt-in for committing if needed)
 .env*
 
@@ -39,3 +44,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# IDE specific
+.vscode/settings.json
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db

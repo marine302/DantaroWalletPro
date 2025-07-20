@@ -103,10 +103,13 @@ class Settings(BaseSettings):
     
     # Port Configuration
     BACKEND_PORT: int = 8000  # 백엔드 서버 포트 (기본 8000)
-    FRONTEND_PORT: int = 3020  # 프론트엔드 포트 설정
+    
+    # 프론트엔드 포트 설정 (두 개의 대시보드)
+    SUPER_ADMIN_FRONTEND_PORT: int = 3020    # 슈퍼 어드민 대시보드
+    PARTNER_ADMIN_FRONTEND_PORT: int = 3030  # 파트너 어드민 템플릿
     
     # 개발용 추가 포트들
-    DEV_FRONTEND_PORTS: List[int] = [3000, 3001, 3010, 3020]  # 개발시 사용할 프론트엔드 포트들
+    DEV_FRONTEND_PORTS: List[int] = [3000, 3001, 3010, 3020, 3030]
     REDIS_PORT: int = 6379  # Redis 포트
     DATABASE_PORT: int = 5432  # PostgreSQL 포트 (운영시)
     
@@ -116,12 +119,14 @@ class Settings(BaseSettings):
         """동적으로 CORS origins 생성"""
         origins = []
         
-        # 현재 프론트엔드 포트
-        origins.extend([
-            f"http://localhost:{self.FRONTEND_PORT}",
-            f"http://127.0.0.1:{self.FRONTEND_PORT}",
-            f"https://localhost:{self.FRONTEND_PORT}",
-        ])
+        # 두 개의 메인 프론트엔드 포트
+        main_ports = [self.SUPER_ADMIN_FRONTEND_PORT, self.PARTNER_ADMIN_FRONTEND_PORT]
+        for port in main_ports:
+            origins.extend([
+                f"http://localhost:{port}",
+                f"http://127.0.0.1:{port}",
+                f"https://localhost:{port}",
+            ])
         
         # 개발용 포트들
         for port in self.DEV_FRONTEND_PORTS:
