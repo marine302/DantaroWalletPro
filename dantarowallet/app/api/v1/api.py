@@ -35,31 +35,55 @@ from app.api.v1.endpoints import (
     admin_dashboard,  # 슈퍼어드민 대시보드 통계
 )
 
-# 기능별 라우터 등록
+# ============================================================================
+# FRONTEND REFERENCE GUIDE
+# ============================================================================
+# Super Admin Dashboard: /frontend/super-admin-dashboard/
+#   - Uses: admin, audit-compliance, integrated_dashboard, admin_dashboard
+#   - Files: /app/audit-compliance/page.tsx, /app/integrated-dashboard/page.tsx
+#
+# Partner Admin Template: /frontend/partner-admin-template/  
+#   - Uses: tronlink, energy_management, fee_policy
+#   - Focus: Partner-specific operations
+# ============================================================================
+
+# Core User APIs - Used by both frontends
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
-api_router.include_router(balance.router, prefix="/balance", tags=["balance"])
-api_router.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
+api_router.include_router(balance.router, prefix="/balance", tags=["balance"])  # User internal balance (different from wallet on-chain balance)
+api_router.include_router(wallet.router, prefix="/wallet", tags=["wallet"])  # User wallet management & on-chain balance
 api_router.include_router(deposit.router, prefix="/deposit", tags=["deposit"])
 api_router.include_router(withdrawal.router, prefix="/withdrawals", tags=["withdrawal"])
-api_router.include_router(withdrawal_management.router, prefix="/withdrawal-management", tags=["withdrawal_management"])  # Doc #28: 파트너사 출금 관리 고도화
-api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding", tags=["partner_onboarding"])  # Doc #29: 파트너사 온보딩 자동화
-api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])  # 메인 TronLink 엔드포인트 사용
-api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Doc #25: 에너지 풀 고급 관리 (통합) - 오류 수정 완료
-api_router.include_router(energy_management.router, tags=["energy_management"])  # Doc #25: 파트너용 에너지 풀 CRUD 관리
-api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Doc #26: 파트너사 수수료 및 정책 관리
-api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Doc #27: 입금 Sweep 자동화 시스템
-api_router.include_router(stats.router, tags=["statistics"])  # 통계 API
-api_router.include_router(users.router, prefix="/users", tags=["users"])  # 사용자 관리 API
-api_router.include_router(partners_simple.router, prefix="/partners", tags=["partners"])  # 간단한 파트너 관리 API
-api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # 거래 관리 API - 오류 수정 완료
+
+# Partner Management APIs - Super Admin Dashboard
+api_router.include_router(partners_simple.router, prefix="/partners", tags=["partners"])  # Basic partner CRUD
+api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding", tags=["partner_onboarding"])  # Partner onboarding automation
+api_router.include_router(fee_policy.router, prefix="/fee-policy", tags=["fee_policy"])  # Partner fee policy management
+
+# TronLink Integration - Partner Admin Template
+api_router.include_router(tronlink.router, prefix="/tronlink", tags=["tronlink"])  # TronLink wallet integration
+
+# Energy Management - Both frontends (different purposes)
+api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Energy monitoring & analytics (Super Admin)
+api_router.include_router(energy_management.router, tags=["energy_management"])  # Energy pool CRUD (Partner Admin)
+api_router.include_router(external_energy.router, prefix="/external-energy", tags=["external_energy"])  # External energy providers
+
+# Advanced Management - Super Admin Dashboard
+api_router.include_router(withdrawal_management.router, prefix="/withdrawal-management", tags=["withdrawal_management"])  # Advanced withdrawal policies
+api_router.include_router(audit_compliance.router)  # Frontend: /app/audit-compliance/page.tsx (uses prefix="/audit-compliance" from router)
+api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Deposit sweep automation
+
+# Analytics & Reporting - Super Admin Dashboard
+api_router.include_router(dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # Frontend: /app/integrated-dashboard/page.tsx
+api_router.include_router(admin_dashboard.router, prefix="/superadmin", tags=["admin_dashboard"])  # Super admin dashboard
+api_router.include_router(stats.router, tags=["statistics"])  # General statistics
 api_router.include_router(
     transaction_analytics.router, prefix="/transaction-analytics", tags=["analytics"]
 )
-api_router.include_router(dashboard.router, prefix="/integrated-dashboard", tags=["integrated_dashboard"])  # 통합 대시보드
-api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
-api_router.include_router(admin_dashboard.router, prefix="/superadmin", tags=["admin_dashboard"])  # 슈퍼어드민 대시보드 통계 (인증 우회)
-api_router.include_router(audit_compliance.router, tags=["audit_compliance"])  # Doc #30: 트랜잭션 감사 및 컴플라이언스
-api_router.include_router(external_energy.router, prefix="/external-energy", tags=["external_energy"])  # Doc #35(38): 외부 에너지 공급자 연동
+
+# System Administration - Super Admin Dashboard
+api_router.include_router(admin.router, prefix="/admin", tags=["admin"])  # General admin operations
+api_router.include_router(users.router, prefix="/users", tags=["users"])  # User management
+api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # Transaction management
 
 
 # 임시 테스트 엔드포인트
