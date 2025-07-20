@@ -12,7 +12,8 @@ import {
   withdrawalApi, 
   onboardingApi, 
   auditApi,
-  authApi 
+  authApi,
+  energyRentalApi 
 } from './api';
 
 // =============================================================================
@@ -172,6 +173,78 @@ export const useStakeForEnergy = () => {
 };
 
 // =============================================================================
+// 에너지 렌탈 서비스 훅들 (Doc-31)
+// =============================================================================
+
+export const useEnergyRentalOverview = () => {
+  return useQuery({
+    queryKey: ['energy', 'rental', 'overview'],
+    queryFn: energyRentalApi.getOverview,
+    refetchInterval: 60000, // 1분마다 업데이트
+  });
+};
+
+export const useEnergyRentalPools = () => {
+  return useQuery({
+    queryKey: ['energy', 'rental', 'pools'],
+    queryFn: energyRentalApi.getPools,
+    refetchInterval: 30000, // 30초마다 업데이트
+  });
+};
+
+export const useEnergyRentalTransactions = (page = 1, limit = 20) => {
+  return useQuery({
+    queryKey: ['energy', 'rental', 'transactions', { page, limit }],
+    queryFn: () => energyRentalApi.getTransactions(page, limit),
+  });
+};
+
+export const useCreateEnergyPool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ name, stake_amount, rental_rate }: { 
+      name: string; 
+      stake_amount: number; 
+      rental_rate: number 
+    }) => energyRentalApi.createPool({ name, stake_amount, rental_rate }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
+    },
+  });
+};
+
+export const useUpdateEnergyPool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ poolId, updates }: { poolId: string; updates: Record<string, unknown> }) =>
+      energyRentalApi.updatePool(poolId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
+    },
+  });
+};
+
+export const useDeleteEnergyPool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (poolId: string) => energyRentalApi.deletePool(poolId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['energy', 'rental'] });
+    },
+  });
+};
+
+export const useEnergyRentalAnalytics = (period = '30d') => {
+  return useQuery({
+    queryKey: ['energy', 'rental', 'analytics', period],
+    queryFn: () => energyRentalApi.getAnalytics(period),
+  });
+};
+
+// =============================================================================
 // 출금 관리 훅들 (Doc-28)
 // =============================================================================
 
@@ -182,6 +255,14 @@ export const useWithdrawalRequests = (page = 1, limit = 20, status?: string) => 
   });
 };
 
+// 출금 정책 관리 훅들 (Doc-28 고급 기능)
+export const useWithdrawalPolicies = () => {
+  return useQuery({
+    queryKey: ['withdrawal', 'policies'],
+    queryFn: withdrawalApi.getPolicies,
+  });
+};
+
 export const useWithdrawalPolicy = () => {
   return useQuery({
     queryKey: ['withdrawal', 'policy'],
@@ -189,31 +270,38 @@ export const useWithdrawalPolicy = () => {
   });
 };
 
-export const useWithdrawalBatches = () => {
-  return useQuery({
-    queryKey: ['withdrawal', 'batches'],
-    queryFn: withdrawalApi.getBatches,
-  });
-};
-
-export const useCreateWithdrawalRequest = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: withdrawalApi.createRequest,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'requests'] });
-    },
-  });
-};
-
 export const useUpdateWithdrawalPolicy = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: withdrawalApi.updatePolicy,
+    mutationFn: ({ policyId, updates }: { policyId: string; updates: Record<string, unknown> }) =>
+      withdrawalApi.updatePolicy(policyId, updates),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
       queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policy'] });
+    },
+  });
+};
+
+export const useCreateWithdrawalPolicy = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (policyData: Record<string, unknown>) =>
+      withdrawalApi.createPolicy(policyData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
+    },
+  });
+};
+
+export const useDeleteWithdrawalPolicy = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (policyId: string) => withdrawalApi.deletePolicy(policyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['withdrawal', 'policies'] });
     },
   });
 };
@@ -226,6 +314,7 @@ export const useOnboardingProgress = () => {
   return useQuery({
     queryKey: ['onboarding', 'progress'],
     queryFn: onboardingApi.getProgress,
+    refetchInterval: 60000, // 1분마다 진행률 업데이트
   });
 };
 
@@ -259,26 +348,60 @@ export const useCompleteOnboardingStep = () => {
 // 감사 및 컴플라이언스 훅들 (Doc-30)
 // =============================================================================
 
-export const useAuditLogs = (page = 1, limit = 50, filters?: Record<string, unknown>) => {
+export const useAuditLogs = (options: {
+  search?: string;
+  period?: string;
+  risk_level?: string;
+  page?: number;
+  limit?: number;
+} = {}) => {
   return useQuery({
-    queryKey: ['audit', 'logs', { page, limit, filters }],
-    queryFn: () => auditApi.getLogs(page, limit, filters),
+    queryKey: ['audit', 'logs', options],
+    queryFn: () => auditApi.getLogs(options),
+    refetchInterval: 30000, // 30초마다 업데이트
   });
 };
 
-export const useSuspiciousTransactions = () => {
+export const useComplianceReports = () => {
   return useQuery({
-    queryKey: ['audit', 'suspicious-transactions'],
-    queryFn: auditApi.getSuspiciousTransactions,
-    refetchInterval: 60000, // 1분마다 확인
+    queryKey: ['audit', 'compliance', 'reports'],
+    queryFn: auditApi.getComplianceReports,
   });
 };
 
-export const useComplianceStatus = () => {
+export const useSecurityEvents = (options: {
+  event_type?: string;
+  severity?: string;
+  status?: string;
+} = {}) => {
   return useQuery({
-    queryKey: ['audit', 'compliance-status'],
-    queryFn: auditApi.getComplianceStatus,
-    refetchInterval: 300000, // 5분마다 확인
+    queryKey: ['audit', 'security', 'events', options],
+    queryFn: () => auditApi.getSecurityEvents(options),
+    refetchInterval: 15000, // 15초마다 업데이트
+  });
+};
+
+export const useGenerateComplianceReport = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ type, period }: { type: string; period: string }) =>
+      auditApi.generateReport(type, period),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['audit', 'compliance'] });
+    },
+  });
+};
+
+export const useUpdateSecurityEvent = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ eventId, updates }: { eventId: string; updates: Record<string, unknown> }) =>
+      auditApi.updateSecurityEvent(eventId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['audit', 'security'] });
+    },
   });
 };
 

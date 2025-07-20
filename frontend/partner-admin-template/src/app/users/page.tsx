@@ -72,8 +72,8 @@ export default function UsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
 
   // 실제 API 데이터 사용
-  const { data: usersData, loading: usersLoading, error: usersError } = useUsers(currentPage, 20, searchTerm, statusFilter);
-  const { data: statsData, loading: statsLoading, error: statsError } = useUserStats();
+  const { data: usersData, isLoading: usersLoading, isError: usersError } = useUsers(currentPage, 20);
+  const { data: statsData, isLoading: statsLoading, isError: statsError } = useUserStats();
 
   // 폴백 데이터
   const fallbackUsers: User[] = [

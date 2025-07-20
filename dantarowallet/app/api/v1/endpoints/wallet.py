@@ -33,7 +33,11 @@ async def create_wallet(
     current_user: User = Depends(deps.get_current_verified_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """사용자 지갑 생성"""
+    """Create New User Wallet
+    
+    Creates a new TRON wallet for the verified user.
+    Returns the wallet address, hex address, and network information.
+    """
     service = WalletService(db)
     wallet = await service.create_wallet(current_user.id)
     await db.commit()
@@ -50,7 +54,11 @@ async def get_wallet(
     current_user: User = Depends(deps.get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """현재 사용자 지갑 정보 조회"""
+    """Get User Wallet Information
+    
+    Retrieves the user's wallet details including address, hex address,
+    and network information. This is for wallet management purposes.
+    """
     service = WalletService(db)
     wallet = await service.get_wallet(current_user.id)
 
@@ -65,7 +73,12 @@ async def get_wallet_balance(
     current_user: User = Depends(deps.get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """지갑 온체인 잔고 조회"""
+    """Get On-Chain Wallet Balance
+    
+    Retrieves the actual on-chain balance from the TRON blockchain.
+    This shows the real-time balance directly from the blockchain,
+    different from internal system balance (/api/v1/balance/).
+    """
     service = WalletService(db)
     wallet = await service.get_wallet(current_user.id)
 
@@ -82,7 +95,11 @@ async def validate_address(
     current_user: User = Depends(deps.get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """TRON 주소 유효성 검증"""
+    """Validate TRON Address
+    
+    Validates if the provided address is a valid TRON address format
+    and checks additional properties if needed.
+    """
     service = WalletService(db)
 
     # 기본 유효성 검증

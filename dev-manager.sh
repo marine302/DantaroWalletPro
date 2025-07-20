@@ -2,6 +2,10 @@
 
 # DantaroWallet 개발 환경 통합 관리 스크립트
 # 모든 개발 환경 설정, 서버 관리, 문제 해결을 한 곳에서 처리
+# 
+# 🤖 AI 개발자님!
+# 새로운 세션이면 먼저 ./dev-manager.sh guide 를 실행해서 가이드를 읽어주세요!
+# 기획자님은 기술적 세부사항을 기억하지 않으니 모든 것을 자동화해주세요!
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$PROJECT_ROOT/dantarowallet"
@@ -44,6 +48,10 @@ function show_help() {
     echo "  backend         백엔드만 시작"
     echo "  super           Super Admin 프론트엔드만 시작"
     echo "  partner         Partner Admin 프론트엔드만 시작"
+    echo ""
+    echo "🤖 AI 개발자용:"
+    echo "  guide           영구 개발 가이드 보기"
+    echo "  memo            중요 사항 메모"
     echo ""
     echo "💡 예시:"
     echo "  $0 auto         # 완전 자동화 (추천)"
@@ -526,6 +534,69 @@ function clean_project() {
 }
 
 # =============================================================================
+# AI 개발자를 위한 영구 가이드 함수
+# =============================================================================
+
+function show_ai_guide() {
+    log_header "🤖 AI 개발자 영구 가이드"
+    echo ""
+    echo -e "${YELLOW}⚠️  AI 개발자님, 이것을 반드시 읽어주세요! ⚠️${NC}"
+    echo ""
+    echo -e "${CYAN}📋 기획자님은 기술적 세부사항을 기억하지 않습니다!${NC}"
+    echo -e "${CYAN}🎯 모든 것은 자동화되어야 하고, 원클릭으로 동작해야 합니다!${NC}"
+    echo ""
+    echo -e "${GREEN}✅ 기획자님이 사용할 명령어:${NC}"
+    echo "  ./dev-manager.sh auto      # 완전 자동화 (이것만 알면 됨!)"
+    echo "  ./dev-manager.sh status    # 상태 확인"
+    echo "  ./dev-manager.sh restart   # 재시작"
+    echo ""
+    echo -e "${RED}❌ 절대 이렇게 안내하지 마세요:${NC}"
+    echo '  - "터미널에서 cd 명령어로..."'
+    echo '  - "가상환경을 먼저 활성화하고..."'
+    echo '  - "pip install을 실행해서..."'
+    echo ""
+    echo -e "${GREEN}✅ 항상 이렇게 답변하세요:${NC}"
+    echo '  - "dev-manager.sh auto 실행해주세요!"'
+    echo '  - "자동으로 해결해드릴게요!"'
+    echo ""
+    echo -e "${PURPLE}📖 상세 가이드: DEVELOPMENT_GUIDE.md${NC}"
+    echo -e "${PURPLE}📝 개발 이력: DEVELOPMENT_LOG.md${NC}"
+    echo ""
+    echo -e "${YELLOW}🔄 새로운 세션마다 이 가이드를 먼저 확인하세요!${NC}"
+}
+
+function show_ai_memo() {
+    log_header "📝 AI 개발자 메모"
+    echo ""
+    echo -e "${CYAN}🎯 프로젝트 목표:${NC}"
+    echo "  - 기획자님을 위한 완전 자동화 개발 환경"
+    echo "  - 원클릭으로 모든 것이 동작"
+    echo "  - 기술적 세부사항 숨기기"
+    echo ""
+    echo -e "${GREEN}✅ 현재 완료된 기능:${NC}"
+    echo "  - 백엔드 자동 실행: ./dev-manager.sh auto"
+    echo "  - 스마트 포트 관리 (중복 실행 방지)"
+    echo "  - 가상환경 자동 설정"
+    echo "  - 의존성 자동 설치"
+    echo "  - Health 체크 우선 로직"
+    echo ""
+    echo -e "${YELLOW}🔨 작업 중인 기능:${NC}"
+    echo "  - 프론트엔드 자동 실행 (예정)"
+    echo "  - Super Admin (포트 3020)"
+    echo "  - Partner Admin (포트 3030)"
+    echo ""
+    echo -e "${PURPLE}🔗 중요 URL:${NC}"
+    echo "  - 백엔드 API: http://localhost:8000/api/v1/docs"
+    echo "  - Health 체크: http://localhost:8000/health"
+    echo ""
+    echo -e "${RED}⚠️  중요 규칙:${NC}"
+    echo "  1. 기존 dev-manager.sh 구조 변경 금지"
+    echo "  2. 복잡한 명령어 요구 금지"
+    echo "  3. 자동화 우선, 수동 설정 금지"
+    echo "  4. 에러 시 자동 복구 로직 포함"
+}
+
+# =============================================================================
 # 메인 명령어 처리
 # =============================================================================
 
@@ -578,6 +649,12 @@ case "$1" in
         ;;
     "clean")
         clean_project
+        ;;
+    "guide")
+        show_ai_guide
+        ;;
+    "memo")
+        show_ai_memo
         ;;
     "help"|"")
         show_help

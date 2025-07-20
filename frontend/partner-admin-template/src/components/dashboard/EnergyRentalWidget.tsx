@@ -28,7 +28,7 @@ interface EnergyRentalWidgetProps {
 export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   // 실제 API에서 데이터 가져오기 (Doc-31 에너지 렌탈 서비스)
   const partnerId = 1; // 실제로는 현재 로그인된 파트너 ID
-  const { loading, error } = useEnergyPoolStatus(partnerId);
+  const { isLoading, error } = useEnergyPoolStatus(partnerId);
   
   // 에너지 렌탈 사용량 데이터 추가 로드
   const [rentalUsage, setRentalUsage] = React.useState<EnergyRentalData | null>(null);
@@ -104,7 +104,7 @@ export function EnergyRentalWidget({ className }: EnergyRentalWidgetProps) {
   }, [partnerId]);
 
   // 로딩 상태
-  if (loading || isLoadingRental || !rentalUsage) {
+  if (isLoading || isLoadingRental || !rentalUsage) {
     return (
       <Card className={`${className} text-foreground`}>
         <CardHeader>

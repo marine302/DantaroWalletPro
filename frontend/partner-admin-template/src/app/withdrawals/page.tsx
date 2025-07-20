@@ -39,7 +39,7 @@ export default function WithdrawalsPage() {
   const [currentPage] = useState(1)
 
   // 실제 API 데이터 사용
-  const { data: withdrawalsData, loading, error } = useWithdrawalRequests(
+  const { data: withdrawalsData, isLoading, error } = useWithdrawalRequests(
     currentPage, 
     20, 
     statusFilter === 'all' ? undefined : statusFilter
@@ -168,7 +168,7 @@ export default function WithdrawalsPage() {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex items-center space-x-2">

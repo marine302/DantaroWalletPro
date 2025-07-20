@@ -66,10 +66,11 @@ async def get_partner_wallets(
     current_partner: Partner = Depends(get_current_partner),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    파트너의 연결된 지갑 목록 조회
+    """Get Partner's Connected TronLink Wallets
     
-    현재 파트너에게 연결된 모든 TronLink 지갑과 잔액 정보를 조회합니다.
+    Retrieves all TronLink wallets connected to the current partner
+    along with their balance information. This is specifically for
+    partner-managed wallet portfolio overview.
     """
     try:
         tronlink_service = TronLinkService(db)
@@ -95,10 +96,11 @@ async def get_wallet_balance(
     current_partner: Partner = Depends(get_current_partner),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    특정 지갑의 잔액 조회
+    """Get TronLink Wallet Balance
     
-    TronLink 지갑의 TRX 및 USDT 잔액을 실시간으로 조회합니다.
+    Retrieves real-time TRX and USDT balance for a specific TronLink wallet.
+    This endpoint is specifically for partner-connected TronLink wallets
+    and includes ownership verification.
     """
     try:
         tronlink_service = TronLinkService(db)

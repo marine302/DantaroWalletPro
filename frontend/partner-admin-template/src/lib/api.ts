@@ -311,14 +311,34 @@ export const feeApi = {
 // 출금 관리 고도화 API (Doc-28)
 // =============================================================================
 export const withdrawalApi = {
-  // 출금 정책 조회
+  // 기본 출금 정책 조회
   async getPolicy() {
     return httpClient.get('/withdrawal/policy');
   },
 
-  // 출금 정책 업데이트
-  async updatePolicy(policy: Record<string, unknown>) {
+  // 기본 출금 정책 업데이트
+  async updateDefaultPolicy(policy: Record<string, unknown>) {
     return httpClient.put('/withdrawal/policy', policy);
+  },
+
+  // 모든 출금 정책 조회 (Doc-28 고급 기능)
+  async getPolicies() {
+    return httpClient.get('/withdrawal/policies');
+  },
+
+  // 특정 출금 정책 업데이트 (Doc-28 고급 기능)
+  async updatePolicy(policyId: string, updates: Record<string, unknown>) {
+    return httpClient.put(`/withdrawal/policies/${policyId}`, updates);
+  },
+
+  // 새 출금 정책 생성 (Doc-28 고급 기능)
+  async createPolicy(policyData: Record<string, unknown>) {
+    return httpClient.post('/withdrawal/policies', policyData);
+  },
+
+  // 출금 정책 삭제 (Doc-28 고급 기능)
+  async deletePolicy(policyId: string) {
+    return httpClient.delete(`/withdrawal/policies/${policyId}`);
   },
 
   // 출금 요청 목록
@@ -380,14 +400,51 @@ export const onboardingApi = {
 // 감사 및 컴플라이언스 API (Doc-30)
 // =============================================================================
 export const auditApi = {
-  // 감사 로그 조회
-  async getLogs(page = 1, limit = 50, filters?: Record<string, unknown>) {
-    const params = new URLSearchParams({ 
-      page: page.toString(), 
-      limit: limit.toString(),
-      ...filters
+  // 감사 로그 조회 (고급 검색 지원)
+  async getLogs(options: {
+    search?: string;
+    period?: string;
+    risk_level?: string;
+    page?: number;
+    limit?: number;
+  } = {}) {
+    const params = new URLSearchParams();
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, value.toString());
+      }
     });
     return httpClient.get(`/audit/logs?${params}`);
+  },
+
+  // 컴플라이언스 리포트 조회
+  async getComplianceReports() {
+    return httpClient.get('/audit/compliance/reports');
+  },
+
+  // 컴플라이언스 리포트 생성
+  async generateReport(type: string, period: string) {
+    return httpClient.post('/audit/compliance/reports', { type, period });
+  },
+
+  // 보안 이벤트 조회
+  async getSecurityEvents(options: {
+    event_type?: string;
+    severity?: string;
+    status?: string;
+  } = {}) {
+    const params = new URLSearchParams();
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, value.toString());
+      }
+    });
+    return httpClient.get(`/audit/security/events?${params}`);
+  },
+
+  // 보안 이벤트 업데이트
+  async updateSecurityEvent(eventId: string, updates: Record<string, unknown>) {
+    return httpClient.put(`/audit/security/events/${eventId}`, updates);
   },
 
   // 의심 거래 목록
@@ -443,6 +500,50 @@ export const energyRentalApi = {
   // 비용 분석 (청구 이력에서 계산)
   async getCostAnalysis(partnerId: number) {
     return this.getBillingHistory(partnerId);
+  },
+
+  // 에너지 렌탈 서비스 개요
+  async getOverview() {
+    return httpClient.get('/energy/rental/overview');
+  },
+
+  // 에너지 풀 목록
+  async getPools() {
+    return httpClient.get('/energy/rental/pools');
+  },
+
+  // 에너지 풀 생성
+  async createPool(poolData: { name: string; stake_amount: number; rental_rate: number }) {
+    return httpClient.post('/energy/rental/pools', poolData);
+  },
+
+  // 에너지 풀 업데이트
+  async updatePool(poolId: string, updates: Record<string, unknown>) {
+    return httpClient.put(`/energy/rental/pools/${poolId}`, updates);
+  },
+
+  // 에너지 풀 삭제
+  async deletePool(poolId: string) {
+    return httpClient.delete(`/energy/rental/pools/${poolId}`);
+  },
+
+  // 렌탈 거래 목록
+  async getTransactions(page = 1, limit = 20) {
+    const params = new URLSearchParams({ 
+      page: page.toString(), 
+      limit: limit.toString()
+    });
+    return httpClient.get(`/energy/rental/transactions?${params}`);
+  },
+
+  // 렌탈 분석 데이터
+  async getAnalytics(period = '30d') {
+    return httpClient.get(`/energy/rental/analytics?period=${period}`);
+  },
+
+  // 수익성 최적화 제안
+  async getOptimizationSuggestions() {
+    return httpClient.get('/energy/rental/optimization');
   }
 };
 
