@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.api.deps import get_current_partner
 from app.services.external_wallet.tronlink_service import TronLinkService
+from app.services.external_wallet.auto_signing_service import TronLinkAutoSigningService
 from app.schemas.tronlink import (
     TronLinkConnectRequest,
     TronLinkConnectResponse,
@@ -21,6 +22,22 @@ from app.schemas.tronlink import (
     TronLinkAuthResponse,
     MessageResponse,
     PartnerWalletInfo
+)
+from app.schemas.auto_signing import (
+    TronLinkAuthRequest as AutoSigningAuthRequest,
+    TronLinkAuthResponse as AutoSigningAuthResponse,
+    AutoSigningSessionRequest,
+    AutoSigningSessionResponse,
+    TronWebSignRequest,
+    TronWebSignResponse,
+    BatchSigningRequest,
+    BatchSigningResponse,
+    TronWebStatusRequest,
+    TronWebStatusResponse,
+    SessionRevokeRequest,
+    SessionRevokeResponse,
+    BatchStatusResponse,
+    BatchResultResponse
 )
 from app.models.partner import Partner
 from app.core.logger import get_logger
@@ -316,3 +333,251 @@ def safe_int(value: Any, default: int = 0) -> int:
         return int(value)
     except (TypeError, ValueError):
         return default
+
+
+# =====================================================================
+# TronLink 자동 서명 엔드포인트들 (Auto Signing Endpoints)
+# =====================================================================
+
+@router.post("/auto-signing/authorize", response_model=AutoSigningAuthResponse)
+async def authorize_auto_signing(
+    request: AutoSigningAuthRequest,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    TronLink 자동 서명 권한 요청 (tron_requestAccounts)
+    
+    TronLink 지갑에 자동 서명 권한을 요청하고 계정을 승인받습니다.
+    실제 TronLink API의 tron_requestAccounts와 호환됩니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.request_account_authorization(
+            partner_id=safe_int(current_partner.id),
+            wallet_address=request.wallet_address,
+            signature=request.signature,
+            message=request.message
+        )
+        
+        return AutoSigningAuthResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"TronLink 자동 서명 권한 요청 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"자동 서명 권한 요청에 실패했습니다: {str(e)}"
+        )
+
+
+@router.post("/auto-signing/session", response_model=AutoSigningSessionResponse)
+async def create_auto_signing_session(
+    request: AutoSigningSessionRequest,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    자동 서명 세션 생성
+    
+    지정된 조건으로 자동 서명 세션을 생성합니다.
+    TronLink의 세션 관리와 호환되는 구조입니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.create_auto_signing_session(
+            partner_id=safe_int(current_partner.id),
+            wallet_address=request.wallet_address,
+            session_duration_hours=request.session_duration_hours,
+            max_amount_per_tx=request.max_amount_per_tx,
+            max_daily_amount=request.max_daily_amount,
+            allowed_addresses=request.allowed_addresses
+        )
+        
+        return AutoSigningSessionResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"자동 서명 세션 생성 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"자동 서명 세션 생성에 실패했습니다: {str(e)}"
+        )
+
+
+@router.post("/auto-signing/sign", response_model=TronWebSignResponse)
+async def sign_transaction_auto(
+    request: TronWebSignRequest,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    TronWeb 호환 자동 트랜잭션 서명
+    
+    출금 요청을 자동으로 서명하고 처리합니다.
+    window.tronWeb.trx.sign()과 호환되는 구조입니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.sign_transaction_with_tronweb(
+            withdrawal_id=request.withdrawal_id,
+            session_token=request.session_token
+        )
+        
+        return TronWebSignResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"자동 트랜잭션 서명 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"자동 트랜잭션 서명에 실패했습니다: {str(e)}"
+        )
+
+
+@router.post("/auto-signing/batch", response_model=BatchSigningResponse)
+async def batch_sign_transactions(
+    request: BatchSigningRequest,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    배치 자동 서명
+    
+    여러 출금 요청을 한 번에 자동 서명 처리합니다.
+    TronLink의 배치 처리와 호환됩니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.batch_sign_with_tronlink(
+            withdrawal_ids=request.withdrawal_ids,
+            session_token=request.session_token,
+            max_concurrent=request.max_concurrent
+        )
+        
+        return BatchSigningResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"배치 자동 서명 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"배치 자동 서명에 실패했습니다: {str(e)}"
+        )
+
+
+@router.get("/auto-signing/session/status", response_model=TronWebStatusResponse)
+async def get_session_status(
+    session_token: str,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    자동 서명 세션 상태 조회 (TronWeb 호환)
+    
+    현재 자동 서명 세션의 상태를 조회합니다.
+    window.tronWeb 상태와 호환되는 정보를 제공합니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.get_tronweb_status(
+            partner_id=safe_int(current_partner.id),
+            session_token=session_token
+        )
+        
+        return TronWebStatusResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"세션 상태 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"세션 상태 조회에 실패했습니다: {str(e)}"
+        )
+
+
+@router.post("/auto-signing/session/revoke", response_model=SessionRevokeResponse)
+async def revoke_session(
+    request: SessionRevokeRequest,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    자동 서명 세션 해제
+    
+    활성화된 자동 서명 세션을 해제합니다.
+    TronLink 연결 해제와 호환됩니다.
+    """
+    try:
+        auto_signing_service = TronLinkAutoSigningService(db)
+        
+        result = await auto_signing_service.revoke_auto_signing_session(
+            partner_id=safe_int(current_partner.id),
+            session_token=request.session_token
+        )
+        
+        return SessionRevokeResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"세션 해제 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"세션 해제에 실패했습니다: {str(e)}"
+        )
+
+
+# 배치 상태 조회를 위한 추가 엔드포인트들
+@router.get("/auto-signing/batch/{batch_id}/status")
+async def get_batch_status(
+    batch_id: str,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    배치 자동 서명 상태 조회
+    
+    배치 처리의 실시간 상태를 조회합니다.
+    """
+    try:
+        # 배치 상태 조회 로직 구현 필요
+        # 현재는 기본 응답만 제공
+        return {
+            "batch_id": batch_id,
+            "status": "processing",
+            "message": "배치 처리 상태 조회 기능은 향후 구현될 예정입니다."
+        }
+        
+    except Exception as e:
+        logger.error(f"배치 상태 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"배치 상태 조회에 실패했습니다: {str(e)}"
+        )
+
+
+@router.get("/auto-signing/batch/{batch_id}/result")
+async def get_batch_result(
+    batch_id: str,
+    current_partner: Partner = Depends(get_current_partner),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    배치 자동 서명 결과 조회
+    
+    완료된 배치 처리의 상세 결과를 조회합니다.
+    """
+    try:
+        # 배치 결과 조회 로직 구현 필요
+        # 현재는 기본 응답만 제공
+        return {
+            "batch_id": batch_id,
+            "status": "completed",
+            "message": "배치 처리 결과 조회 기능은 향후 구현될 예정입니다."
+        }
+        
+    except Exception as e:
+        logger.error(f"배치 결과 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"배치 결과 조회에 실패했습니다: {str(e)}"
+        )

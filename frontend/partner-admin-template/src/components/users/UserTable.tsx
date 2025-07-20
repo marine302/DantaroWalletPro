@@ -36,6 +36,9 @@ interface UserTableProps {
   selectedUsers: string[]
   onUserSelect: (userId: string) => void
   onSelectAll: (checked: boolean) => void
+  onViewUser?: (user: User) => void
+  onEditUser?: (user: User) => void
+  onDeleteUser?: (user: User) => void
 }
 
 export function UserTable({
@@ -44,7 +47,10 @@ export function UserTable({
   error,
   selectedUsers,
   onUserSelect,
-  onSelectAll
+  onSelectAll,
+  onViewUser,
+  onEditUser,
+  onDeleteUser
 }: UserTableProps) {
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -202,13 +208,29 @@ export function UserTable({
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => onViewUser?.(user)}
+                      title="사용자 상세보기"
+                    >
                       <Eye className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => onEditUser?.(user)}
+                      title="사용자 정보 수정"
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="text-red-600 hover:text-red-700 hover:border-red-300"
+                      onClick={() => onDeleteUser?.(user)}
+                      title="사용자 삭제"
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>

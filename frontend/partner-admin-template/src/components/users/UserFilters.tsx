@@ -3,7 +3,8 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Search, RefreshCw } from 'lucide-react'
 import { BulkActions } from './BulkActions'
 import { UserTable } from './UserTable'
 import { Pagination } from './Pagination'
@@ -53,6 +54,14 @@ interface UserManagementSectionProps {
   totalItems: number
   itemsPerPage: number
   onPageChange: (page: number) => void
+  
+  // 새로고침
+  onRefresh?: () => void
+  
+  // 사용자 액션
+  onViewUser?: (user: User) => void
+  onEditUser?: (user: User) => void
+  onDeleteUser?: (user: User) => void
 }
 
 export function UserManagementSection({
@@ -74,13 +83,32 @@ export function UserManagementSection({
   currentPage,
   totalItems,
   itemsPerPage,
-  onPageChange
+  onPageChange,
+  onRefresh,
+  onViewUser,
+  onEditUser,
+  onDeleteUser
 }: UserManagementSectionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>사용자 목록</CardTitle>
-        <CardDescription>사용자 검색 및 필터링</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>사용자 목록</CardTitle>
+            <CardDescription>사용자 검색 및 필터링</CardDescription>
+          </div>
+          {onRefresh && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              새로고침
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {/* 필터 및 검색 */}
@@ -134,6 +162,9 @@ export function UserManagementSection({
           selectedUsers={selectedUsers}
           onUserSelect={onUserSelect}
           onSelectAll={onSelectAll}
+          onViewUser={onViewUser}
+          onEditUser={onEditUser}
+          onDeleteUser={onDeleteUser}
         />
 
         {/* 페이지네이션 */}

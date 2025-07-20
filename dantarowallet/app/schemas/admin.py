@@ -60,6 +60,11 @@ class UserDetailResponse(BaseModel):
     wallet_count: int = 0
     transaction_count: int = 0
     last_transaction_date: Optional[datetime] = None
+    last_login: Optional[datetime] = None
+    total_transactions: int = 0
+    total_volume: Decimal = Decimal("0")
+    risk_score: int = 0
+    risk_level: str = "LOW"
 
 
 class UserUpdateRequest(BaseModel):

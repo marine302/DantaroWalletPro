@@ -84,22 +84,14 @@ class UserManagementService:
             )
             wallet_count = wallet_count_result.scalar() or 0
 
-            # 사용자 정보 안전하게 추출
-            user_id = getattr(user, 'id', 0)
-            user_email = getattr(user, 'email', '')
-            user_is_active = getattr(user, 'is_active', False)
-            user_is_verified = getattr(user, 'is_verified', False)
-            user_is_admin = getattr(user, 'is_admin', False)
-            user_created_at = getattr(user, 'created_at', datetime.now())
-
             user_list.append(
                 UserListResponse(
-                    id=user_id,
-                    email=str(user_email),
-                    is_active=bool(user_is_active),
-                    is_verified=bool(user_is_verified),
-                    is_admin=bool(user_is_admin),
-                    created_at=user_created_at,
+                    id=int(user.id),  # type: ignore
+                    email=str(user.email),  # type: ignore
+                    is_active=bool(user.is_active),
+                    is_verified=bool(user.is_verified),
+                    is_admin=bool(user.is_admin),
+                    created_at=user.created_at,  # type: ignore
                     total_balance=total_balance,
                     wallet_count=wallet_count,
                 )
@@ -125,29 +117,19 @@ class UserManagementService:
             return None
             
         # 간단한 응답 반환 (실제 구현에서는 더 많은 정보 포함)
-        # 사용자 기본 정보 안전하게 추출
-        user_id = getattr(user, 'id', 0)
-        user_email = getattr(user, 'email', '')
-        user_is_active = getattr(user, 'is_active', False)
-        user_is_verified = getattr(user, 'is_verified', False)
-        user_is_admin = getattr(user, 'is_admin', False)
-        user_tron_address = getattr(user, 'tron_address', None)
-        user_created_at = getattr(user, 'created_at', datetime.now())
-        user_updated_at = getattr(user, 'updated_at', datetime.now())
-        
         return UserDetailResponse(
-            id=user_id,
-            email=str(user_email),
-            is_active=user_is_active,
-            is_verified=user_is_verified,
-            is_admin=user_is_admin,
-            tron_address=str(user_tron_address) if user_tron_address else None,
-            created_at=user_created_at,
-            updated_at=user_updated_at,
-            total_balance=Decimal("0"),
-            wallet_count=0,
-            transaction_count=0,
-            last_transaction_date=None
+            id=int(user.id),  # type: ignore
+            email=str(user.email),  # type: ignore
+            is_active=bool(user.is_active),  # type: ignore
+            is_verified=bool(user.is_verified),  # type: ignore
+            is_admin=bool(user.is_admin),  # type: ignore
+            created_at=user.created_at,  # type: ignore
+            updated_at=user.updated_at,  # type: ignore
+            last_login=getattr(user, 'last_login', None),
+            total_transactions=0,
+            total_volume=Decimal("0"),
+            risk_score=0,
+            risk_level="LOW"
         )
 
     async def update_user(self, user_id: int, updates: Dict[str, Any]) -> bool:
@@ -170,14 +152,12 @@ class UserManagementService:
         """사용자 위험도 분석"""
         # 사용자 정보 조회
         user = await self.db.get(User, user_id)
-        # 사용자 이메일 안전하게 추출
-        email = getattr(user, 'email', f"user_{user_id}@example.com") if user else f"user_{user_id}@example.com"
-        email_str = str(email) if email else f"user_{user_id}@example.com"
+        email = str(user.email) if user else f"user_{user_id}@example.com"  # type: ignore
         
         # 간단한 구현 예시
         return UserRiskAnalysisResponse(
             user_id=user_id,
-            email=email_str,
+            email=email,
             risk_score=0,
             risk_level="LOW",
             main_reason="No suspicious activity detected",

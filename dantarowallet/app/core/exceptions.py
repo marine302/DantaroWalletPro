@@ -130,6 +130,17 @@ class DatabaseError(DantaroException):
         )
 
 
+class BusinessLogicError(DantaroException):
+    """비즈니스 로직 관련 예외"""
+
+    def __init__(self, message: str):
+        super().__init__(
+            message=message,
+            error_code="BUSINESS_LOGIC_ERROR",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 class EnergyInsufficientError(DantaroException):
     """에너지 부족 예외"""
 

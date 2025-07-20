@@ -55,13 +55,21 @@ export interface User {
   email: string
   username: string
   walletAddress: string
+  wallet_address?: string // alias for walletAddress
   balance: number
-  status: 'active' | 'inactive' | 'suspended'
-  kycStatus: 'pending' | 'approved' | 'rejected' | 'not_started'
+  status: 'active' | 'inactive' | 'suspended' | 'pending'
+  kycStatus: 'pending' | 'approved' | 'rejected' | 'not_started' | 'none'
+  kyc_status?: 'pending' | 'approved' | 'rejected' | 'none' // alias for kycStatus
   createdAt: string
+  created_at?: string // alias for createdAt
   lastLogin: string
+  last_login?: string // alias for lastLogin
   totalTransactions: number
   totalVolume: number
+  phone?: string
+  tier?: 'basic' | 'premium' | 'vip'
+  referral_code?: string
+  referred_by?: string
 }
 
 export interface KYCDocument {

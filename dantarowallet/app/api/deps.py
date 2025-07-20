@@ -41,6 +41,8 @@ async def get_current_user(
     token = credentials.credentials
 
     # 토큰 검증
+    # Import here to avoid circular import  
+    import app.core.security as security_module
     payload = verify_token(token, token_type="access")
     if not payload:
         raise AuthenticationError("유효하지 않은 인증 정보입니다")

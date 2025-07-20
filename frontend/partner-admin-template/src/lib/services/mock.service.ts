@@ -1,6 +1,6 @@
 // Mock 서비스 - 빌드용 스텁
 export const MockService = {
-  login: async (email: string, password: string) => ({ 
+  login: async (email: string, _password: string) => ({ 
     success: true,
     message: 'Login successful',
     data: { 
@@ -22,7 +22,7 @@ export const MockService = {
       expires_in: 3600
     } 
   }),
-  register: async (email: string, username: string, password: string) => ({ 
+  register: async (email: string, username: string, _password: string) => ({ 
     success: true,
     message: 'Registration successful', 
     data: { 
