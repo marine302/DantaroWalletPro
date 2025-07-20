@@ -103,8 +103,13 @@ function PartnerOnboardingPage() {
     }
   };
 
+  const handleNewPartnerRegistration = () => {
+    // 실제로는 모달을 열거나 새 페이지로 이동
+    alert('신규 파트너 등록 양식을 여기에 구현할 예정입니다.\n\n포함 사항:\n- 회사 정보\n- 사업자 등록증\n- 담당자 연락처\n- 사업 유형\n- KYC 문서');
+  };
+
   const headerActions = (
-    <Button variant="primary">
+    <Button variant="primary" onClick={handleNewPartnerRegistration}>
       새 파트너 등록
     </Button>
   );

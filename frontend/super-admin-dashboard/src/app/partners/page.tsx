@@ -78,14 +78,19 @@ function PartnersPage() {
     }
   };
 
-  const handleAddPartner = () => {
-    alert('파트너 추가 모달을 여기에 구현할 예정입니다.');
+  const handleViewOnboarding = () => {
+    window.location.href = '/partner-onboarding';
   };
 
   const headerActions = (
-    <Button variant="primary" onClick={handleAddPartner}>
-      {t.partners.addPartner}
-    </Button>
+    <div className="flex gap-2">
+      <Button variant="secondary" onClick={handleViewOnboarding}>
+        신규 파트너 온보딩
+      </Button>
+      <Button variant="primary" onClick={() => fetchPartners()}>
+        새로고침
+      </Button>
+    </div>
   );
 
   return (

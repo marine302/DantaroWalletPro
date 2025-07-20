@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/DarkThemeComponents'
 import { gridLayouts } from '@/styles/dark-theme'
 import { useI18n } from '@/contexts/I18nContext'
+import { withRBAC } from '@/components/auth/withRBAC'
 import {
   TransactionTrendChart,
   VolumeAreaChart,
@@ -57,12 +58,39 @@ interface DashboardData {
   }
 }
 
-export default function IntegratedDashboard() {
+function IntegratedDashboard() {
   const { t } = useI18n()
   const [partnerId, setPartnerId] = useState<number>(1)
+  const [partners, setPartners] = useState<{id: number, name: string}[]>([])
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+
+  // 파트너 목록 가져오기 (슈퍼 어드민용)
+  const fetchPartners = useCallback(async () => {
+    try {
+      // TODO: 실제 API 연동
+      // const response = await fetch('/api/partners/list', {
+      //   headers: { 'Authorization': `Bearer ${token}` }
+      // })
+      // const partners = await response.json()
+      
+      // 임시 목 데이터 (파트너 어드민 시스템과 연동 예정)
+      const mockPartners = [
+        { id: 1, name: "DantaroExchange" },
+        { id: 2, name: "CryptoLink Korea" },
+        { id: 3, name: "BlockChain Ventures" },
+        { id: 4, name: "FinTech Solutions" }
+      ]
+      setPartners(mockPartners)
+    } catch (error) {
+      console.error('파트너 목록 가져오기 실패:', error)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPartners()
+  }, [fetchPartners])
 
   // 안전한 숫자 처리 유틸리티
   const safeNumber = (value: number | undefined | null): number => {
@@ -192,24 +220,42 @@ export default function IntegratedDashboard() {
     )
   }
 
+  const handlePartnerChange = (newPartnerId: number) => {
+    setPartnerId(newPartnerId)
+    // 파트너 변경 시 자동으로 데이터 새로고침
+    fetchDashboardData()
+  }
+
+  const headerActions = (
+    <div className="flex items-center gap-4">
+      {/* 파트너 선택 드롭다운 */}
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-300">파트너 선택:</label>
+        <select 
+          value={partnerId}
+          onChange={(e) => handlePartnerChange(Number(e.target.value))}
+          className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          {partners.map(partner => (
+            <option key={partner.id} value={partner.id}>
+              {partner.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <Button onClick={fetchDashboardData}>
+        새로고침
+      </Button>
+    </div>
+  )
+
   return (
     <BasePage 
       title={t.integratedDashboard.title}
-      description={`${t.integratedDashboard.description} (${t.integratedDashboard.partnerId} ${partnerId})`}
+      description={`${partners.find(p => p.id === partnerId)?.name || `파트너 ${partnerId}`}의 상세 분석 대시보드`}
+      headerActions={headerActions}
     >
       <div className="space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <FormField
-            label={t.integratedDashboard.partnerId}
-            type="number"
-            value={partnerId}
-            onChange={(value) => setPartnerId(typeof value === 'number' ? value : parseInt(value.toString()) || 1)}
-            min={1}
-          />
-          <Button onClick={fetchDashboardData}>
-            {t.common.refresh}
-          </Button>
-        </div>
 
         {/* 지갑 현황 */}
         <Section title={t.integratedDashboard.sections.walletOverview}>
@@ -430,3 +476,8 @@ export default function IntegratedDashboard() {
     </BasePage>
   )
 }
+
+// Export protected component with RBAC
+export default withRBAC(IntegratedDashboard, { 
+  requiredPermissions: ['partners.view', 'analytics.view']
+})

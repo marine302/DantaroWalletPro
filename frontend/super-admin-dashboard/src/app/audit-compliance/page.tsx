@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-import { Badge } from '@/components/ui/Badge';
-import { useI18n } from '@/contexts/I18nContext';
 import { withRBAC } from '@/components/auth/withRBAC';
+import { useI18n } from '@/contexts/I18nContext';
 
 // 타입 정의
 interface AuditLog {
@@ -128,8 +127,8 @@ function AuditCompliancePage() {
 
   return (
     <BasePage 
-      title={t.auditCompliance?.title || "감사 및 컴플라이언스"}
-      description={t.auditCompliance?.description || "시스템 감사, 컴플라이언스 모니터링 및 규정 준수를 관리합니다"}
+      title="감사 및 컴플라이언스"
+      description="시스템 감사, 컴플라이언스 모니터링 및 규정 준수를 관리합니다"
       headerActions={headerActions}
     >
       {/* 컴플라이언스 통계 */}

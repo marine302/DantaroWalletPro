@@ -89,10 +89,6 @@ export interface TranslationMessages {
     debugDesc: string;
     logout: string;
   };
-    partnerOnboarding: string;
-    integratedDashboard: string;
-    logout: string;
-  };
   
   // 파트너 관리
   partners: {

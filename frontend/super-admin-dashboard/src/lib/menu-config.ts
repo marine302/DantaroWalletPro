@@ -31,14 +31,7 @@ export const getMenuConfig = (t: any): MenuItem[] => [
     labelKey: 'nav.dashboard',
     icon: BarChart3,
     href: '/',
-    description: t.nav.dashboardDesc || '통합 대시보드 및 실시간 현황'
-  },
-  {
-    id: 'integrated-dashboard',
-    labelKey: 'nav.integratedDashboard',
-    icon: Target,
-    href: '/integrated-dashboard',
-    description: t.nav.integratedDashboardDesc || '통합 운영 대시보드'
+    description: t.nav.dashboardDesc || '전체 시스템 현황 및 실시간 모니터링'
   },
   {
     id: 'analytics',
@@ -46,6 +39,13 @@ export const getMenuConfig = (t: any): MenuItem[] => [
     icon: TrendingUp,
     href: '/analytics',
     description: t.nav.analyticsDesc || '데이터 분석 및 리포트'
+  },
+  {
+    id: 'integrated-dashboard',
+    labelKey: 'nav.integratedDashboard',
+    icon: Target,
+    href: '/integrated-dashboard',
+    description: t.nav.integratedDashboardDesc || '파트너별 상세 데이터 분석 및 차트'
   },
   {
     id: 'energy',

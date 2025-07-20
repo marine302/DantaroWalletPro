@@ -17,25 +17,25 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
   useEffect(() => {
     // Subscribe to all realtime data types
     const unsubscribers = [
-      realtimeManager.subscribe('systemStats', (data) => {
+      realtimeManager.subscribe('systemStats', () => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
         setIsConnected(true);
         setError(null);
       }),
-      realtimeManager.subscribe('dashboardStats', (data) => {
+      realtimeManager.subscribe('dashboardStats', () => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
         setIsConnected(true);
         setError(null);
       }),
-      realtimeManager.subscribe('alerts', (data) => {
+      realtimeManager.subscribe('alerts', () => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
         setIsConnected(true);
         setError(null);
       }),
-      realtimeManager.subscribe('energyMarket', (data) => {
+      realtimeManager.subscribe('energyMarket', () => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
         setIsConnected(true);
