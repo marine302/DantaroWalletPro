@@ -11,11 +11,10 @@
     "logs": "./manage-services.sh logs",
     "build": "next build",
     "lint": "next lint",
-    "mock-only": "node unified-service-manager.js start",
-    "frontend-only": "node port-manager.js dev",
-    "dev:frontend-only": "node port-manager.js dev",
-    "dev:mock-only": "node unified-service-manager.js start",
-    "check-ports": "node port-manager.js check"
+    "type-check": "tsc --noEmit",
+    "frontend-only": "next dev -p ${NEXT_PUBLIC_FRONTEND_PORT:-3020}",
+    "mock-server": "node mock-server.js",
+    "mock-realtime": "node mock-realtime-server.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",

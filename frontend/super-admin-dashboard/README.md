@@ -99,18 +99,24 @@ npm install
 ### 개발 환경 실행
 ```bash
 npm install
-npm run dev                 # 프론트엔드만 실행
+npm run dev                 # 통합 서비스 실행 (프론트엔드 + Mock 서버)
 ```
 
-### Mock 서버와 함께 개발
+### 개별 서비스 실행
 ```bash
-# 실시간 모니터링 Mock 서버와 함께 실행
-npm run dev:with-mock
+# 프론트엔드만 실행
+npm run frontend-only       # 포트 3020
 
-# 또는 개별 실행
-npm run mock-server         # 터미널 1: Mock HTTP Server (포트 3001)
-npm run mock-realtime       # 터미널 2: Mock WebSocket Server (포트 3002)
-npm run dev                 # 터미널 3: Frontend (포트 3020)
+# Mock 서버들만 실행
+npm run mock-server         # HTTP Mock Server (포트 3001)
+npm run mock-realtime       # WebSocket Mock Server (포트 3002)
+```
+
+### 서비스 관리
+```bash
+./manage-services.sh status # 서비스 상태 확인
+./manage-services.sh stop   # 모든 서비스 중지
+./manage-services.sh logs   # 서비스 로그 확인
 ```
 
 ### 빌드 및 배포

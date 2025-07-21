@@ -58,3 +58,27 @@ next-env.d.ts
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Project specific cleanup
+*.backup
+*.old
+*-old.*
+*-backup.*
+port-manager-old.js
+test-server.js
+smart-port-manager.js
+unified-service-manager.js
+
+# Analysis and report files
+api-structure-analysis.md
+backend-frontend-sync-report.md
+complete-api-sync-report.md
+mock-data-enhancement-plan.md
+websocket-sync-report.md
+
+# Service management logs
+services.log
+ws-server.log
+ws-server-new.log
+ws.log
+http.log
