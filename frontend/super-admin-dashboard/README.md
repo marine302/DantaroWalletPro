@@ -419,3 +419,48 @@ src/
 ## 📚 문서
 
 상세한 개발 문서는 `docs/` 폴더를 참조하세요.
+
+## 🔄 백엔드 API 마이그레이션 준비
+
+### 현재 상태 (Phase 2 완료)
+- ✅ TronNRG API 직접 연동 구현 완료 
+- ✅ 실시간 에너지 거래 시스템 구현
+- ✅ Mock/Real API 전환 가능한 서비스 구조
+- ✅ 백엔드 API 요구사항 문서 작성 완료
+
+### 백엔드 API 완성 시 즉시 적용할 준비 완료
+- 📋 **백엔드 연동 체크리스트**: `docs/backend-ready-checklist.md`
+- 🔧 **자동 마이그레이션 스크립트**: `scripts/migrate-to-backend.sh`
+- 📖 **상세 마이그레이션 가이드**: `docs/frontend-migration-plan.md`
+- 🎯 **백엔드 API 스펙 문서**: `docs/backend-energy-api-requirements.md`
+
+### 백엔드 팀을 위한 API 요구사항
+1. **에너지 공급자 API 엔드포인트** (`/api/v1/energy/external`)
+   - TronNRG 시장 데이터 중계 (`/tronnrg/market/*`)
+   - 주문 생성 및 관리 (`/tronnrg/order`)
+   - WebSocket 실시간 스트리밍 (`/ws/energy/tronnrg`)
+
+2. **인증 및 권한**
+   - JWT 토큰 기반 인증
+   - RBAC 권한 시스템 연동
+
+3. **실시간 통신**
+   - WebSocket을 통한 실시간 가격 스트리밍
+   - 주문 상태 실시간 업데이트
+
+### 마이그레이션 실행 방법
+```bash
+# 백엔드 API 준비 완료 시
+./scripts/migrate-to-backend.sh http://your-backend-url:8000
+
+# 수동 설정 확인이 필요한 경우
+./scripts/prepare-backend-migration.sh
+```
+
+## 🔧 개발 환경 설정
+
+### 통합 서비스 실행 (권장)
+```bash
+npm install
+./manage-services.sh start  # 모든 서비스 자동 시작
+```
