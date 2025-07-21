@@ -133,6 +133,126 @@
 
 ---
 
+## 🔄 **Phase 2.5: 백엔드 API 마이그레이션 (Pending Backend)**
+
+### **백엔드 API 준비 대기 중**
+- [ ] 백엔드 팀의 에너지 공급자 API 엔드포인트 개발 완료 대기
+- [ ] 백엔드 API 스펙 문서 리뷰 및 확인
+- [ ] 프론트엔드 코드 백엔드 연동 준비 완료 ✅
+
+### **백엔드 API 완성 후 즉시 실행할 마이그레이션 단계**
+- [ ] 환경변수 설정 변경 (.env.local)
+  - [ ] TronNRG 직접 API 설정 제거
+  - [ ] 백엔드 API URL 설정 추가
+  - [ ] WebSocket URL 백엔드로 변경
+- [ ] TronNRG 서비스 파일 수정 (src/services/tron-nrg-service.ts)
+  - [ ] baseURL을 백엔드 API 엔드포인트로 변경
+  - [ ] API Key 인증을 JWT 토큰 인증으로 변경
+  - [ ] WebSocket 연결을 백엔드 서버로 변경
+  - [ ] 에러 핸들링을 백엔드 API 형식에 맞게 수정
+- [ ] API 클라이언트 설정 확인 (src/lib/api.ts)
+- [ ] 백엔드 연동 테스트 및 검증
+  - [ ] 에너지 시장 데이터 정상 로드 확인
+  - [ ] 실시간 가격 업데이트 확인
+  - [ ] 주문 기능 정상 동작 확인
+  - [ ] WebSocket 실시간 연결 확인
+
+### **마이그레이션 자동화 도구**
+- [x] 백엔드 준비 체크리스트 생성 (`docs/backend-ready-checklist.md`)
+- [x] 수동 마이그레이션 가이드 생성 (`scripts/prepare-backend-migration.sh`)
+- [x] 자동 마이그레이션 스크립트 생성 (`scripts/migrate-to-backend.sh`)
+- [x] 마이그레이션 템플릿 생성 (`docs/tron-nrg-service-migration-template.md`)
+
+### **관련 문서**
+- [x] 백엔드 API 요구사항 문서 (`docs/backend-energy-api-requirements.md`)
+- [x] 프론트엔드 마이그레이션 계획서 (`docs/frontend-migration-plan.md`)
+
+---
+
+## 📊 **백엔드 API 개발 우선순위 및 현황**
+
+### **🔴 최긴급 - 현재 에러 발생 중 (즉시 개발 필요)**
+- [ ] **메인 대시보드 API** - 실시간 호출 중 (10-60초 간격)
+  - [ ] `GET /api/v1/admin/dashboard/stats` (getDashboardStats)
+  - [ ] `GET /api/v1/admin/system/health` (getSystemHealth)  
+  - [ ] `GET /api/v1/partners/?page=1&size=5` (getPartners)
+- [ ] **파트너 관리 API**
+  - [ ] `GET /api/v1/partners/` (getPartners)
+- [ ] **기본 인증 API**
+  - [ ] `POST /api/v1/auth/login` (superAdminLogin)
+
+### **🟡 2순위 - Fallback 있지만 완전한 기능 필요**
+- [ ] **통합 대시보드 API**
+  - [ ] `GET /api/v1/integrated-dashboard/dashboard/{partnerId}`
+  - [ ] `GET /api/v1/integrated-dashboard/summary`
+
+### **🟢 3순위 - API 클라이언트 정의 완료 (페이지에서 사용 대기)**
+- [ ] **파트너 관리 전체 CRUD**
+  - [ ] `POST /api/v1/admin/partners` (createPartner)
+  - [ ] `PUT /api/v1/admin/partners/{id}` (updatePartner)
+  - [ ] `DELETE /api/v1/admin/partners/{id}` (deletePartner)
+  - [ ] `GET /api/v1/admin/partners/{id}/config` (getPartnerConfig)
+  - [ ] `GET /api/v1/admin/partners/{id}/statistics` (getPartnerStatistics)
+- [ ] **에너지 관리 API**
+  - [ ] `GET /api/v1/admin/energy/pool` (getEnergyPool)
+  - [ ] `POST /api/v1/admin/energy/recharge` (rechargeEnergy)
+  - [ ] `POST /api/v1/admin/energy/allocate` (allocateEnergy)
+  - [ ] `GET /api/v1/admin/energy/transactions` (getEnergyTransactions)
+- [ ] **수수료 관리 API**
+  - [ ] `GET /api/v1/admin/fees/configs` (getFeeConfigs)
+  - [ ] `POST /api/v1/admin/fees/configs` (createFeeConfig)
+  - [ ] `PUT /api/v1/admin/fees/configs/{id}` (updateFeeConfig)
+  - [ ] `DELETE /api/v1/admin/fees/configs/{id}` (deleteFeeConfig)
+  - [ ] `GET /api/v1/admin/fees/revenue` (getFeeRevenue)
+- [ ] **시스템 관리자 API**
+  - [ ] `GET /api/v1/admin/system/admins` (getSystemAdmins)
+  - [ ] `POST /api/v1/admin/system/admins` (createSystemAdmin)
+  - [ ] `PUT /api/v1/admin/system/admins/{id}` (updateSystemAdmin)
+  - [ ] `DELETE /api/v1/admin/system/admins/{id}` (deleteSystemAdmin)
+
+### **🔵 4순위 - SuperAdminService 정의 완료 (고급 기능)**
+- [ ] **감사 및 컴플라이언스 API**
+  - [ ] `GET /api/v1/audit/logs` (getAuditLogs)
+  - [ ] `GET /api/v1/audit/compliance-stats` (getComplianceStats)
+  - [ ] `GET /api/v1/audit/suspicious-activities` (getSuspiciousActivities)
+  - [ ] `PUT /api/v1/audit/suspicious-activities/{id}` (updateSuspiciousActivityStatus)
+- [ ] **외부 에너지 시장 API**
+  - [ ] `GET /api/v1/external-energy/providers` (getEnergyProviders)
+  - [ ] `GET /api/v1/external-energy/market-stats` (getMarketStats)
+  - [ ] `POST /api/v1/external-energy/purchase` (createEnergyPurchase)
+  - [ ] `GET /api/v1/external-energy/purchase` (getEnergyPurchases)
+  - [ ] `PUT /api/v1/external-energy/providers/{id}` (updateProviderStatus)
+- [ ] **파트너 온보딩 API**
+  - [ ] `GET /api/v1/partner-onboarding/partners` (getPartners)
+  - [ ] `GET /api/v1/partner-onboarding/stats` (getOnboardingStats)
+  - [ ] `POST /api/v1/partner-onboarding/partners/{id}/approve` (approvePartner)
+  - [ ] `POST /api/v1/partner-onboarding/partners/{id}/reject` (rejectPartner)
+  - [ ] `POST /api/v1/partner-onboarding/partners/{id}/advance-stage` (advancePartnerStage)
+  - [ ] `PUT /api/v1/partner-onboarding/partners/{id}/risk-score` (updatePartnerRiskScore)
+
+### **🔄 5순위 - 외부 API 중계 (현재 프론트엔드에서 직접 호출 중)**
+- [ ] **TronNRG API 중계 시스템**
+  - [ ] `GET /api/v1/energy/external/tronnrg/market/price` (getCurrentPrice)
+  - [ ] `GET /api/v1/energy/external/tronnrg/market/data` (getMarketData)
+  - [ ] `GET /api/v1/energy/external/tronnrg/providers` (getProviders)
+  - [ ] `POST /api/v1/energy/external/tronnrg/order` (createOrder)
+  - [ ] `GET /api/v1/energy/external/tronnrg/orders` (getOrderHistory)
+  - [ ] `WebSocket /ws/energy/tronnrg` (실시간 가격 스트리밍)
+
+### **📊 백엔드 API 개발 현황 요약**
+- **총 API 엔드포인트**: 48개
+- **최긴급 (빨간색)**: 4개 - 현재 에러 발생 중
+- **2순위 (노란색)**: 2개 - Fallback 사용 중
+- **3순위 (초록색)**: 20개 - 정의 완료, 페이지 대기 중
+- **4순위 (파란색)**: 15개 - 고급 기능
+- **5순위 (회색)**: 7개 - 외부 API 중계
+
+### **🎯 1주차 목표**: 최긴급 4개 API 완성으로 메인 대시보드 정상 동작
+### **🎯 2주차 목표**: 2순위 2개 API 완성으로 통합 대시보드 완전 동작  
+### **🎯 3-4주차**: 3순위 20개 API로 모든 관리 기능 완성
+
+---
+
 ## 🛠️ **기술 구현 체크리스트**
 
 ### **컴포넌트 개발**
