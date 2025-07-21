@@ -113,7 +113,7 @@ async def check_database_health(db: Session) -> Dict[str, Any]:
     try:
         # 간단한 DB 쿼리로 연결 상태 확인
         result = db.execute(text("SELECT 1"))
-        result.fetchone()
+        result.scalar()  # 동기 방식으로 수정
         
         return {
             "status": "healthy",
@@ -135,16 +135,28 @@ async def websocket_energy_prices(websocket: WebSocket, db: Session = Depends(ge
     try:
         while True:
             try:
-                # 실제 DB에서 최신 에너지 가격 조회
-                energy_prices = db.query(EnergyPrice).filter(
-                    EnergyPrice.is_active == True
-                ).order_by(desc(EnergyPrice.updated_at)).all()
+                # 실제 DB에서 최신 에너지 가격 조회 (안전한 방식)
+                try:
+                    energy_prices = db.execute(
+                        select(EnergyPrice).where(
+                            EnergyPrice.is_active == True
+                        ).order_by(desc(EnergyPrice.updated_at))
+                    ).scalars().all()
+                except Exception as e:
+                    logger.error(f"Error querying energy prices: {e}")
+                    energy_prices = []
                 
                 prices = []
                 for price in energy_prices:
-                    provider = db.query(EnergyProvider).filter(
-                        EnergyProvider.id == price.provider_id
-                    ).first()
+                    try:
+                        provider = db.execute(
+                            select(EnergyProvider).where(
+                                EnergyProvider.id == price.provider_id
+                            )
+                        ).scalars().first()
+                    except Exception as e:
+                        logger.error(f"Error querying provider: {e}")
+                        provider = None
                     
                     if provider:
                         # 안전한 속성 접근
@@ -202,23 +214,40 @@ async def websocket_system_health(websocket: WebSocket, db: Session = Depends(ge
                 # 실제 DB에서 시스템 상태 수집
                 database_health = await check_database_health(db)
                 
-                # 파트너 수 조회
-                total_partners = db.query(Partner).filter(Partner.is_active == True).count()
-                
-                # 대기 중인 출금 수 조회  
-                pending_withdrawals = db.query(Withdrawal).filter(
-                    Withdrawal.status.in_(["pending", "processing"])
-                ).count()
-                
-                # 활성 에너지 공급자 수 조회
-                active_providers = db.query(EnergyProvider).filter(
-                    EnergyProvider.is_active == True
-                ).count()
-                
-                # 최근 온보딩 현황 조회
-                recent_onboarding = db.query(PartnerOnboarding).filter(
-                    PartnerOnboarding.status.in_(["pending", "in_progress"])
-                ).count()
+                # 안전한 DB 쿼리들
+                try:
+                    # 파트너 수 조회
+                    total_partners = db.execute(
+                        select(func.count(Partner.id)).where(Partner.is_active == True)
+                    ).scalar() or 0
+                    
+                    # 대기 중인 출금 수 조회  
+                    pending_withdrawals = db.execute(
+                        select(func.count(Withdrawal.id)).where(
+                            Withdrawal.status.in_(["pending", "processing"])
+                        )
+                    ).scalar() or 0
+                    
+                    # 활성 에너지 공급자 수 조회
+                    active_providers = db.execute(
+                        select(func.count(EnergyProvider.id)).where(
+                            EnergyProvider.is_active == True
+                        )
+                    ).scalar() or 0
+                    
+                    # 최근 온보딩 현황 조회
+                    recent_onboarding = db.execute(
+                        select(func.count(PartnerOnboarding.id)).where(
+                            PartnerOnboarding.status.in_(["pending", "in_progress"])
+                        )
+                    ).scalar() or 0
+                    
+                except Exception as e:
+                    logger.error(f"Error querying system stats: {e}")
+                    total_partners = 0
+                    pending_withdrawals = 0
+                    active_providers = 0
+                    recent_onboarding = 0
                 
                 health_data = {
                     "database": database_health,
@@ -260,7 +289,10 @@ async def websocket_order_status(websocket: WebSocket, order_id: int, db: Sessio
         while True:
             try:
                 # 실제 DB에서 출금 주문 조회
-                withdrawal = db.query(Withdrawal).filter(Withdrawal.id == order_id).first()
+                from sqlalchemy import select
+                stmt = select(Withdrawal).where(Withdrawal.id == order_id)
+                result = db.execute(stmt)
+                withdrawal = result.scalar_one_or_none()
                 
                 if not withdrawal:
                     # 주문이 없으면 연결 종료
@@ -680,7 +712,10 @@ async def get_partner_onboarding_data(db: Session, partner_id: int) -> Dict[str,
     """실제 파트너 온보딩 데이터 조회"""
     try:
         # 파트너 조회
-        partner = db.query(Partner).filter(Partner.id == str(partner_id)).first()
+        from sqlalchemy import select
+        stmt = select(Partner).where(Partner.id == str(partner_id))
+        result = db.execute(stmt)
+        partner = result.scalar_one_or_none()
         if not partner:
             return {"error": "Partner not found"}
         
@@ -726,7 +761,10 @@ async def get_partner_onboarding_data(db: Session, partner_id: int) -> Dict[str,
 async def get_partner_energy_usage(db: Session, partner_id: int) -> Dict[str, Any]:
     """실제 파트너 에너지 사용량 데이터 조회"""
     try:
-        partner = db.query(Partner).filter(Partner.id == str(partner_id)).first()
+        from sqlalchemy import select
+        stmt = select(Partner).where(Partner.id == str(partner_id))
+        result = db.execute(stmt)
+        partner = result.scalar_one_or_none()
         if not partner:
             return {"error": "Partner not found"}
         
@@ -776,10 +814,13 @@ async def get_withdrawal_batch_status(db: Session, partner_id: int) -> Dict[str,
     """실제 출금 배치 상태 조회"""
     try:
         # 파트너의 활성 출금 배치 조회
-        active_withdrawals = db.query(Withdrawal).filter(
+        from sqlalchemy import select
+        stmt = select(Withdrawal).where(
             Withdrawal.partner_id == str(partner_id),
             Withdrawal.status.in_(["pending", "processing", "signing"])
-        ).all()
+        )
+        result = db.execute(stmt)
+        active_withdrawals = result.scalars().all()
         
         batches = []
         for withdrawal in active_withdrawals:

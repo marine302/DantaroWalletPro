@@ -35,27 +35,38 @@ class IntegratedOptimizationManager:
         try:
             logger.info("통합 최적화 시스템 초기화 시작")
             
-            # Redis 초기화
-            await self.db_optimizer.initialize_redis()
+            # Redis 초기화 (타임아웃 추가)
+            try:
+                await asyncio.wait_for(self.db_optimizer.initialize_redis(), timeout=5.0)
+                logger.info("Redis 초기화 완료")
+            except asyncio.TimeoutError:
+                logger.warning("Redis 초기화 타임아웃, 스킵")
+            except Exception as e:
+                logger.warning(f"Redis 초기화 실패, 스킵: {e}")
             
-            # 성능 모니터링 시작
-            asyncio.create_task(self._performance_monitoring_loop())
-            
-            # 자동 스케일링 시작
-            if self.auto_scaling_enabled:
-                asyncio.create_task(self._auto_scaling_loop())
-            
-            # 백그라운드 작업 스케줄러 시작
-            asyncio.create_task(self._background_scheduler_loop())
-            
-            # 기본 최적화 작업 등록
-            await self._register_default_optimization_tasks()
+            # 백그라운드 작업들을 비동기로 시작 (blocking 방지)
+            if hasattr(asyncio, 'create_task'):
+                # 성능 모니터링 시작
+                asyncio.create_task(self._performance_monitoring_loop())
+                
+                # 자동 스케일링 시작
+                if self.auto_scaling_enabled:
+                    asyncio.create_task(self._auto_scaling_loop())
+                
+                # 백그라운드 작업 스케줄러 시작
+                asyncio.create_task(self._background_scheduler_loop())
+                
+                # 기본 최적화 작업 등록 (비동기로 처리)
+                asyncio.create_task(self._register_default_optimization_tasks())
+                
+                logger.info("통합 최적화 시스템 백그라운드 작업 시작")
             
             logger.info("통합 최적화 시스템 초기화 완료")
             
         except Exception as e:
             logger.error(f"최적화 시스템 초기화 실패: {e}")
-            raise
+            # 에러 발생 시에도 서버 시작은 계속 진행
+            logger.warning("최적화 시스템 없이 서버 계속 진행")
 
     async def _performance_monitoring_loop(self):
         """성능 모니터링 루프"""
