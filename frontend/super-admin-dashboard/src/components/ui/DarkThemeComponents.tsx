@@ -89,7 +89,10 @@ interface FormFieldProps {
   value: string | number
   onChange: (value: string | number) => void
   placeholder?: string
-  min?: number
+  min?: number | string
+  max?: number | string
+  step?: string
+  helpText?: string
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -98,19 +101,29 @@ export const FormField: React.FC<FormFieldProps> = ({
   value,
   onChange,
   placeholder,
-  min
+  min,
+  max,
+  step,
+  helpText
 }) => {
   return (
-    <div className="flex items-center gap-4">
-      <label className={createDarkClasses.label()}>{label}:</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(type === 'number' ? parseInt(e.target.value) : e.target.value)}
-        className={createDarkClasses.input()}
-        placeholder={placeholder}
-        min={min}
-      />
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-4">
+        <label className={createDarkClasses.label()}>{label}:</label>
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(type === 'number' ? parseInt(e.target.value) : e.target.value)}
+          className={createDarkClasses.input()}
+          placeholder={placeholder}
+          min={min}
+          max={max}
+          step={step}
+        />
+      </div>
+      {helpText && (
+        <p className="text-sm text-gray-400 ml-0">{helpText}</p>
+      )}
     </div>
   )
 }

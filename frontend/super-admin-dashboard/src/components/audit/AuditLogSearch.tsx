@@ -245,7 +245,7 @@ export function AuditLogSearch() {
   }, []);
 
   return (
-    <Section>
+    <Section title="감사 로그 검색">
       <div className="space-y-6">
         {/* 헤더 */}
         <div className="flex justify-between items-center">

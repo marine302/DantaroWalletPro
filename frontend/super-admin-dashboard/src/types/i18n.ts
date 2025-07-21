@@ -284,6 +284,81 @@ export interface TranslationMessages {
     complianceMetrics: string;
     auditTrail: string;
     securityIncidents: string;
+    realtimeTransactionMonitor: string;
+    emergencyBlockingPanel: string;
+    auditLogSearch: string;
+    // Metrics
+    totalAudits: string;
+    passedAudits: string;
+    failedAudits: string;
+    pendingReviews: string;
+    complianceScore: string;
+    criticalAlerts: string;
+    monthlyReports: string;
+    lastAuditTime: string;
+    // Buttons/Actions
+    generateReport: string;
+    runAudit: string;
+    executeAudit: string;
+    exportData: string;
+    viewDetails: string;
+    investigate: string;
+    resolve: string;
+    escalate: string;
+    monitorTab: string;
+    emergencyTab: string;
+    searchTab: string;
+    reportsTab: string;
+    // Status
+    statusActive: string;
+    statusInactive: string;
+    statusPending: string;
+    statusSuspicious: string;
+    statusCompliant: string;
+    statusViolation: string;
+    // Search & Filter
+    searchPlaceholder: string;
+    filterByDate: string;
+    filterBySeverity: string;
+    filterByType: string;
+    filterByUser: string;
+    filterByPartner: string;
+    // Table Headers
+    timestamp: string;
+    eventType: string;
+    severity: string;
+    entityType: string;
+    entityId: string;
+    userId: string;
+    partnerId: string;
+    ipAddress: string;
+    details: string;
+    // Severity Levels
+    severityInfo: string;
+    severityWarning: string;
+    severityCritical: string;
+    // Event Types
+    eventTransaction: string;
+    eventCompliance: string;
+    eventSecurity: string;
+    eventSystem: string;
+    // Risk & Status
+    riskLevel: string;
+    low: string;
+    medium: string;
+    high: string;
+    critical: string;
+    // Filters & Logs
+    allLogs: string;
+    successLogs: string;
+    failedLogs: string;
+    warningLogs: string;
+    // Compliance Tools
+    complianceTools: string;
+    amlReport: string;
+    transactionMonitoring: string;
+    complianceCheckTool: string;
+    suspiciousTransactionReport: string;
   };
   
   // 파트너 온보딩

@@ -141,7 +141,7 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
   }
 
   return (
-    <Section>
+    <Section title="긴급 차단 패널">
       <div className="space-y-6">
         {/* 헤더 */}
         <div className="flex justify-between items-center">

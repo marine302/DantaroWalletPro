@@ -20,48 +20,147 @@ import {
 
 class ApiClient {
   private client: AxiosInstance;
+  private mockClient: AxiosInstance;
+  private backendClient: AxiosInstance;
+  private useBackendAPI: boolean = false;
 
   constructor() {
-    // 개발 모드에서는 Mock 서버 사용
+    // Mock 서버 클라이언트 (항상 준비)
+    this.mockClient = axios.create({
+      baseURL: "http://localhost:3001",
+      timeout: 5000,
+    });
+
+    // 백엔드 API 클라이언트 (프로덕션 또는 백엔드 테스트용)
+    this.backendClient = axios.create({
+      baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000/api/v1",
+      timeout: 10000,
+    });
+
+    // 기본 클라이언트 설정 (환경에 따라 결정)
     const baseURL = process.env.NODE_ENV === 'development' 
       ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001")
       : (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1");
     
-    console.log('API Base URL:', baseURL);
-    console.log('Environment:', process.env.NODE_ENV);
+    // 백엔드 API 사용 여부 결정
+    this.useBackendAPI = process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true';
+    
+    console.log('🔧 API Client Configuration:', {
+      baseURL,
+      useBackendAPI: this.useBackendAPI,
+      environment: process.env.NODE_ENV,
+      mockURL: "http://localhost:3001",
+      backendURL: process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000/api/v1"
+    });
     
     this.client = axios.create({
       baseURL,
       timeout: 10000,
     });
 
-    // Request interceptor to add auth token
-    this.client.interceptors.request.use(
-      (config) => {
-        const token = this.getAuthToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor to handle errors
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        // 개발 환경에서는 401 에러 무시
-        if (error.response?.status === 401 && process.env.NODE_ENV !== 'development') {
-          this.removeAuthToken();
-          // Redirect to login page
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+    // Request interceptor to add auth token (모든 클라이언트에 적용)
+    [this.client, this.mockClient, this.backendClient].forEach(client => {
+      client.interceptors.request.use(
+        (config) => {
+          const token = this.getAuthToken();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
           }
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+
+      // Response interceptor to handle errors
+      client.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          // 개발 환경에서는 401 에러 무시
+          if (error.response?.status === 401 && process.env.NODE_ENV !== 'development') {
+            this.removeAuthToken();
+            // Redirect to login page
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+          }
+          return Promise.reject(error);
         }
-        return Promise.reject(error);
+      );
+    });
+  }
+
+  /**
+   * 백엔드 API 실패 시 자동으로 Mock API로 fallback하는 요청 메서드
+   */
+  private async makeResilientRequest<T>(
+    endpoint: string, 
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+    data?: any,
+    options?: any
+  ): Promise<T> {
+    const requestConfig = {
+      method: method.toLowerCase(),
+      ...options,
+      ...(data && ['post', 'put'].includes(method.toLowerCase()) && { data })
+    };
+
+    // 1. 백엔드 API 사용이 활성화된 경우 먼저 시도
+    if (this.useBackendAPI) {
+      try {
+        console.log(`🚀 Trying Backend API: ${method} ${endpoint}`);
+        const response: AxiosResponse<T> = await this.backendClient.request({
+          url: endpoint,
+          ...requestConfig
+        });
+        console.log(`✅ Backend API Success: ${method} ${endpoint}`);
+        return response.data;
+      } catch (error) {
+        console.warn(`❌ Backend API Failed: ${method} ${endpoint}`, error);
+        console.log(`🔄 Falling back to Mock API...`);
       }
-    );
+    }
+
+    // 2. Mock API로 fallback
+    try {
+      console.log(`🎭 Using Mock API: ${method} ${endpoint}`);
+      const response: AxiosResponse<T> = await this.mockClient.request({
+        url: endpoint,
+        ...requestConfig
+      });
+      console.log(`✅ Mock API Success: ${method} ${endpoint}`);
+      return response.data;
+    } catch (mockError) {
+      console.error(`❌ Mock API Also Failed: ${method} ${endpoint}`, mockError);
+      
+      // 3. 최종 fallback: 기본 클라이언트 사용
+      try {
+        console.log(`🔄 Using Default Client: ${method} ${endpoint}`);
+        const response: AxiosResponse<T> = await this.client.request({
+          url: endpoint,
+          ...requestConfig
+        });
+        return response.data;
+      } catch (finalError) {
+        console.error(`💥 All API clients failed: ${method} ${endpoint}`, finalError);
+        throw finalError;
+      }
+    }
+  }
+
+  /**
+   * 백엔드 API 상태 확인 및 자동 전환
+   */
+  async checkBackendHealth(): Promise<boolean> {
+    if (!this.useBackendAPI) return false;
+    
+    try {
+      await this.backendClient.get('/health', { timeout: 3000 });
+      console.log('✅ Backend API is healthy');
+      return true;
+    } catch (error) {
+      console.warn('❌ Backend API health check failed:', error);
+      return false;
+    }
   }
 
   private getAuthToken(): string | null {
@@ -85,17 +184,17 @@ class ApiClient {
 
   // Authentication
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.client.post('/auth/login', credentials);
-    this.setAuthToken(response.data.access_token);
-    return response.data;
+    const response = await this.makeResilientRequest<AuthResponse>('/auth/login', 'POST', credentials);
+    this.setAuthToken(response.access_token);
+    return response;
   }
 
   async superAdminLogin(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('Attempting login with:', { email: credentials.email, baseURL: this.client.defaults.baseURL });
-    const response: AxiosResponse<AuthResponse> = await this.client.post('/auth/login', credentials);
-    console.log('Login response:', response.data);
-    this.setAuthToken(response.data.access_token);
-    return response.data;
+    console.log('Attempting login with:', { email: credentials.email });
+    const response = await this.makeResilientRequest<AuthResponse>('/auth/login', 'POST', credentials);
+    console.log('Login response:', response);
+    this.setAuthToken(response.access_token);
+    return response;
   }
 
   async logout(): Promise<void> {
@@ -104,53 +203,47 @@ class ApiClient {
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response: AxiosResponse<DashboardStats> = await this.client.get('/admin/dashboard/stats');
-    return response.data;
+    return this.makeResilientRequest<DashboardStats>('/admin/dashboard/stats');
   }
 
   async getSystemHealth(): Promise<SystemHealth> {
-    const response: AxiosResponse<SystemHealth> = await this.client.get('/admin/system/health');
-    return response.data;
+    return this.makeResilientRequest<SystemHealth>('/admin/system/health');
   }
 
   // Partners
   async getPartners(page = 1, size = 20): Promise<PaginatedResponse<Partner>> {
-    const response: AxiosResponse<PaginatedResponse<Partner>> = await this.client.get('/partners/', {
+    return this.makeResilientRequest<PaginatedResponse<Partner>>('/partners/', 'GET', undefined, {
       params: { page, size },
     });
-    return response.data;
   }
 
   async getPartner(id: number): Promise<Partner> {
-    const response: AxiosResponse<Partner> = await this.client.get(`/partners/${id}`);
-    return response.data;
+    return this.makeResilientRequest<Partner>(`/partners/${id}`);
   }
 
   async createPartner(data: CreatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<Partner> = await this.client.post('/admin/partners', data);
-    return response.data;
+    return this.makeResilientRequest<Partner>('/admin/partners', 'POST', data);
   }
 
   async updatePartner(id: number, data: UpdatePartnerRequest): Promise<Partner> {
-    const response: AxiosResponse<Partner> = await this.client.put(`/admin/partners/${id}`, data);
-    return response.data;
+    return this.makeResilientRequest<Partner>(`/admin/partners/${id}`, 'PUT', data);
   }
 
   async deletePartner(id: number): Promise<void> {
-    await this.client.delete(`/admin/partners/${id}`);
+    return this.makeResilientRequest<void>(`/admin/partners/${id}`, 'DELETE');
   }
 
   async getPartnerConfig(partnerId: number): Promise<PartnerConfig> {
-    const response: AxiosResponse<PartnerConfig> = await this.client.get(`/admin/partners/${partnerId}/config`);
-    return response.data;
+    return this.makeResilientRequest<PartnerConfig>(`/admin/partners/${partnerId}/config`);
   }
 
   async getPartnerStatistics(partnerId: number, days = 30): Promise<PartnerDailyStatistics[]> {
-    const response: AxiosResponse<PartnerDailyStatistics[]> = await this.client.get(
+    return this.makeResilientRequest<PartnerDailyStatistics[]>(
       `/admin/partners/${partnerId}/statistics`,
+      'GET',
+      undefined,
       { params: { days } }
     );
-    return response.data;
   }
 
   // Energy Management

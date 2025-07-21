@@ -132,7 +132,7 @@ export function RealtimeTransactionMonitor() {
   }, [isMonitoring, isConnected, sendMessage]);
 
   return (
-    <Section>
+    <Section title="실시간 트랜잭션 모니터링">
       <div className="space-y-6">
         {/* 헤더 및 컨트롤 */}
         <div className="flex justify-between items-center">

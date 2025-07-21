@@ -289,21 +289,55 @@ export const en: TranslationMessages = {
     
     // Buttons/Actions
     generateReport: 'Generate Report',
+    runAudit: 'Run Audit',
+    exportData: 'Export Data',
+    viewDetails: 'View Details',
+    investigate: 'Investigate',
+    resolve: 'Resolve',
+    escalate: 'Escalate',
     executeAudit: 'Execute Audit',
     monitorTab: 'Monitor',
     emergencyTab: 'Emergency',
     searchTab: 'Search',
     reportsTab: 'Reports',
     
-    // Descriptions
-    totalAuditsDesc: 'Total audit count',
-    passedAuditsDesc: 'Successful audits',
-    failedAuditsDesc: 'Failed audits',
-    pendingReviewsDesc: 'Pending review',
-    complianceScoreDesc: 'Overall compliance score',
-    criticalAlertsDesc: 'High priority alerts',
-    monthlyReportsDesc: 'Monthly report count',
-    lastAuditTimeDesc: 'Recent audit execution time',
+    // Status
+    statusActive: 'Active',
+    statusInactive: 'Inactive',
+    statusPending: 'Pending',
+    statusSuspicious: 'Suspicious',
+    statusCompliant: 'Compliant',
+    statusViolation: 'Violation',
+    
+    // Search & Filter
+    searchPlaceholder: 'Search audit logs...',
+    filterByDate: 'Filter by Date',
+    filterBySeverity: 'Filter by Severity',
+    filterByType: 'Filter by Type',
+    filterByUser: 'Filter by User',
+    filterByPartner: 'Filter by Partner',
+    
+    // Table Headers
+    timestamp: 'Timestamp',
+    eventType: 'Event Type',
+    severity: 'Severity',
+    entityType: 'Entity Type',
+    entityId: 'Entity ID',
+    userId: 'User ID',
+    partnerId: 'Partner ID',
+    ipAddress: 'IP Address',
+    details: 'Details',
+    
+    // Severity Levels
+    severityInfo: 'Info',
+    severityWarning: 'Warning',
+    severityCritical: 'Critical',
+    
+    // Event Types
+    eventTransaction: 'Transaction',
+    eventCompliance: 'Compliance',
+    eventSecurity: 'Security',
+    eventSystem: 'System',
     
     // Status
     riskLevel: 'Risk Level',
@@ -317,15 +351,6 @@ export const en: TranslationMessages = {
     successLogs: 'Success',
     failedLogs: 'Failed',
     warningLogs: 'Warning',
-    
-    // Table Headers
-    time: 'Time',
-    user: 'User',
-    action: 'Action',
-    resource: 'Resource',
-    status: 'Status',
-    ipAddress: 'IP Address',
-    details: 'Details',
     
     // Compliance Tools
     complianceTools: 'Compliance Tools',

@@ -289,21 +289,55 @@ export const ko: TranslationMessages = {
     
     // 버튼/액션
     generateReport: '보고서 생성',
+    runAudit: '감사 실행',
+    exportData: '데이터 내보내기',
+    viewDetails: '세부 정보 보기',
+    investigate: '조사',
+    resolve: '해결',
+    escalate: '에스컬레이션',
     executeAudit: '감사 실행',
     monitorTab: '모니터링',
     emergencyTab: '긴급대응',
     searchTab: '검색',
     reportsTab: '보고서',
     
-    // 설명
-    totalAuditsDesc: '총 감사 건수',
-    passedAuditsDesc: '성공한 감사',
-    failedAuditsDesc: '실패한 감사',
-    pendingReviewsDesc: '검토 대기 중',
-    complianceScoreDesc: '전체 컴플라이언스 점수',
-    criticalAlertsDesc: '중요도 높은 알림',
-    monthlyReportsDesc: '월간 보고서 수',
-    lastAuditTimeDesc: '최근 감사 실행 시간',
+    // 상태
+    statusActive: '활성',
+    statusInactive: '비활성',
+    statusPending: '대기 중',
+    statusSuspicious: '의심스러운',
+    statusCompliant: '규정 준수',
+    statusViolation: '위반',
+    
+    // 검색 및 필터
+    searchPlaceholder: '감사 로그 검색...',
+    filterByDate: '날짜별 필터',
+    filterBySeverity: '심각도별 필터',
+    filterByType: '유형별 필터',
+    filterByUser: '사용자별 필터',
+    filterByPartner: '파트너별 필터',
+    
+    // 테이블 헤더
+    timestamp: '타임스탬프',
+    eventType: '이벤트 유형',
+    severity: '심각도',
+    entityType: '엔티티 유형',
+    entityId: '엔티티 ID',
+    userId: '사용자 ID',
+    partnerId: '파트너 ID',
+    ipAddress: 'IP 주소',
+    details: '세부 정보',
+    
+    // 심각도 레벨
+    severityInfo: '정보',
+    severityWarning: '경고',
+    severityCritical: '위험',
+    
+    // 이벤트 유형
+    eventTransaction: '트랜잭션',
+    eventCompliance: '컴플라이언스',
+    eventSecurity: '보안',
+    eventSystem: '시스템',
     
     // 상태
     riskLevel: '위험도',
@@ -317,15 +351,6 @@ export const ko: TranslationMessages = {
     successLogs: '성공',
     failedLogs: '실패',
     warningLogs: '경고',
-    
-    // 테이블 헤더
-    time: '시간',
-    user: '사용자',
-    action: '액션',
-    resource: '리소스',
-    status: '상태',
-    ipAddress: 'IP 주소',
-    details: '세부사항',
     
     // 컴플라이언스 도구
     complianceTools: '컴플라이언스 도구',

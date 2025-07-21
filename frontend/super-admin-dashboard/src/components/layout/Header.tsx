@@ -5,6 +5,7 @@ import { Bars3Icon, BellIcon, UserCircleIcon } from '@heroicons/react/24/outline
 import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageSelector';
+import BackendStatusMonitor from '@/components/ui/BackendStatusMonitor';
 import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -40,8 +41,9 @@ export function Header({ setSidebarOpen }: HeaderProps) {
       <div className="h-6 w-px bg-gray-700 lg:hidden" aria-hidden="true" />
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <div className="flex flex-1">
-          {/* Page title will be injected here by individual pages */}
+        <div className="flex flex-1 items-center">
+          {/* 백엔드 API 상태 모니터 */}
+          <BackendStatusMonitor className="mr-4" />
         </div>
         <div className="flex items-center gap-x-4 lg:gap-x-6">
           {/* Language Toggle */}
