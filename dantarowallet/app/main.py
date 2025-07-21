@@ -320,6 +320,134 @@ async def root():
 # API 라우터 등록
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
+
+# === 공개 API 엔드포인트들 (인증 불필요) ===
+
+@app.get("/public/providers", tags=["public"])
+async def get_public_providers():
+    """공급업체 목록 공개 조회 (인증 불필요)"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect("dev.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                id, 
+                name, 
+                status, 
+                reliability_score, 
+                min_order_size, 
+                max_order_size,
+                trading_fee,
+                withdrawal_fee
+            FROM energy_providers 
+            WHERE status = 'ONLINE'
+            ORDER BY reliability_score DESC
+        """)
+        providers = cursor.fetchall()
+        
+        # 각 공급업체의 최신 가격 정보도 조회
+        provider_data = []
+        for provider in providers:
+            cursor.execute("""
+                SELECT price, available_energy 
+                FROM energy_prices 
+                WHERE provider_id = ? 
+                ORDER BY timestamp DESC 
+                LIMIT 1
+            """, (provider[0],))
+            price_info = cursor.fetchone()
+            
+            provider_info = {
+                "id": provider[0],
+                "name": provider[1], 
+                "status": provider[2],
+                "reliability": float(provider[3]) if provider[3] else 0.0,
+                "min_order": provider[4],
+                "max_order": provider[5],
+                "trading_fee": float(provider[6]) if provider[6] else 0.0,
+                "withdrawal_fee": float(provider[7]) if provider[7] else 0.0
+            }
+            
+            if price_info:
+                provider_info.update({
+                    "current_price": float(price_info[0]) if price_info[0] else 0.0,
+                    "available_energy": price_info[1]
+                })
+            
+            provider_data.append(provider_info)
+        
+        conn.close()
+        
+        return {
+            "success": True,
+            "count": len(provider_data),
+            "data": provider_data,
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": time.time()
+        }
+
+
+@app.get("/public/providers/summary", tags=["public"])
+async def get_providers_summary():
+    """공급업체 요약 정보 (인증 불필요)"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect("dev.db")
+        cursor = conn.cursor()
+        
+        # 활성 공급업체 수
+        cursor.execute("SELECT COUNT(*) FROM energy_providers WHERE status = 'ONLINE'")
+        active_count = cursor.fetchone()[0]
+        
+        # 평균 신뢰성
+        cursor.execute("SELECT AVG(reliability_score) FROM energy_providers WHERE status = 'ONLINE'")
+        avg_reliability = cursor.fetchone()[0] or 0.0
+        
+        # 최저 가격
+        cursor.execute("""
+            SELECT MIN(price) FROM energy_prices 
+            WHERE provider_id IN (
+                SELECT id FROM energy_providers WHERE status = 'ONLINE'
+            )
+        """)
+        min_price = cursor.fetchone()[0] or 0.0
+        
+        # 총 가용 에너지
+        cursor.execute("""
+            SELECT SUM(available_energy) FROM energy_prices 
+            WHERE provider_id IN (
+                SELECT id FROM energy_providers WHERE status = 'ONLINE'
+            )
+        """)
+        total_available = cursor.fetchone()[0] or 0
+        
+        conn.close()
+        
+        return {
+            "success": True,
+            "summary": {
+                "active_providers": active_count,
+                "average_reliability": round(float(avg_reliability), 2),
+                "best_price": float(min_price),
+                "total_available_energy": total_available
+            },
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": time.time()
+        }
+
+
 # 인증 페이지 라우터 등록
 from app.api.v1.auth_pages import router as auth_pages_router
 

@@ -5,9 +5,24 @@ import { BasePage } from "@/components/ui/BasePage";
 import { Section, StatCard, Button } from '@/components/ui/DarkThemeComponents';
 import { RefreshCw, TrendingUp, TrendingDown, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import { tronNRGService, TronNRGProvider, TronNRGMarketData, TronNRGPrice } from '@/services/tron-nrg-service';
+import { energyTronService, EnergyTronProvider, EnergyTronMarketData, ProviderComparison } from '@/services/energytron-service';
 
-interface EnergyProvider extends TronNRGProvider {
-  // 기존 필드는 TronNRGProvider에서 상속
+interface CombinedProvider {
+  id: string;
+  name: string;
+  provider: 'TronNRG' | 'EnergyTron';
+  status: 'online' | 'offline' | 'maintenance';
+  pricePerEnergy: number;
+  availableEnergy: number;
+  reliability: number;
+  avgResponseTime: number;
+  minOrderSize: number;
+  maxOrderSize: number;
+  fees: {
+    tradingFee: number;
+    withdrawalFee: number;
+  };
+  lastUpdated: string;
   priceChangeStatus?: 'up' | 'down' | 'stable';
 }
 
@@ -23,31 +38,38 @@ interface MarketSummary {
 }
 
 export default function ExternalEnergyMarketPage() {
-  const [providers, setProviders] = useState<EnergyProvider[]>([]);
+  const [combinedProviders, setCombinedProviders] = useState<CombinedProvider[]>([]);
   const [marketSummary, setMarketSummary] = useState<MarketSummary | null>(null);
-  const [currentPrice, setCurrentPrice] = useState<TronNRGPrice | null>(null);
+  const [providerComparison, setProviderComparison] = useState<ProviderComparison | null>(null);
+  const [tronNRGPrice, setTronNRGPrice] = useState<TronNRGPrice | null>(null);
+  const [energyTronData, setEnergyTronData] = useState<EnergyTronMarketData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connecting');
   const [sortBy, setSortBy] = useState('price');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterProvider, setFilterProvider] = useState('all'); // 추가: 공급자별 필터
   const [lastUpdate, setLastUpdate] = useState<string>('');
   
-  const wsRef = useRef<WebSocket | null>(null);
+  const tronWSRef = useRef<WebSocket | null>(null);
+  const energyTronWSRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     // 초기 데이터 로드
     loadInitialData();
     
     // 실시간 가격 업데이트 연결
-    connectPriceStream();
+    connectPriceStreams();
 
     // 정기적으로 공급자 정보 업데이트 (30초마다)
-    const providerInterval = setInterval(loadProviders, 30000);
+    const providerInterval = setInterval(loadAllProviders, 30000);
 
     // 컴포넌트 언마운트 시 정리
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (tronWSRef.current) {
+        tronWSRef.current.close();
+      }
+      if (energyTronWSRef.current) {
+        energyTronWSRef.current.close();
       }
       clearInterval(providerInterval);
     };
@@ -57,65 +79,58 @@ export default function ExternalEnergyMarketPage() {
     try {
       setIsLoading(true);
       
-      // 병렬로 데이터 로드
-      const [marketData, providersData, priceData] = await Promise.all([
+      // 병렬로 두 공급자의 데이터 로드
+      const [
+        tronNRGMarketData,
+        tronNRGProviders,
+        tronNRGPrice,
+        energyTronMarketData,
+        energyTronProviders,
+        comparison
+      ] = await Promise.all([
         tronNRGService.getMarketData(),
-        tronNRGService.getProviders(),
-        tronNRGService.getCurrentPrice()
+        tronNRGService.getProviders(), 
+        tronNRGService.getCurrentPrice(),
+        energyTronService.getMarketData(),
+        energyTronService.getProviders(),
+        energyTronService.compareProviders()
       ]);
 
-      // 마켓 데이터 변환
+      // 공급자 데이터 통합
+      const combined: CombinedProvider[] = [
+        ...tronNRGProviders.map(p => ({
+          ...p,
+          provider: 'TronNRG' as const,
+          priceChangeStatus: 'stable' as const
+        })),
+        ...energyTronProviders.map(p => ({
+          ...p,
+          provider: 'EnergyTron' as const,
+          priceChangeStatus: 'stable' as const
+        }))
+      ];
+
+      // 마켓 서머리 계산
+      const allPrices = combined.filter(p => p.status === 'online').map(p => p.pricePerEnergy);
+      const bestPrice = Math.min(...allPrices);
+      const bestProvider = combined.find(p => p.pricePerEnergy === bestPrice)?.name || 'Unknown';
+      
       const summary: MarketSummary = {
-        bestPrice: marketData.bestBuyPrice,
-        bestProvider: 'TronNRG',
-        totalProviders: providersData.length + 8, // TronNRG + 기타 공급자들
-        activeProviders: providersData.filter(p => p.status === 'online').length + 6,
-        avgPrice: marketData.currentPrice,
-        priceChange24h: marketData.dailyChange,
-        totalVolume: marketData.dailyVolume,
+        bestPrice,
+        bestProvider,
+        totalProviders: combined.length,
+        activeProviders: combined.filter(p => p.status === 'online').length,
+        avgPrice: allPrices.reduce((a, b) => a + b, 0) / allPrices.length,
+        priceChange24h: (tronNRGMarketData.dailyChange + energyTronMarketData.dailyChange) / 2,
+        totalVolume: tronNRGMarketData.dailyVolume + energyTronMarketData.dailyVolume,
         lastUpdated: new Date().toISOString()
       };
 
-      // 공급자 데이터 변환 및 추가 Mock 데이터 병합
-      const enhancedProviders: EnergyProvider[] = [
-        ...providersData.map(p => ({
-          ...p,
-          priceChangeStatus: p.pricePerEnergy > marketData.currentPrice ? 'up' as const : 'down' as const
-        })),
-        // 추가 Mock 공급자들 (다양성을 위해)
-        {
-          id: 'p2p-energy-1',
-          name: 'P2P Energy Trading',
-          status: 'online' as const,
-          pricePerEnergy: 0.0039,
-          availableEnergy: 4500000,
-          reliability: 97.8,
-          avgResponseTime: 2.5,
-          minOrderSize: 1000,
-          maxOrderSize: 8000000,
-          fees: { tradingFee: 0.002, withdrawalFee: 0.0004 },
-          lastUpdated: new Date().toISOString(),
-          priceChangeStatus: 'down' as const
-        },
-        {
-          id: 'energy-market-pro',
-          name: 'Energy Market Pro',
-          status: 'online' as const,
-          pricePerEnergy: 0.0038,
-          availableEnergy: 3200000,
-          reliability: 96.5,
-          avgResponseTime: 3.1,
-          minOrderSize: 500,
-          maxOrderSize: 5000000,
-          fees: { tradingFee: 0.0018, withdrawalFee: 0.0006 },
-          lastUpdated: new Date().toISOString(),
-          priceChangeStatus: 'stable' as const
-        }
-      ];
-
+      setCombinedProviders(combined);
       setMarketSummary(summary);
-      setProviders(enhancedProviders);
-      setCurrentPrice(priceData);
+      setTronNRGPrice(tronNRGPrice);
+      setEnergyTronData(energyTronMarketData);
+      setProviderComparison(comparison);
       setLastUpdate(new Date().toLocaleTimeString());
       setConnectionStatus('connected');
       
@@ -127,53 +142,64 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const loadProviders = async () => {
+  const loadAllProviders = async () => {
     try {
-      const providersData = await tronNRGService.getProviders();
-      const marketData = await tronNRGService.getMarketData();
+      const [tronNRGProviders, energyTronProviders] = await Promise.all([
+        tronNRGService.getProviders(),
+        energyTronService.getProviders()
+      ]);
       
-      setProviders(prevProviders => {
-        // TronNRG 공급자들만 업데이트하고 나머지는 유지
-        const nonTronProviders = prevProviders.filter(p => !p.id.startsWith('tronnrg-'));
-        const updatedTronProviders = providersData.map(p => ({
+      const combined: CombinedProvider[] = [
+        ...tronNRGProviders.map(p => ({
           ...p,
-          priceChangeStatus: p.pricePerEnergy > marketData.currentPrice ? 'up' as const : 'down' as const
-        }));
-        
-        return [...updatedTronProviders, ...nonTronProviders];
-      });
+          provider: 'TronNRG' as const,
+          priceChangeStatus: 'stable' as const
+        })),
+        ...energyTronProviders.map(p => ({
+          ...p,
+          provider: 'EnergyTron' as const,
+          priceChangeStatus: 'stable' as const
+        }))
+      ];
       
+      setCombinedProviders(combined);
       setLastUpdate(new Date().toLocaleTimeString());
     } catch (error) {
       console.error('❌ Failed to update providers:', error);
     }
   };
 
-  const connectPriceStream = () => {
+  const connectPriceStreams = () => {
     try {
       setConnectionStatus('connecting');
       
-      const ws = tronNRGService.connectPriceStream((price: TronNRGPrice) => {
-        setCurrentPrice(price);
+      // TronNRG 가격 스트림
+      const tronWS = tronNRGService.connectPriceStream((price: TronNRGPrice) => {
+        setTronNRGPrice(price);
         setLastUpdate(new Date().toLocaleTimeString());
-        
-        // 가격 변동에 따라 마켓 요약 업데이트
-        setMarketSummary(prev => prev ? {
-          ...prev,
-          avgPrice: price.price,
-          priceChange24h: price.change24h,
-          lastUpdated: price.timestamp
-        } : null);
       });
       
-      if (ws) {
-        wsRef.current = ws;
+      // EnergyTron 가격 스트림
+      const energyTronWS = energyTronService.connectPriceStream((data: any) => {
+        if (data.type === 'price_update') {
+          setEnergyTronData(prev => prev ? {
+            ...prev,
+            currentPrice: data.data.price,
+            timestamp: data.data.timestamp
+          } : null);
+          setLastUpdate(new Date().toLocaleTimeString());
+        }
+      });
+      
+      if (tronWS && energyTronWS) {
+        tronWSRef.current = tronWS;
+        energyTronWSRef.current = energyTronWS;
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('disconnected');
       }
     } catch (error) {
-      console.error('❌ Failed to connect price stream:', error);
+      console.error('❌ Failed to connect price streams:', error);
       setConnectionStatus('disconnected');
     }
   };
@@ -182,14 +208,13 @@ export default function ExternalEnergyMarketPage() {
     await loadInitialData();
   };
 
-  const handlePurchase = async (provider: EnergyProvider) => {
+  const handlePurchase = async (provider: CombinedProvider) => {
     try {
-      // 구매 모달이나 페이지로 이동하는 로직
-      // 현재는 알림으로 대체
-      alert(`${provider.name}에서 에너지 구매를 시작합니다.\n가격: $${provider.pricePerEnergy}\n가용량: ${provider.availableEnergy.toLocaleString()}`);
+      // 구매 페이지로 이동
+      window.location.href = `/energy/external-market/purchase?provider=${provider.id}&source=${provider.provider}`;
     } catch (error) {
-      console.error('❌ Purchase failed:', error);
-      alert('구매 요청 중 오류가 발생했습니다.');
+      console.error('❌ Purchase navigation failed:', error);
+      alert('구매 페이지 이동 중 오류가 발생했습니다.');
     }
   };
 
@@ -230,19 +255,25 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  // 필터링 및 정렬된 공급자 목록
-  const filteredAndSortedProviders = providers
+  // 필터링 및 정렬 로직
+  const filteredAndSortedProviders = combinedProviders
     .filter(provider => {
-      if (filterStatus === 'all') return true;
-      return provider.status === filterStatus;
+      if (filterStatus !== 'all' && provider.status !== filterStatus) return false;
+      if (filterProvider !== 'all' && provider.provider !== filterProvider) return false;
+      return true;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'price': return a.pricePerEnergy - b.pricePerEnergy;
-        case 'reliability': return b.reliability - a.reliability;
-        case 'response': return a.avgResponseTime - b.avgResponseTime;
-        case 'available': return b.availableEnergy - a.availableEnergy;
-        default: return 0;
+        case 'price':
+          return a.pricePerEnergy - b.pricePerEnergy;
+        case 'reliability':
+          return b.reliability - a.reliability;
+        case 'response':
+          return a.avgResponseTime - b.avgResponseTime;
+        case 'available':
+          return b.availableEnergy - a.availableEnergy;
+        default:
+          return 0;
       }
     });
 
@@ -261,25 +292,45 @@ export default function ExternalEnergyMarketPage() {
       <div className="space-y-6">
         {/* 연결 상태 및 실시간 정보 */}
         <Section title="연결 상태">
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 space-y-4">
+            {/* TronNRG 연결 상태 */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {getConnectionStatusIcon()}
                 <span className="text-sm font-medium">
                   TronNRG API: {connectionStatus === 'connected' ? '연결됨' : connectionStatus === 'connecting' ? '연결 중...' : '연결 실패'}
                 </span>
-                {currentPrice && (
+                {tronNRGPrice && (
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-400">현재 가격:</span>
-                    <span className="font-mono text-green-400">${currentPrice.price.toFixed(6)}</span>
-                    <span className={`text-xs ${currentPrice.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      ({currentPrice.change24h >= 0 ? '+' : ''}{currentPrice.change24h.toFixed(2)}%)
+                    <span className="text-gray-400">TronNRG 가격:</span>
+                    <span className="font-mono text-green-400">${tronNRGPrice.price.toFixed(6)}</span>
+                    <span className={`text-xs ${tronNRGPrice.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ({tronNRGPrice.change24h >= 0 ? '+' : ''}{tronNRGPrice.change24h.toFixed(2)}%)
                     </span>
                   </div>
                 )}
               </div>
               <div className="text-xs text-gray-500">
                 마지막 업데이트: {lastUpdate}
+              </div>
+            </div>
+
+            {/* EnergyTron 연결 상태 */}
+            <div className="flex items-center justify-between border-t border-gray-700 pt-3">
+              <div className="flex items-center gap-3">
+                {getConnectionStatusIcon()}
+                <span className="text-sm font-medium">
+                  EnergyTron API: {connectionStatus === 'connected' ? '연결됨' : connectionStatus === 'connecting' ? '연결 중...' : '연결 실패'}
+                </span>
+                {energyTronData && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-400">EnergyTron 가격:</span>
+                    <span className="font-mono text-purple-400">${energyTronData.currentPrice.toFixed(6)}</span>
+                    <span className={`text-xs ${energyTronData.dailyChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ({energyTronData.dailyChange >= 0 ? '+' : ''}{energyTronData.dailyChange.toFixed(2)}%)
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -337,6 +388,18 @@ export default function ExternalEnergyMarketPage() {
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-gray-200 min-w-[80px]">상태 필터:</label>
               <select
+                value={filterProvider}
+                onChange={(e) => setFilterProvider(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">전체 공급자</option>
+                <option value="TronNRG">TronNRG</option>
+                <option value="EnergyTron">EnergyTron</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-200 min-w-[80px]">상태 필터:</label>
+              <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -352,7 +415,122 @@ export default function ExternalEnergyMarketPage() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 새로고침
               </Button>
-              <Button variant="secondary" onClick={connectPriceStream}>
+              <Button variant="secondary" onClick={connectPriceStreams}>
+                실시간 연결
+              </Button>
+            </div>
+          </div>
+        </Section>
+
+        {/* 공급자 비교 */}
+        {providerComparison && (
+          <Section title="공급자 비교 분석">
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 최적가 공급자 */}
+                <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
+                  <h4 className="text-lg font-semibold text-green-400 mb-2">💰 최저가 공급자</h4>
+                  <p className="text-sm text-gray-300 mb-1">공급자: {providerComparison.bestPrice.provider}</p>
+                  <p className="text-xl font-bold text-green-400">${providerComparison.bestPrice.price.toFixed(6)}</p>
+                  <p className="text-sm text-green-300">절약: ${providerComparison.bestPrice.savings.toFixed(6)}</p>
+                </div>
+
+                {/* 최고 신뢰도 공급자 */}
+                <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30">
+                  <h4 className="text-lg font-semibold text-blue-400 mb-2">🛡️ 최고 신뢰도</h4>
+                  <p className="text-sm text-gray-300 mb-1">공급자: {providerComparison.bestReliability.provider}</p>
+                  <p className="text-xl font-bold text-blue-400">{providerComparison.bestReliability.reliability}%</p>
+                  <p className="text-sm text-blue-300">신뢰도 지수</p>
+                </div>
+
+                {/* 추천 공급자 */}
+                <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
+                  <h4 className="text-lg font-semibold text-purple-400 mb-2">⭐ 추천 공급자</h4>
+                  <p className="text-sm text-gray-300 mb-1">추천: {providerComparison.recommendation.suggested}</p>
+                  <p className="text-sm text-purple-300 mb-1">{providerComparison.recommendation.reason}</p>
+                  <p className="text-sm font-bold text-purple-400">{providerComparison.recommendation.savings}</p>
+                </div>
+              </div>
+
+              {/* 상세 비교 테이블 */}
+              <div className="mt-6">
+                <h4 className="text-lg font-semibold text-white mb-4">상세 비교</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left py-2 text-gray-300">공급자</th>
+                        <th className="text-right py-2 text-gray-300">평균 가격</th>
+                        <th className="text-right py-2 text-gray-300">신뢰도</th>
+                        <th className="text-right py-2 text-gray-300">응답시간</th>
+                        <th className="text-right py-2 text-gray-300">가용량</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {providerComparison.comparison.map((comp, index) => (
+                        <tr key={index} className="border-b border-gray-800">
+                          <td className="py-2 font-medium text-white">{comp.provider}</td>
+                          <td className="py-2 text-right font-mono text-green-400">${comp.avgPrice.toFixed(6)}</td>
+                          <td className="py-2 text-right text-blue-400">{comp.reliability}%</td>
+                          <td className="py-2 text-right text-gray-300">{comp.responseTime}ms</td>
+                          <td className="py-2 text-right text-gray-300">{comp.availableEnergy.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* 필터 및 정렬 */}
+        <Section title="필터 및 정렬">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-200 min-w-[60px]">정렬:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="price">가격순</option>
+                <option value="reliability">신뢰도순</option>
+                <option value="response">응답속도순</option>
+                <option value="available">가용량순</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-200 min-w-[80px]">공급자:</label>
+              <select
+                value={filterProvider}
+                onChange={(e) => setFilterProvider(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">전체 공급자</option>
+                <option value="TronNRG">TronNRG</option>
+                <option value="EnergyTron">EnergyTron</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-200 min-w-[80px]">상태 필터:</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">전체</option>
+                <option value="online">온라인</option>
+                <option value="offline">오프라인</option>
+                <option value="maintenance">점검중</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2">
+              <Button onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                새로고침
+              </Button>
+              <Button variant="secondary" onClick={connectPriceStreams}>
                 실시간 연결
               </Button>
             </div>
@@ -371,11 +549,13 @@ export default function ExternalEnergyMarketPage() {
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadge(provider.status)}`}>
                       {provider.status === 'online' ? '온라인' : provider.status === 'maintenance' ? '점검중' : '오프라인'}
                     </span>
-                    {provider.id.startsWith('tronnrg-') && (
-                      <span className="px-2 py-1 bg-blue-900 text-blue-200 rounded-full text-xs">
-                        TronNRG API
-                      </span>
-                    )}
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      provider.provider === 'TronNRG' 
+                        ? 'bg-blue-900 text-blue-200' 
+                        : 'bg-purple-900 text-purple-200'
+                    }`}>
+                      {provider.provider}
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     <Button 
@@ -497,7 +677,7 @@ export default function ExternalEnergyMarketPage() {
             </div>
           </div>
 
-          {currentPrice && (
+          {tronNRGPrice && (
             <div className="mt-6 bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-yellow-400" />
@@ -506,21 +686,21 @@ export default function ExternalEnergyMarketPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-gray-400">현재가</p>
-                  <p className="text-xl font-bold text-green-400">${currentPrice.price.toFixed(6)}</p>
+                  <p className="text-xl font-bold text-green-400">${tronNRGPrice.price.toFixed(6)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">24h 변동</p>
-                  <p className={`text-lg font-semibold ${currentPrice.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {currentPrice.change24h >= 0 ? '+' : ''}{currentPrice.change24h.toFixed(2)}%
+                  <p className={`text-lg font-semibold ${tronNRGPrice.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {tronNRGPrice.change24h >= 0 ? '+' : ''}{tronNRGPrice.change24h.toFixed(2)}%
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">24h 거래량</p>
-                  <p className="text-lg font-semibold">{currentPrice.volume24h.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">{tronNRGPrice.volume24h.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">통화</p>
-                  <p className="text-lg font-semibold text-yellow-400">{currentPrice.currency}</p>
+                  <p className="text-lg font-semibold text-yellow-400">{tronNRGPrice.currency}</p>
                 </div>
               </div>
             </div>

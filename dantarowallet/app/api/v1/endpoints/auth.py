@@ -21,6 +21,7 @@ from app.core.security import (
 )
 from app.models.balance import Balance
 from app.models.user import User
+from app.models.partner import Partner
 from app.models.system_admin import SuperAdminUser
 from app.schemas.auth import (
     PasswordChange,
@@ -97,6 +98,7 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     return Token(
         access_token=access_token,
         refresh_token=refresh_token,
+        token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -117,6 +119,7 @@ async def refresh_token(token_data: TokenRefresh):
     return Token(
         access_token=access_token,
         refresh_token=refresh_token,
+        token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -233,6 +236,100 @@ async def super_admin_login(user_data: UserLogin, db: AsyncSession = Depends(get
         "token_type": "bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     }
+
+
+# === 사용자 유형별 로그인 엔드포인트 ===
+
+@router.post("/partner/login", response_model=Token)
+async def partner_login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+    """
+    파트너어드민 로그인
+    파트너사 직원/관리자 전용 로그인
+    """
+    # 사용자 인증
+    result = await db.execute(select(User).filter(User.email == user_data.email))
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(user_data.password, str(user.password_hash)):
+        raise AuthenticationError("이메일 또는 비밀번호가 올바르지 않습니다")
+
+    if not bool(user.is_active):
+        raise AuthenticationError("비활성화된 계정입니다")
+
+    # TODO: 파트너 소속 확인
+    # user.partner_id가 있는지 확인
+    
+    # 임시로 test_partner_001 파트너에 속한다고 가정
+    partner_id = "test_partner_001"
+    
+    # 파트너 존재 확인
+    result = await db.execute(select(Partner).where(Partner.id == partner_id))
+    partner = result.scalar_one_or_none()
+    
+    if not partner:
+        raise AuthenticationError("소속 파트너를 찾을 수 없습니다")
+
+    # 파트너 정보를 포함한 토큰 생성
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "user_type": "partner_admin",
+        "partner_id": partner_id,
+        "partner_name": partner.name
+    })
+    refresh_token = create_refresh_token({
+        "sub": str(user.id),
+        "user_type": "partner_admin", 
+        "partner_id": partner_id
+    })
+
+    logger.info(f"파트너어드민 로그인 성공: {user.email} (파트너: {partner.name})")
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+
+
+@router.post("/user/login", response_model=Token)  
+async def user_login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+    """
+    일반 사용자 로그인
+    최종 고객 전용 로그인
+    """
+    # 사용자 인증
+    result = await db.execute(select(User).filter(User.email == user_data.email))
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(user_data.password, str(user.password_hash)):
+        raise AuthenticationError("이메일 또는 비밀번호가 올바르지 않습니다")
+
+    if not bool(user.is_active):
+        raise AuthenticationError("비활성화된 계정입니다")
+
+    # 관리자가 아닌 일반 사용자만 허용
+    if bool(user.is_admin):
+        raise AuthenticationError("일반 사용자 로그인을 이용해주세요")
+
+    # 일반 사용자 토큰 생성
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "user_type": "end_user"
+    })
+    refresh_token = create_refresh_token({
+        "sub": str(user.id),
+        "user_type": "end_user"
+    })
+
+    logger.info(f"일반 사용자 로그인 성공: {user.email}")
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
 
 
 @router.get("/test")

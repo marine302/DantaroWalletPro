@@ -18,6 +18,7 @@ from app.schemas.external_energy import (
     EnergyOrderResponse, CreateOrderResponse
 )
 from app.services.external_energy.tronnrg_service import tronnrg_service, TronNRGAPIError
+from app.services.external_energy.energytron_service import energytron_service
 from app.core.exceptions import DantaroException
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,18 @@ class ExternalEnergyService:
     
     def __init__(self, db: AsyncSession):
         self.db = db
+        # 지원하는 공급업체 서비스 매핑
+        self.provider_services = {
+            'tronnrg': tronnrg_service,
+            'energytron': energytron_service
+        }
+    
+    def _get_provider_service(self, provider_name: str):
+        """공급업체별 서비스 인스턴스 반환"""
+        service = self.provider_services.get(provider_name.lower())
+        if not service:
+            raise ExternalEnergyError(f"Unsupported provider: {provider_name}")
+        return service
     
     async def get_providers(self) -> List[EnergyProviderResponse]:
         """모든 활성 공급자 목록 조회"""
@@ -61,7 +74,7 @@ class ExternalEnergyService:
                 provider_data = provider.to_dict()
                 if latest_price:
                     provider_data.update({
-                        "pricePerEnergy": float(latest_price.price),
+                        "pricePerEnergy": float(str(latest_price.price)),
                         "availableEnergy": latest_price.available_energy
                     })
                 else:
@@ -274,6 +287,28 @@ class ExternalEnergyService:
             logger.error(f"Database error in get_user_orders: {e}")
             raise ExternalEnergyError("Failed to fetch user orders")
     
+    async def get_order_detail(self, order_id: str, user_id: str) -> Optional[EnergyOrderResponse]:
+        """특정 주문 상세 정보 조회"""
+        try:
+            result = await self.db.execute(
+                select(EnergyOrder).where(
+                    and_(
+                        EnergyOrder.id == order_id,
+                        EnergyOrder.user_id == user_id
+                    )
+                )
+            )
+            order = result.scalar_one_or_none()
+            
+            if not order:
+                return None
+            
+            return EnergyOrderResponse(**order.to_dict())
+            
+        except SQLAlchemyError as e:
+            logger.error(f"Database error in get_order_detail: {e}")
+            raise ExternalEnergyError("Failed to fetch order details")
+    
     async def update_provider_data(self, provider_id: str):
         """공급자 데이터 업데이트 (백그라운드 작업)"""
         try:
@@ -301,3 +336,137 @@ class ExternalEnergyService:
             await self.db.rollback()
             logger.error(f"Error updating provider data: {e}")
             return False
+    
+    async def get_all_provider_prices(self) -> Dict[str, Any]:
+        """모든 공급업체의 현재 가격 조회"""
+        try:
+            all_prices = {}
+            
+            for provider_name, service in self.provider_services.items():
+                try:
+                    prices = await service.get_current_prices()
+                    all_prices[provider_name] = prices
+                except Exception as e:
+                    logger.warning(f"Failed to get prices from {provider_name}: {e}")
+                    all_prices[provider_name] = None
+            
+            return all_prices
+        except Exception as e:
+            logger.error(f"Error getting all provider prices: {e}")
+            raise ExternalEnergyError("Failed to fetch provider prices")
+    
+    async def find_best_price(self, energy_amount: int) -> Optional[Dict[str, Any]]:
+        """최적 가격 공급업체 찾기"""
+        try:
+            all_prices = await self.get_all_provider_prices()
+            best_option = None
+            best_price = float('inf')
+            
+            for provider_name, price_data in all_prices.items():
+                if not price_data:
+                    continue
+                    
+                # 해당 에너지 양에 맞는 가격 찾기
+                for tier in price_data.prices:
+                    if tier.amount >= energy_amount:
+                        total_cost = tier.price_per_unit * energy_amount
+                        if total_cost < best_price:
+                            best_price = total_cost
+                            best_option = {
+                                'provider': provider_name,
+                                'price_per_unit': tier.price_per_unit,
+                                'total_cost': total_cost,
+                                'tier_info': tier
+                            }
+                        break
+            
+            return best_option
+        except Exception as e:
+            logger.error(f"Error finding best price: {e}")
+            raise ExternalEnergyError("Failed to find best price")
+    
+    async def purchase_energy_multi_provider(
+        self, 
+        energy_amount: int, 
+        target_address: str,
+        preferred_provider: Optional[str] = None,
+        auto_distribute: bool = False,
+        partner_allocation: Optional[Dict[str, int]] = None
+    ) -> Dict[str, Any]:
+        """다중 공급업체를 고려한 에너지 구매"""
+        try:
+            if preferred_provider:
+                # 선호 공급업체 지정된 경우
+                service = self._get_provider_service(preferred_provider)
+                from app.schemas.external_energy import EnergyPurchaseRequest
+                
+                request = EnergyPurchaseRequest(
+                    amount=energy_amount,
+                    target_address=target_address,
+                    auto_distribute=auto_distribute,
+                    partner_allocation=partner_allocation
+                )
+                
+                result = await service.purchase_energy(request)
+                return {
+                    'provider_used': preferred_provider,
+                    'purchase_result': result,
+                    'strategy': 'preferred_provider'
+                }
+            else:
+                # 최적 가격 공급업체 자동 선택
+                best_option = await self.find_best_price(energy_amount)
+                if not best_option:
+                    raise ExternalEnergyError("No available providers for the requested amount")
+                
+                service = self._get_provider_service(best_option['provider'])
+                from app.schemas.external_energy import EnergyPurchaseRequest
+                
+                request = EnergyPurchaseRequest(
+                    amount=energy_amount,
+                    target_address=target_address,
+                    auto_distribute=auto_distribute,
+                    partner_allocation=partner_allocation
+                )
+                
+                result = await service.purchase_energy(request)
+                return {
+                    'provider_used': best_option['provider'],
+                    'purchase_result': result,
+                    'best_price_info': best_option,
+                    'strategy': 'best_price'
+                }
+                
+        except Exception as e:
+            logger.error(f"Error in multi-provider purchase: {e}")
+            raise ExternalEnergyError(f"Failed to purchase energy: {str(e)}")
+    
+    async def check_all_provider_health(self) -> Dict[str, Any]:
+        """모든 공급업체 상태 확인"""
+        try:
+            health_status = {}
+            
+            for provider_name, service in self.provider_services.items():
+                try:
+                    start_time = datetime.now()
+                    is_healthy = await service.health_check()
+                    response_time = (datetime.now() - start_time).total_seconds()
+                    
+                    health_status[provider_name] = {
+                        'is_healthy': is_healthy,
+                        'response_time': response_time,
+                        'last_check': datetime.now(),
+                        'error_message': None
+                    }
+                except Exception as e:
+                    health_status[provider_name] = {
+                        'is_healthy': False,
+                        'response_time': 0.0,
+                        'last_check': datetime.now(),
+                        'error_message': str(e)
+                    }
+            
+            return health_status
+        except Exception as e:
+            logger.error(f"Error checking provider health: {e}")
+            raise ExternalEnergyError("Failed to check provider health")

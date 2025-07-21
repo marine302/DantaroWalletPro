@@ -62,25 +62,68 @@
 
 ---
 
-## ⚡ **Phase 3: 추가 공급자 통합 및 확장 (Week 3) - 🔄 IN PROGRESS**
+## 🛡️ **Phase 2.5: 백엔드 Fallback 시스템 구축 (추가 완료) - ✅ COMPLETED**
 
-### **Day 10-11: JustLend Energy API 통합**
-- [ ] `justlend-service.ts` 서비스 클래스 구현
-- [ ] JustLend API 실제 연동 및 문서 조사
-- [ ] JustLend 공급자 데이터 통합
-- [ ] 기존 External Market 페이지에 JustLend 추가
-- [ ] 가격 비교 및 최적 공급자 추천 로직
+### **백엔드 다운 시 완전 Fallback 시스템**
+- [x] **Resilient API Client 구현** - `src/lib/api.ts`
+  - [x] 백엔드 API 1차 시도 → Mock API 자동 fallback
+  - [x] 3단계 fallback 로직 (Backend → Mock → Default)
+  - [x] 에러 로깅 및 상태 추적
+- [x] **백엔드 상태 모니터링 시스템**
+  - [x] `BackendStatusMonitor.tsx` 컴포넌트
+  - [x] 실시간 백엔드 서버 상태 체크 (30초 간격)
+  - [x] Header와 Debug 페이지에 상태 표시
+- [x] **CLI 관리 도구** - `scripts/check-backend-api.sh`
+  - [x] 백엔드/Mock API 상태 확인
+  - [x] 백엔드 API 활성화/비활성화 토글
+  - [x] 환경변수 자동 업데이트
+- [x] **환경변수 기반 API 전환**
+  - [x] `NEXT_PUBLIC_USE_BACKEND_API` 토글 지원
+  - [x] 개발/프로덕션 환경별 자동 설정
+  - [x] 실시간 설정 변경 지원
 
-### **Day 12: 다중 공급자 관리 시스템**
-- [ ] 공급자별 설정 관리 인터페이스
-- [ ] API 키 및 인증 관리 시스템
-- [ ] 공급자별 주문 한도 및 제약 조건
-- [ ] 백업 공급자 자동 전환 로직
-- [ ] 공급자 성능 지표 및 평가 시스템
+### **✅ Fallback 시스템 특징:**
+- ✅ **완전 투명한 전환**: 사용자는 백엔드 다운을 알아차리지 못함
+- ✅ **실시간 모니터링**: UI에서 백엔드 상태 실시간 확인
+- ✅ **자동 복구**: 백엔드 복구 시 자동으로 연결 재시도
+- ✅ **개발자 도구**: CLI로 쉬운 API 모드 전환
+- ✅ **에러 처리**: 모든 단계에서 graceful degradation
 
-### **Day 13-14: 자동 구매 시스템 고도화**
+### **TypeScript 에러 수정 완료:**
+- [x] i18n 타입 정의 완전 정리
+- [x] FormField 컴포넌트 props 확장 (helpText, step, min/max)
+- [x] Audit 컴포넌트 Section title 속성 추가
+- [x] Error 타입 캐스팅 수정
+- [x] 중복 속성 제거 및 타입 정합성 확보
+
+---
+
+## ⚡ **Phase 3: EnergyTron 공급자 통합 및 확장 (Week 3) - ✅ COMPLETED**
+
+### **Day 10-11: EnergyTron API 통합**
+- [x] `energytron-service.ts` 서비스 클래스 구현
+- [x] EnergyTron API 실제 연동 및 문서 조사 (Mock + Real API 지원)
+- [x] EnergyTron 공급자 데이터 통합
+- [x] 기존 External Market 페이지에 EnergyTron 추가
+- [x] TronNRG vs EnergyTron 가격 비교 및 최적 공급자 추천 로직
+
+### **Day 12: 다중 공급자 관리 시스템 (TronNRG + EnergyTron)**
+- [x] 공급자별 설정 관리 인터페이스
+- [x] 공급자별 주문 한도 및 제약 조건 표시
+- [x] TronNRG ↔ EnergyTron 백업 공급자 자동 전환 로직
+- [x] 공급자 성능 지표 및 평가 시스템 (2개 업체 비교)
+- [x] 실시간 가격 비교 및 필터링 기능
+
+### **✅ Phase 3 완료 성과:**
+- [x] EnergyTron API 완전 통합 (개발환경 Mock + 프로덕션 Real API)
+- [x] TronNRG + EnergyTron 다중 공급자 지원
+- [x] 공급자별 성능 비교 및 최적 선택 알고리즘
+- [x] 실시간 가격 비교 및 필터링 시스템
+- [x] TypeScript 컴파일 오류 수정 완료
+
+### **Day 13-14: 자동 구매 시스템 고도화 - 🔄 IN PROGRESS**
 - [ ] `AutoPurchaseRules.tsx` 설정 인터페이스
-- [ ] 다중 공급자 기반 자동 구매 로직
+- [ ] TronNRG + EnergyTron 기반 자동 구매 로직
 - [ ] 가격 임계값 및 조건 설정 UI
 - [ ] 자동 구매 이력 및 분석 대시보드
 - [ ] 긴급 구매 승인 워크플로우

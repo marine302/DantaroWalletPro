@@ -1,7 +1,7 @@
 """
 에너지 가격 히스토리 모델
 """
-from sqlalchemy import Column, String, Numeric, DateTime, BigInteger, ForeignKey, Index
+from sqlalchemy import Column, String, Numeric, DateTime, BigInteger, ForeignKey, Index, Integer
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -11,7 +11,7 @@ class EnergyPrice(Base):
     """에너지 가격 히스토리"""
     __tablename__ = "energy_prices"
     
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     provider_id = Column(String(50), ForeignKey("energy_providers.id"), nullable=False)
     
     # 가격 정보

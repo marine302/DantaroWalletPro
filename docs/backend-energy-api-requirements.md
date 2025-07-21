@@ -220,7 +220,24 @@ POST https://api.tronnrg.com/v1/orders
 WebSocket wss://api.tronnrg.com/v1/stream/price
 ```
 
-#### **1.2 향후 추가 예정 공급자**
+#### **1.2 EnergyTron API 연동**
+**참고 파일**: `frontend/super-admin-dashboard/src/services/energytron-service.ts`
+
+**주요 기능:**
+- 실시간 가격 및 가용 에너지 조회
+- 공급자 정보 조회  
+- 주문 생성 및 추적
+- WebSocket 가격 및 가용 에너지 스트림
+
+**API 엔드포인트:**
+```
+GET https://api.energytron.com/v1/market/data
+GET https://api.energytron.com/v1/providers
+POST https://api.energytron.com/v1/orders
+WebSocket wss://api.energytron.com/v1/stream/price
+```
+
+#### **1.3 향후 추가 예정 공급자**
 - JustLend Energy API
 - P2P Energy Trading API
 - 기타 에너지 거래소 API
@@ -393,6 +410,7 @@ logger.info(f"Order created: {order_id} - User: {user_id}")
 - `frontend/super-admin-dashboard/src/services/tron-nrg-service.ts` - 기존 TronNRG API 구현
 - `frontend/super-admin-dashboard/src/app/energy/external-market/page.tsx` - 공급자 목록 페이지
 - `frontend/super-admin-dashboard/src/app/energy/external-market/purchase/page.tsx` - 주문 로직
+- `frontend/super-admin-dashboard/src/services/energytron-service.ts` - EnergyTron API 구현
 
 ### **백엔드 파일 (기존 구조)**
 - `dantarowallet/app/services/external_energy_service.py` - 기존 외부 에너지 서비스
@@ -408,6 +426,7 @@ logger.info(f"Order created: {order_id} - User: {user_id}")
 - [ ] 시장 데이터 API 구현
 - [ ] 주문 관리 API 구현
 - [ ] TronNRG API 연동
+- [ ] EnergyTron API 연동
 - [ ] 캐싱 시스템 구현
 - [ ] WebSocket 실시간 업데이트
 - [ ] 백그라운드 작업 구현
