@@ -20,7 +20,7 @@ def check_tronlink_implementation():
         from app.services.external_wallet.auto_signing_service import TronLinkAutoSigningService
         print("✅ TronLinkAutoSigningService 임포트 성공")
         
-        from app.core.key_manager import SecureKeyManager
+        from app.core.security.key_manager import SecureKeyManager
         print("✅ SecureKeyManager 임포트 성공")
         
         from app.schemas.auto_signing import AutoSigningSessionRequest

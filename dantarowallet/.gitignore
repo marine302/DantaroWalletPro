@@ -66,3 +66,4 @@ app/services/energy/*_fixed.py
 app/api/v1/endpoints/*_temp.py
 app/api/v1/endpoints/*_backup.py
 app/api/v1/endpoints/admin/*_temp.py
+frontend/
