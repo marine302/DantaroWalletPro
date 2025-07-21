@@ -8,6 +8,7 @@ import pytest
 import pytest_asyncio
 import sqlalchemy
 from app.core.database import Base, engine, get_db
+from app.core.security import get_password_hash, verify_token
 from app.main import app
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
@@ -42,7 +43,6 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest_asyncio.fixture
 async def user_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str, str]:
     """Get auth headers for a test user."""
-    from app.core.security import get_password_hash
     from app.models.balance import Balance
     from app.models.user import User
     from sqlalchemy import select
@@ -90,7 +90,6 @@ async def user_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str,
 async def admin_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str, str]:
     """Get auth headers for an admin user."""
     # DB에 직접 관리자 생성 (register endpoint 대신 직접 DB에 쓰기)
-    from app.core.security import get_password_hash
     from app.models.user import User
     from sqlalchemy import select, update
 
@@ -134,7 +133,6 @@ async def test_user(db: AsyncSession) -> Any:
     """테스트용 일반 사용자 ORM 객체 반환"""
     from app.models.user import User
     from sqlalchemy import select
-    from app.core.security import get_password_hash
 
     # 기존 사용자 확인
     result = await db.execute(

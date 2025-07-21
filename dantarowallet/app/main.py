@@ -1,13 +1,6 @@
 """
 Main FastAPI application module for DantaroWallet.
 Production-ready FastAPI application with advanced middleware, logging, and error handling.
-
-Features:
-- TronLink 자동 서명 시스템 (Auto-signing with TronLink/TronWeb compatibility)
-- 파트너사 관리 및 지갑 연동
-- 실시간 트랜잭션 모니터링
-- 보안 감사 및 컴플라이언스
-- 에너지 풀 관리
 """
 import asyncio
 import os
@@ -45,7 +38,6 @@ async def lifespan(app: FastAPI):
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"📊 Debug mode: {settings.DEBUG}")
     logger.info(f"🌐 Environment: {settings.TRON_NETWORK}")
-    logger.info("🔗 TronLink 자동 서명 시스템 준비 완료")
 
     # 입금 모니터링 백그라운드 시작 (개발환경에서는 비활성화)
     if not deposit_monitor.is_monitoring and not settings.DEBUG:

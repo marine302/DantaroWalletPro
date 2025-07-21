@@ -1,4 +1,3 @@
-from httpx import AsyncClient, ASGITransport
 """
 잔고 관련 기능에 대한 통합 테스트
 """
@@ -6,6 +5,7 @@ import asyncio
 from decimal import Decimal
 
 import pytest
+from httpx import AsyncClient, ASGITransport
 from app.core.database import AsyncSessionLocal, get_db
 from app.core.security import get_password_hash
 from app.main import app

@@ -182,7 +182,7 @@ export function useWebSocket(
     return () => {
       disconnect();
     };
-  }, [url]); // connect와 disconnect dependency 제거
+  }, [url, connect, disconnect]); // connect와 disconnect dependency 추가
 
   return {
     ...state,

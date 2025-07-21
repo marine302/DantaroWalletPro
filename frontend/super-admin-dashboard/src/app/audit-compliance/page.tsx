@@ -1,10 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import { withRBAC } from '@/components/auth/withRBAC';
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-import { withRBAC } from '@/components/auth/withRBAC';
-import { useI18n } from '@/contexts/I18nContext';
+import { useState } from 'react';
+
+// 임시 i18n mock (I18nContext가 없으므로)
+const mockI18n = {
+  auditCompliance: {
+    title: 'Audit & Compliance',
+    description: 'Monitor audit logs and compliance status',
+    auditLog: 'Audit Log',
+    suspiciousActivities: 'Suspicious Activities',
+    complianceCheck: 'Compliance Check',
+    reports: 'Reports',
+    alerts: 'Alerts',
+    investigations: 'Investigations',
+    complianceMetrics: 'Compliance Metrics',
+    auditTrail: 'Audit Trail',
+    securityIncidents: 'Security Incidents',
+    generateReport: 'Generate Report',
+    executeAudit: 'Execute Audit',
+    totalAudits: 'Total Audits',
+    totalAuditsDesc: 'Total number of audits performed',
+    passedAudits: 'Passed Audits',
+    passedAuditsDesc: 'Number of successful audits',
+    failedAudits: 'Failed Audits',
+    failedAuditsDesc: 'Number of failed audits',
+    pendingReviews: 'Pending Reviews',
+    pendingReviewsDesc: 'Audits pending review',
+    complianceScore: 'Compliance Score',
+    complianceScoreDesc: 'Overall compliance score',
+    lastAuditTime: 'Last Audit',
+    lastAuditTimeDesc: 'Time of last audit',
+    criticalAlerts: 'Critical Alerts',
+    criticalAlertsDesc: 'Number of critical alerts',
+    monthlyReports: 'Monthly Reports',
+    monthlyReportsDesc: 'Generated monthly reports',
+    allLogs: 'All Logs',
+    successLogs: 'Success',
+    failedLogs: 'Failed',
+    warningLogs: 'Warning',
+    time: 'Time',
+    user: 'User',
+    action: 'Action',
+    resource: 'Resource',
+    status: 'Status',
+    riskLevel: 'Risk Level',
+    ipAddress: 'IP Address',
+    details: 'Details',
+    complianceTools: 'Compliance Tools',
+    amlReport: 'AML Report',
+    transactionMonitoring: 'Transaction Monitoring',
+    complianceCheckTool: 'Compliance Check Tool',
+    suspiciousTransactionReport: 'Suspicious Transaction Report'
+  }
+};
 
 // 타입 정의
 interface AuditLog {
@@ -31,8 +82,8 @@ interface ComplianceMetrics {
 }
 
 function AuditCompliancePage() {
-  const { t } = useI18n();
-  
+  const t = mockI18n; // mockI18n 사용
+
   const [metrics] = useState<ComplianceMetrics>({
     totalAudits: 156,
     passedAudits: 142,
@@ -40,8 +91,8 @@ function AuditCompliancePage() {
     pendingReviews: 6,
     complianceScore: 94.2,
     lastAuditDate: '2025-01-20',
-    criticalIssues: 3,
-    resolvedIssues: 128
+    criticalIssues: 2,
+    resolvedIssues: 147
   });
 
   const [auditLogs] = useState<AuditLog[]>([
@@ -92,121 +143,6 @@ function AuditCompliancePage() {
   ]);
 
   const [filter, setFilter] = useState('all');
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [isExecutingAudit, setIsExecutingAudit] = useState(false);
-
-  // 보고서 생성 함수
-  const handleGenerateReport = async () => {
-    try {
-      setIsGeneratingReport(true);
-      
-      // Mock API 호출 - 실제로는 백엔드 API를 호출
-      console.log('📊 보고서 생성 시작...');
-      
-      // 로딩 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 보고서 데이터 생성 (Mock)
-      const reportData = {
-        reportId: `AUDIT_RPT_${Date.now()}`,
-        generatedAt: new Date().toISOString(),
-        period: 'monthly',
-        totalAudits: metrics.totalAudits,
-        passedAudits: metrics.passedAudits,
-        failedAudits: metrics.failedAudits,
-        complianceScore: metrics.complianceScore,
-        criticalIssues: metrics.criticalIssues
-      };
-      
-      // 파일 다운로드 시뮬레이션
-      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `audit-compliance-report-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      alert('✅ 보고서가 성공적으로 생성되어 다운로드되었습니다.');
-      console.log('📊 보고서 생성 완료');
-      
-    } catch (error) {
-      console.error('❌ 보고서 생성 실패:', error);
-      alert('❌ 보고서 생성 중 오류가 발생했습니다.');
-    } finally {
-      setIsGeneratingReport(false);
-    }
-  };
-
-  // 감사 실행 함수
-  const handleExecuteAudit = async () => {
-    try {
-      setIsExecutingAudit(true);
-      
-      console.log('🔍 감사 실행 시작...');
-      
-      // 사용자 확인
-      const confirmed = window.confirm('감사를 실행하시겠습니까? 이 작업은 시간이 걸릴 수 있습니다.');
-      if (!confirmed) {
-        setIsExecutingAudit(false);
-        return;
-      }
-      
-      // Mock 감사 실행 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // 새로운 감사 로그 추가 (Mock)
-      const newAuditLog: AuditLog = {
-        id: auditLogs.length + 1,
-        timestamp: new Date().toISOString(),
-        userId: 'system@audit.com',
-        action: 'MANUAL_AUDIT',
-        resource: 'Full System Audit',
-        details: 'Manual audit execution completed',
-        ipAddress: '127.0.0.1',
-        status: 'success',
-        riskLevel: 'low'
-      };
-      
-      // 실제로는 상태를 업데이트하거나 페이지를 새로고침해야 함
-      console.log('새 감사 로그:', newAuditLog);
-      
-      alert('✅ 감사가 성공적으로 실행되었습니다. 결과가 감사 로그에 추가되었습니다.');
-      console.log('🔍 감사 실행 완료');
-      
-      // 페이지 새로고침으로 최신 데이터 가져오기
-      window.location.reload();
-      
-    } catch (error) {
-      console.error('❌ 감사 실행 실패:', error);
-      alert('❌ 감사 실행 중 오류가 발생했습니다.');
-    } finally {
-      setIsExecutingAudit(false);
-    }
-  };
-
-  // 컴플라이언스 도구 핸들러 함수들
-  const handleAmlReport = () => {
-    alert('📄 AML 보고서 기능을 실행합니다.\n\n실제 구현 시 AML 분석 대시보드로 이동하거나 보고서를 생성합니다.');
-    console.log('📄 AML 보고서 실행');
-  };
-
-  const handleTransactionMonitoring = () => {
-    alert('🔍 실시간 거래 모니터링 기능을 실행합니다.\n\n실제 구현 시 거래 모니터링 대시보드를 표시합니다.');
-    console.log('🔍 거래 모니터링 실행');
-  };
-
-  const handleComplianceCheck = () => {
-    alert('🛡️ 컴플라이언스 체크를 실행합니다.\n\n실제 구현 시 자동화된 컴플라이언스 검사를 시작합니다.');
-    console.log('🛡️ 컴플라이언스 체크 실행');
-  };
-
-  const handleSuspiciousTransactionReport = () => {
-    alert('⚠️ 의심거래 보고 기능을 실행합니다.\n\n실제 구현 시 의심스러운 거래 분석 및 보고서를 생성합니다.');
-    console.log('⚠️ 의심거래 보고 실행');
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -231,25 +167,17 @@ function AuditCompliancePage() {
 
   const headerActions = (
     <div className="flex gap-2">
-      <Button 
-        variant="secondary"
-        onClick={handleGenerateReport}
-        disabled={isGeneratingReport}
-      >
-        {isGeneratingReport ? '📊 생성 중...' : t.auditCompliance.generateReport}
+      <Button variant="secondary">
+        {t.auditCompliance.generateReport}
       </Button>
-      <Button 
-        variant="primary"
-        onClick={handleExecuteAudit}
-        disabled={isExecutingAudit}
-      >
-        {isExecutingAudit ? '🔍 실행 중...' : t.auditCompliance.executeAudit}
+      <Button variant="primary">
+        {t.auditCompliance.executeAudit}
       </Button>
     </div>
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.auditCompliance.title}
       description={t.auditCompliance.description}
       headerActions={headerActions}
@@ -310,25 +238,25 @@ function AuditCompliancePage() {
       <Section title={t.auditCompliance.auditLog}>
         {/* 필터 버튼 */}
         <div className="flex gap-2 mb-4">
-          <Button 
+          <Button
             variant={filter === 'all' ? 'primary' : 'secondary'}
             onClick={() => setFilter('all')}
           >
             {t.auditCompliance.allLogs}
           </Button>
-          <Button 
+          <Button
             variant={filter === 'success' ? 'primary' : 'secondary'}
             onClick={() => setFilter('success')}
           >
             {t.auditCompliance.successLogs}
           </Button>
-          <Button 
+          <Button
             variant={filter === 'failed' ? 'primary' : 'secondary'}
             onClick={() => setFilter('failed')}
           >
             {t.auditCompliance.failedLogs}
           </Button>
-          <Button 
+          <Button
             variant={filter === 'warning' ? 'primary' : 'secondary'}
             onClick={() => setFilter('warning')}
           >
@@ -410,35 +338,19 @@ function AuditCompliancePage() {
       {/* 컴플라이언스 액션 */}
       <Section title={t.auditCompliance.complianceTools}>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <Button 
-            variant="secondary" 
-            className="h-20 flex-col"
-            onClick={handleAmlReport}
-          >
+          <Button variant="secondary" className="h-20 flex-col">
             <span className="text-2xl mb-2">📄</span>
             {t.auditCompliance.amlReport}
           </Button>
-          <Button 
-            variant="secondary" 
-            className="h-20 flex-col"
-            onClick={handleTransactionMonitoring}
-          >
+          <Button variant="secondary" className="h-20 flex-col">
             <span className="text-2xl mb-2">🔍</span>
             {t.auditCompliance.transactionMonitoring}
           </Button>
-          <Button 
-            variant="secondary" 
-            className="h-20 flex-col"
-            onClick={handleComplianceCheck}
-          >
+          <Button variant="secondary" className="h-20 flex-col">
             <span className="text-2xl mb-2">🛡️</span>
             {t.auditCompliance.complianceCheckTool}
           </Button>
-          <Button 
-            variant="secondary" 
-            className="h-20 flex-col"
-            onClick={handleSuspiciousTransactionReport}
-          >
+          <Button variant="secondary" className="h-20 flex-col">
             <span className="text-2xl mb-2">⚠️</span>
             {t.auditCompliance.suspiciousTransactionReport}
           </Button>
@@ -449,6 +361,6 @@ function AuditCompliancePage() {
 }
 
 // Export protected component
-export default withRBAC(AuditCompliancePage, { 
+export default withRBAC(AuditCompliancePage, {
   requiredPermissions: ['audit.view', 'compliance.view']
 });
