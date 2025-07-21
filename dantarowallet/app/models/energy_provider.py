@@ -48,13 +48,13 @@ class EnergyProvider(Base):
             "id": self.id,
             "name": self.name,
             "status": self.status.value,
-            "reliability": float(self.reliability_score),
-            "avgResponseTime": float(self.response_time_avg),
+            "reliability": float(self.reliability_score) if self.reliability_score is not None else 0.0,  # type: ignore
+            "avgResponseTime": float(self.response_time_avg) if self.response_time_avg is not None else 0.0,  # type: ignore
             "minOrderSize": self.min_order_size,
             "maxOrderSize": self.max_order_size,
             "fees": {
-                "tradingFee": float(self.trading_fee),
-                "withdrawalFee": float(self.withdrawal_fee)
+                "tradingFee": float(self.trading_fee) if self.trading_fee is not None else 0.0,  # type: ignore
+                "withdrawalFee": float(self.withdrawal_fee) if self.withdrawal_fee is not None else 0.0  # type: ignore
             },
-            "lastUpdated": self.updated_at.isoformat() if self.updated_at else None
+            "lastUpdated": self.updated_at.isoformat() if self.updated_at is not None else None
         }

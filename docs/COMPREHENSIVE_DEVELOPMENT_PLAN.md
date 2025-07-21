@@ -377,7 +377,7 @@ npx react-native@latest init PartnerWalletApp --template react-native-template-t
 #### **🔄 부분 완성 영역 (50-80%)**
 - [x] **파트너 관리자 대시보드** 기본 구조
 - [ ] **API 연동** - 90% 준비, 연결만 필요
-- [ ] **실시간 데이터 업데이트** - WebSocket 연동 필요
+- [x] **실시간 데이터 업데이트** - WebSocket 연동 완료 ✅
 - [ ] **페이지 라우팅** - 4개 페이지 미완성
 - [ ] **Doc-28~31 고급 기능 페이지** - 백엔드 완성, 프론트엔드 미구현
 
@@ -395,7 +395,7 @@ npx react-native@latest init PartnerWalletApp --template react-native-template-t
 #### **🔥 Phase 1: API 연동 (1일) - 즉시 착수**
 **목표**: 기존 구현된 UI들이 실제로 동작하도록 만들기
 - [ ] API 클라이언트 구현 및 연동
-- [ ] WebSocket 실시간 데이터 연동
+- [x] WebSocket 실시간 데이터 연동 ✅ 완료
 - [ ] 기존 위젯들 데이터 연결
 
 **완료 기준**: 모든 대시보드에서 실제 데이터 표시

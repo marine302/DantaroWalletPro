@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     DB_MAX_OVERFLOW: int = 0
 
     # Redis Configuration - 포트 설정 사용
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: str = ""
+    
     @property 
     def REDIS_URL_DYNAMIC(self) -> str:
         """동적 Redis URL 생성"""

@@ -1,0 +1,73 @@
+# 거래 패턴 설정
+transaction_patterns:
+  successful:
+    name: "성공 거래"
+    percentage: 85
+    amount_ranges:
+      micro: [1, 50]      # 마이크로 거래
+      small: [50, 500]    # 소액 거래
+      medium: [500, 5000] # 중간 거래
+      large: [5000, 50000] # 대량 거래
+    distribution:
+      micro: 40%
+      small: 40%
+      medium: 15%
+      large: 5%
+      
+  failed:
+    name: "실패 거래"
+    percentage: 10
+    reasons:
+      insufficient_balance: 40%
+      network_error: 25%
+      invalid_address: 20%
+      rate_limit: 10%
+      system_maintenance: 5%
+      
+  pending:
+    name: "보류 거래"
+    percentage: 3
+    reasons:
+      kyc_required: 50%
+      large_amount_review: 30%
+      suspicious_activity: 20%
+      
+  cancelled:
+    name: "취소 거래"
+    percentage: 2
+    reasons:
+      user_cancelled: 60%
+      timeout: 25%
+      system_cancelled: 15%
+
+# 시간대별 패턴
+time_patterns:
+  daily:
+    peak_hours: [9, 12, 18, 21]  # 거래량 피크 시간
+    low_hours: [2, 5, 6]         # 거래량 저조 시간
+    
+  weekly:
+    high_days: ["Monday", "Tuesday", "Wednesday"]
+    medium_days: ["Thursday", "Friday"]
+    low_days: ["Saturday", "Sunday"]
+    
+  monthly:
+    peak_dates: [1, 15, 30]      # 월급날, 중간, 월말
+    
+# 거래 유형별 패턴
+transaction_types:
+  deposit:
+    frequency: 30%
+    amount_multiplier: 1.2
+    
+  withdrawal:
+    frequency: 25%
+    amount_multiplier: 0.8
+    
+  transfer:
+    frequency: 35%
+    amount_multiplier: 1.0
+    
+  energy_purchase:
+    frequency: 10%
+    amount_multiplier: 0.5

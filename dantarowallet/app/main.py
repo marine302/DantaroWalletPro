@@ -23,6 +23,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from app.core.optimization_manager import optimization_manager
+from app.api.v1.endpoints import optimization
 
 # 로깅 설정
 logger = setup_logging()
@@ -38,6 +40,14 @@ async def lifespan(app: FastAPI):
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"📊 Debug mode: {settings.DEBUG}")
     logger.info(f"🌐 Environment: {settings.TRON_NETWORK}")
+
+    # 최적화 시스템 초기화
+    try:
+        logger.info("⚡ Initializing optimization system...")
+        await optimization_manager.initialize()
+        logger.info("✅ Optimization system initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Optimization system initialization failed: {e}")
 
     # 입금 모니터링 백그라운드 시작 (개발환경에서는 비활성화)
     if not deposit_monitor.is_monitoring and not settings.DEBUG:
@@ -201,6 +211,10 @@ tags_metadata = [
     {
         "name": "web-dashboard",
         "description": "**🌐 Web Pages** - Dashboard web pages",
+    },
+    {
+        "name": "optimization",
+        "description": "**⚡ System Optimization** - Backend performance optimization and monitoring",
     },
 ]
 

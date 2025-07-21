@@ -1,0 +1,58 @@
+# 사용자 프로필 설정
+user_profiles:
+  newbie:
+    name: "신규 사용자"
+    count: 10
+    kyc_status: false
+    verification_status: false
+    balance_range: [0, 100]
+    activity_level: "low"
+    registration_days_ago: [0, 7]
+    
+  regular:
+    name: "일반 사용자"
+    count: 50
+    kyc_status: true
+    verification_status: true
+    balance_range: [100, 10000]
+    activity_level: "medium"
+    registration_days_ago: [7, 365]
+    
+  vip:
+    name: "VIP 사용자"
+    count: 5
+    kyc_status: true
+    verification_status: true
+    balance_range: [10000, 100000]
+    activity_level: "high"
+    registration_days_ago: [30, 730]
+    
+  partner_admin:
+    name: "파트너 관리자"
+    count: 3
+    kyc_status: true
+    verification_status: true
+    balance_range: [1000, 50000]
+    activity_level: "admin"
+    registration_days_ago: [90, 365]
+    permissions: ["partner_dashboard", "user_management"]
+    
+  super_admin:
+    name: "슈퍼 관리자"
+    count: 1
+    kyc_status: true
+    verification_status: true
+    balance_range: [0, 0]
+    activity_level: "admin"
+    registration_days_ago: [365, 365]
+    permissions: ["full_access"]
+    
+  dormant:
+    name: "휴면 계정"
+    count: 20
+    kyc_status: true
+    verification_status: true
+    balance_range: [0, 5000]
+    activity_level: "dormant"
+    registration_days_ago: [180, 730]
+    last_login_days_ago: [90, 365]

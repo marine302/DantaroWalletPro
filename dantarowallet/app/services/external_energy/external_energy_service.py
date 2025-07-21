@@ -2,6 +2,7 @@
 외부 에너지 관리 서비스
 """
 import uuid
+import asyncio
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -15,11 +16,13 @@ from app.models.energy_price import EnergyPrice
 from app.models.energy_order import EnergyOrder, OrderType, OrderStatus
 from app.schemas.external_energy import (
     EnergyProviderResponse, MarketSummary, CreateOrderRequest, 
-    EnergyOrderResponse, CreateOrderResponse
+    EnergyOrderResponse, CreateOrderResponse, ProviderStatus, ProviderFees
 )
 from app.services.external_energy.tronnrg_service import tronnrg_service, TronNRGAPIError
 from app.services.external_energy.energytron_service import energytron_service
 from app.core.exceptions import DantaroException
+from app.core.database_optimization import OptimizedServiceBase, db_optimizer
+from app.core.api_optimization import api_optimizer, concurrency_optimizer
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,159 @@ class ExternalEnergyError(DantaroException):
     """외부 에너지 관련 오류"""
     def __init__(self, message: str, error_code: str = "EXTERNAL_ENERGY_ERROR"):
         super().__init__(message, error_code)
+
+
+# 기존 서비스 최적화
+class OptimizedExternalEnergyService(OptimizedServiceBase):
+    """최적화된 외부 에너지 서비스"""
+    
+    def __init__(self, db: AsyncSession):
+        super().__init__(db)
+        # 지원하는 공급업체 서비스 매핑
+        self.provider_services = {
+            'tronnrg': tronnrg_service,
+            'energytron': energytron_service
+        }
+    
+    @api_optimizer.performance_monitor()
+    @api_optimizer.circuit_breaker(failure_threshold=3, recovery_timeout=30)
+    async def get_optimized_suppliers(self) -> List[EnergyProviderResponse]:
+        """최적화된 공급업체 목록 조회"""
+        try:
+            # 캐싱된 공급업체 조회
+            cached_suppliers = await self._get_cached_suppliers()
+            if cached_suppliers:
+                return cached_suppliers
+            
+            # 병렬로 모든 공급업체 상태 확인
+            async with concurrency_optimizer.limited_concurrency("supplier_check", 5):
+                supplier_tasks = []
+                for provider_name, service in self.provider_services.items():
+                    task = self._check_provider_status(provider_name, service)
+                    supplier_tasks.append(task)
+                
+                results = await asyncio.gather(*supplier_tasks, return_exceptions=True)
+            
+            # 결과 필터링 및 정렬
+            active_suppliers = []
+            for result in results:
+                if isinstance(result, EnergyProviderResponse):
+                    active_suppliers.append(result)
+            
+            # 신뢰도 순으로 정렬
+            active_suppliers.sort(key=lambda x: x.reliability_score, reverse=True)
+            
+            # 결과 캐싱 (5분)
+            await self._cache_suppliers(active_suppliers, 300)
+            
+            return active_suppliers
+            
+        except Exception as e:
+            logger.error(f"최적화된 공급업체 조회 실패: {e}")
+            raise ExternalEnergyError("Failed to retrieve optimized suppliers")
+    
+    @db_optimizer.cache_query(expire_seconds=180)  # 3분 캐싱
+    async def get_price_comparison(self, amount: int) -> Dict[str, Any]:
+        """가격 비교 최적화"""
+        try:
+            # 동시에 모든 공급업체 가격 조회
+            price_tasks = []
+            for provider_name, service in self.provider_services.items():
+                task = self._get_provider_price(provider_name, service, amount)
+                price_tasks.append(task)
+            
+            prices = await asyncio.gather(*price_tasks, return_exceptions=True)
+            
+            # 유효한 가격만 필터링
+            valid_prices = []
+            for price in prices:
+                if isinstance(price, dict) and 'provider' in price:
+                    valid_prices.append(price)
+            
+            if not valid_prices:
+                raise ExternalEnergyError("No valid prices available")
+            
+            # 최적 가격 계산
+            best_price = min(valid_prices, key=lambda x: x['total_cost'])
+            savings = max(valid_prices, key=lambda x: x['total_cost'])['total_cost'] - best_price['total_cost']
+            
+            return {
+                'prices': valid_prices,
+                'best_option': best_price,
+                'potential_savings': savings,
+                'comparison_time': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"가격 비교 최적화 실패: {e}")
+            raise
+    
+    async def _check_provider_status(self, provider_name: str, service) -> Optional[EnergyProviderResponse]:
+        """공급업체 상태 확인"""
+        try:
+            # 헬스체크
+            is_healthy = await service.health_check()
+            if not is_healthy:
+                return None
+            
+            # 기본 정보 조회
+            return EnergyProviderResponse(
+                id=provider_name,
+                name=provider_name.title(),
+                status=ProviderStatus.ONLINE,
+                pricePerEnergy=0.001,
+                availableEnergy=1000000,
+                reliability=95.0,
+                avgResponseTime=150.0,
+                minOrderSize=1000,
+                maxOrderSize=1000000,
+                fees=ProviderFees(tradingFee=0.001, withdrawalFee=0.0005),
+                lastUpdated=datetime.now().isoformat()  # 문자열로 변환
+            )
+            
+        except Exception as e:
+            logger.warning(f"공급업체 {provider_name} 상태 확인 실패: {e}")
+            return None
+    
+    async def _get_provider_price(self, provider_name: str, service, amount: int) -> Optional[Dict[str, Any]]:
+        """공급업체별 가격 조회"""
+        try:
+            price_response = await service.get_current_prices()
+            if not price_response or not price_response.prices:
+                return None
+            
+            # 요청 금액에 맞는 가격 찾기
+            suitable_price = None
+            for price_tier in price_response.prices:
+                if price_tier.amount >= amount:
+                    suitable_price = price_tier
+                    break
+            
+            if not suitable_price:
+                suitable_price = price_response.prices[-1]  # 최대 tier 사용
+            
+            return {
+                'provider': provider_name,
+                'amount': amount,
+                'price_per_unit': suitable_price.price_per_unit,
+                'total_cost': amount * suitable_price.price_per_unit,
+                'estimated_delivery': '5-10 minutes',
+                'features': ['Instant', 'Reliable']
+            }
+            
+        except Exception as e:
+            logger.warning(f"공급업체 {provider_name} 가격 조회 실패: {e}")
+            return None
+    
+    async def _get_cached_suppliers(self) -> Optional[List[EnergyProviderResponse]]:
+        """캐싱된 공급업체 조회"""
+        # 구현 필요
+        return None
+    
+    async def _cache_suppliers(self, suppliers: List[EnergyProviderResponse], ttl: int):
+        """공급업체 캐싱"""
+        # 구현 필요
+        pass
 
 
 class ExternalEnergyService:
@@ -441,6 +597,86 @@ class ExternalEnergyService:
             logger.error(f"Error in multi-provider purchase: {e}")
             raise ExternalEnergyError(f"Failed to purchase energy: {str(e)}")
     
+    async def update_all_provider_prices(self) -> Dict[str, Any]:
+        """모든 공급업체 가격 정보 업데이트"""
+        try:
+            update_results = {}
+            
+            for provider_name, service in self.provider_services.items():
+                try:
+                    # 각 공급업체별로 가격 업데이트
+                    if hasattr(service, 'get_energy_price'):
+                        # 표준 수량들에 대한 가격 조회 (1M, 10M, 100M)
+                        standard_amounts = [1000000, 10000000, 100000000]
+                        
+                        for amount in standard_amounts:
+                            price_info = await service.get_energy_price(amount)
+                            if price_info:
+                                # DB에 가격 정보 저장
+                                await self._update_price_in_db(provider_name, amount, price_info)
+                        
+                        update_results[provider_name] = {
+                            'success': True,
+                            'updated_at': datetime.now(),
+                            'price_points': len(standard_amounts)
+                        }
+                    else:
+                        update_results[provider_name] = {
+                            'success': False,
+                            'error': 'Service does not support price updates'
+                        }
+                        
+                except Exception as e:
+                    logger.error(f"Failed to update prices for {provider_name}: {e}")
+                    update_results[provider_name] = {
+                        'success': False,
+                        'error': str(e)
+                    }
+            
+            return update_results
+            
+        except Exception as e:
+            logger.error(f"Error updating all provider prices: {e}")
+            raise ExternalEnergyError("Failed to update provider prices")
+
+    async def _update_price_in_db(self, provider_name: str, amount: int, price_info: Dict[str, Any]) -> None:
+        """DB에 가격 정보 업데이트"""
+        try:
+            # 기존 가격 정보 조회
+            existing_price = await self.db.execute(
+                select(EnergyPrice).where(
+                    and_(
+                        EnergyPrice.provider_name == provider_name,
+                        EnergyPrice.amount == amount
+                    )
+                )
+            )
+            existing_price = existing_price.scalar_one_or_none()
+            
+            if existing_price:
+                # 기존 정보 업데이트
+                existing_price.price_sun = int(price_info.get('price_sun', 0))
+                existing_price.price_trx = float(price_info.get('price_trx', 0.0))
+                existing_price.updated_at = datetime.now()
+            else:
+                # 새로운 가격 정보 생성
+                new_price = EnergyPrice(
+                    provider_name=provider_name,
+                    amount=amount,
+                    price_sun=int(price_info.get('price_sun', 0)),
+                    price_trx=float(price_info.get('price_trx', 0.0)),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now()
+                )
+                self.db.add(new_price)
+            
+            await self.db.commit()
+            
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Failed to update price in DB: {e}")
+            raise
+
     async def check_all_provider_health(self) -> Dict[str, Any]:
         """모든 공급업체 상태 확인"""
         try:
@@ -470,3 +706,9 @@ class ExternalEnergyService:
         except Exception as e:
             logger.error(f"Error checking provider health: {e}")
             raise ExternalEnergyError("Failed to check provider health")
+
+
+# 서비스 팩토리 함수
+def get_external_energy_service(db: AsyncSession) -> ExternalEnergyService:
+    """외부 에너지 서비스 인스턴스 생성"""
+    return ExternalEnergyService(db)

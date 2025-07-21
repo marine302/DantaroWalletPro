@@ -1,6 +1,7 @@
 """
 외부 에너지 주문 관리 모델
 """
+from decimal import Decimal
 from sqlalchemy import Column, String, Numeric, DateTime, Enum, BigInteger, ForeignKey, Index
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -67,17 +68,17 @@ class EnergyOrder(Base):
             "providerId": self.provider_id,
             "userId": self.user_id,
             "amount": self.amount,
-            "price": float(self.price) if self.price else 0.0,  # type: ignore
-            "totalCost": float(self.total_cost) if self.total_cost else 0.0,  # type: ignore
+            "price": float(self.price) if self.price is not None else 0.0,  # type: ignore
+            "totalCost": float(self.total_cost) if self.total_cost is not None else 0.0,  # type: ignore
             "orderType": self.order_type.value,
             "status": self.status.value,
             "duration": self.duration,
             "fees": {
-                "trading": float(self.trading_fee) if self.trading_fee else 0.0,  # type: ignore
-                "withdrawal": float(self.withdrawal_fee) if self.withdrawal_fee else 0.0  # type: ignore
+                "trading": float(self.trading_fee) if self.trading_fee is not None else 0.0,  # type: ignore
+                "withdrawal": float(self.withdrawal_fee) if self.withdrawal_fee is not None else 0.0  # type: ignore
             },
             "externalOrderId": self.external_order_id,
             "transactionHash": self.transaction_hash,
-            "createdAt": self.created_at.isoformat() if self.created_at else None,
-            "filledAt": self.filled_at.isoformat() if self.filled_at else None
+            "createdAt": self.created_at.isoformat() if self.created_at is not None else None,  # type: ignore
+            "filledAt": self.filled_at.isoformat() if self.filled_at is not None else None  # type: ignore
         }

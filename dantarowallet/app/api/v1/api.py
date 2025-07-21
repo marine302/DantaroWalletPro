@@ -31,8 +31,10 @@ from app.api.v1.endpoints import (
     audit_compliance,  # Doc #30: 트랜잭션 감사 및 컴플라이언스
     external_energy,  # Doc #35(38): 외부 에너지 공급자 연동
     integrated_dashboard,  # Doc #37(34): 파트너사 종합 대시보드
+    optimization,  # 백엔드 최적화 관리
     tronlink,  # TronLink 연동 (메인 엔드포인트)
     admin_dashboard,  # 슈퍼어드민 대시보드 통계
+    websocket,  # WebSocket 실시간 데이터 스트리밍
 )
 
 # ============================================================================
@@ -116,6 +118,13 @@ api_router.include_router(user_dashboard_router, prefix="/dashboard", tags=["das
 # Energy APIs - Admin monitoring vs Partner management
 api_router.include_router(energy.router, prefix="/energy", tags=["energy"])  # Energy monitoring & analytics
 api_router.include_router(external_energy.router, prefix="/external-energy", tags=["external_energy"])  # External providers
+
+# === WEBSOCKET REAL-TIME APIS ===
+# Real-time data streaming for both frontends
+api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])  # WebSocket real-time streaming
+
+# Backend Optimization - System performance management (Super Admin only)
+api_router.include_router(optimization.router, prefix="/admin", tags=["optimization"])  # Performance optimization
 
 
 # 임시 테스트 엔드포인트

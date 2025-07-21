@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+"""
+Dantaro Wallet Pro 백엔드 서버 시작 스크립트
+"""
+import uvicorn
 
-try:
-    from app.main import app
-    from app.core.config import settings
-    import uvicorn
+if __name__ == "__main__":
+    print("🚀 Dantaro Wallet Pro 백엔드 서버를 시작합니다...")
+    print("📍 서버 주소: http://localhost:8000")
+    print("📚 API 문서: http://localhost:8000/docs")
+    print("🔌 WebSocket 엔드포인트: ws://localhost:8000/api/v1/ws/")
+    print("=" * 50)
     
-    # 중앙화된 포트 설정 사용
-    port = settings.BACKEND_PORT
-    host = "127.0.0.1"
-    
-    print(f"🚀 서버 시작 중... (http://{host}:{port})")
-    print(f"📊 대시보드: http://{host}:{port}/docs")
-    
-    uvicorn.run(app, host=host, port=port, log_level="warning")
-    
-except Exception as e:
-    print(f"❌ 오류: {e}")
-    import traceback
-    traceback.print_exc()
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )

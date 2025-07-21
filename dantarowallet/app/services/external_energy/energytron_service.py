@@ -7,6 +7,7 @@ EnergyTRON은 B2B/B2C 하이브리드 모델로 파트너십 프로그램을 운
 
 import httpx
 import asyncio
+from datetime import datetime
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import logging
@@ -16,7 +17,8 @@ from app.schemas.external_energy import (
     EnergyPriceResponse,
     EnergyPurchaseRequest,
     EnergyPurchaseResponse,
-    EnergyBalanceResponse
+    EnergyBalanceResponse,
+    EnergyPriceTier
 )
 
 logger = logging.getLogger(__name__)
@@ -78,13 +80,13 @@ class EnergyTRONService:
             return EnergyPriceResponse(
                 provider="energytron",
                 prices=[
-                    {
-                        "amount": tier["amount"],
-                        "price_per_unit": tier["partner_price"],  # 파트너 할인가
-                        "total_price": tier["amount"] * tier["partner_price"],
-                        "discount_rate": tier.get("discount_percent", 0.0),
-                        "tier_name": tier.get("tier_name", f"{tier['amount']} 에너지")
-                    }
+                    EnergyPriceTier(
+                        amount=tier["amount"],
+                        price_per_unit=tier["partner_price"],  # 파트너 할인가
+                        total_price=tier["amount"] * tier["partner_price"],
+                        discount_rate=tier.get("discount_percent", 0.0),
+                        tier_name=tier.get("tier_name", f"{tier['amount']} 에너지")
+                    )
                     for tier in data.get("pricing_tiers", [])
                 ],
                 currency="TRX",

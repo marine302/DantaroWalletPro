@@ -711,10 +711,3 @@ async def get_system_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"System status check failed: {str(e)}"
         )
-
-
-# WebSocket 연결은 별도 파일에서 구현 예정
-# @router.websocket("/ws/prices")
-# async def websocket_prices(websocket: WebSocket):
-#     """실시간 가격 WebSocket 연결"""
-#     pass
