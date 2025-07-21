@@ -51,7 +51,7 @@ export const getMenuConfig = (t: any): MenuItem[] => [
     id: 'energy',
     labelKey: 'nav.energy',
     icon: Zap,
-    href: '/energy',
+    href: '#',
     description: t.nav.energyDesc || '에너지 거래 및 관리',
     children: [
       {

@@ -248,63 +248,52 @@ class ApiClient {
 
   // Energy Management
   async getEnergyPool(): Promise<EnergyPool> {
-    const response: AxiosResponse<EnergyPool> = await this.client.get('/admin/energy/pool');
-    return response.data;
+    return this.makeResilientRequest<EnergyPool>('/admin/energy/pool');
   }
 
   async rechargeEnergy(amount: number): Promise<EnergyTransaction> {
-    const response: AxiosResponse<EnergyTransaction> = await this.client.post('/admin/energy/recharge', {
-      amount,
-    });
-    return response.data;
+    return this.makeResilientRequest<EnergyTransaction>('/admin/energy/recharge', 'POST', { amount });
   }
 
   async allocateEnergy(partnerId: number, amount: number): Promise<EnergyTransaction> {
-    const response: AxiosResponse<EnergyTransaction> = await this.client.post('/admin/energy/allocate', {
+    return this.makeResilientRequest<EnergyTransaction>('/admin/energy/allocate', 'POST', {
       partner_id: partnerId,
       amount,
     });
-    return response.data;
   }
 
   async getEnergyTransactions(page = 1, size = 20): Promise<PaginatedResponse<EnergyTransaction>> {
-    const response: AxiosResponse<PaginatedResponse<EnergyTransaction>> = await this.client.get('/admin/energy/transactions', {
+    return this.makeResilientRequest<PaginatedResponse<EnergyTransaction>>('/admin/energy/transactions', 'GET', undefined, {
       params: { page, size },
     });
-    return response.data;
   }
 
   // Fee Management
   async getFeeConfigs(): Promise<FeeConfig[]> {
-    const response: AxiosResponse<FeeConfig[]> = await this.client.get('/admin/fees/configs');
-    return response.data;
+    return this.makeResilientRequest<FeeConfig[]>('/admin/fees/configs');
   }
 
   async createFeeConfig(data: CreateFeeConfigRequest): Promise<FeeConfig> {
-    const response: AxiosResponse<FeeConfig> = await this.client.post('/admin/fees/configs', data);
-    return response.data;
+    return this.makeResilientRequest<FeeConfig>('/admin/fees/configs', 'POST', data);
   }
 
   async updateFeeConfig(id: number, data: Partial<CreateFeeConfigRequest>): Promise<FeeConfig> {
-    const response: AxiosResponse<FeeConfig> = await this.client.put(`/admin/fees/configs/${id}`, data);
-    return response.data;
+    return this.makeResilientRequest<FeeConfig>(`/admin/fees/configs/${id}`, 'PUT', data);
   }
 
   async deleteFeeConfig(id: number): Promise<void> {
-    await this.client.delete(`/admin/fees/configs/${id}`);
+    return this.makeResilientRequest<void>(`/admin/fees/configs/${id}`, 'DELETE');
   }
 
   async getFeeRevenue(page = 1, size = 20, partnerId?: number): Promise<PaginatedResponse<FeeRevenue>> {
-    const response: AxiosResponse<PaginatedResponse<FeeRevenue>> = await this.client.get('/admin/fees/revenue', {
+    return this.makeResilientRequest<PaginatedResponse<FeeRevenue>>('/admin/fees/revenue', 'GET', undefined, {
       params: { page, size, partner_id: partnerId },
     });
-    return response.data;
   }
 
   // System Admins
   async getSystemAdmins(): Promise<SystemAdmin[]> {
-    const response: AxiosResponse<SystemAdmin[]> = await this.client.get('/admin/system/admins');
-    return response.data;
+    return this.makeResilientRequest<SystemAdmin[]>('/admin/system/admins');
   }
 
   async createSystemAdmin(data: {
@@ -314,8 +303,7 @@ class ApiClient {
     password: string;
     role: 'super_admin' | 'admin' | 'operator';
   }): Promise<SystemAdmin> {
-    const response: AxiosResponse<SystemAdmin> = await this.client.post('/admin/system/admins', data);
-    return response.data;
+    return this.makeResilientRequest<SystemAdmin>('/admin/system/admins', 'POST', data);
   }
 
   async updateSystemAdmin(id: number, data: Partial<{
@@ -324,12 +312,11 @@ class ApiClient {
     role: 'super_admin' | 'admin' | 'operator';
     is_active: boolean;
   }>): Promise<SystemAdmin> {
-    const response: AxiosResponse<SystemAdmin> = await this.client.put(`/admin/system/admins/${id}`, data);
-    return response.data;
+    return this.makeResilientRequest<SystemAdmin>(`/admin/system/admins/${id}`, 'PUT', data);
   }
 
   async deleteSystemAdmin(id: number): Promise<void> {
-    await this.client.delete(`/admin/system/admins/${id}`);
+    return this.makeResilientRequest<void>(`/admin/system/admins/${id}`, 'DELETE');
   }
 }
 

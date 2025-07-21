@@ -107,6 +107,11 @@ app.get('/admin/dashboard/stats', (req, res) => {
   res.json(generateDashboardStats());
 });
 
+// 추가: /api/dashboard/stats 엔드포인트
+app.get('/api/dashboard/stats', (req, res) => {
+  res.json(generateDashboardStats());
+});
+
 app.get('/admin/system/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -204,6 +209,26 @@ app.put('/api/users/:id', (req, res) => {
 app.delete('/api/users/:id', (req, res) => {
   const { id } = req.params;
   res.json({ message: `User ${id} deleted successfully` });
+});
+
+// System Admins PUT/DELETE endpoints (누락된 부분 추가)
+app.put('/admin/system/admins/:id', (req, res) => {
+  const { id } = req.params;
+  const updatedAdmin = {
+    id: parseInt(id),
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  
+  res.json(updatedAdmin);
+});
+
+app.delete('/admin/system/admins/:id', (req, res) => {
+  const { id } = req.params;
+  res.json({ 
+    success: true,
+    message: `System admin ${id} deleted successfully` 
+  });
 });
 
 // Partner management endpoints
@@ -356,16 +381,12 @@ app.post('/auth/login', (req, res) => {
   
   // Mock authentication - accept any credentials
   if (email && password) {
+    // 백엔드 Token 스키마와 정확히 일치하는 응답
     res.json({
-      success: true,
-      token: 'mock-jwt-token-' + Date.now(),
-      user: {
-        id: 1,
-        email: email,
-        name: 'Mock Admin',
-        role: 'super-admin',
-        permissions: ['read', 'write', 'admin']
-      }
+      access_token: 'mock-jwt-token-' + Date.now(),
+      refresh_token: 'mock-refresh-token-' + Date.now(),
+      token_type: 'bearer',
+      expires_in: 3600
     });
   } else {
     res.status(401).json({
@@ -373,6 +394,418 @@ app.post('/auth/login', (req, res) => {
       message: 'Invalid credentials'
     });
   }
+});
+
+// === External Energy API endpoints (백엔드 스키마와 동일한 구조) ===
+
+function generateExternalEnergyProviders() {
+  const providers = [
+    {
+      id: "tronnrg",
+      name: "TronNRG",
+      status: "online",
+      pricePerEnergy: 0.000012,
+      availableEnergy: 500000,
+      reliability: 0.98,
+      avgResponseTime: 250.5,
+      minOrderSize: 1000,
+      maxOrderSize: 100000,
+      fees: {
+        tradingFee: 0.002,
+        withdrawalFee: 0.001
+      },
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: "energytron",
+      name: "EnergyTron",
+      status: "online",
+      pricePerEnergy: 0.000015,
+      availableEnergy: 350000,
+      reliability: 0.95,
+      avgResponseTime: 180.3,
+      minOrderSize: 500,
+      maxOrderSize: 75000,
+      fees: {
+        tradingFee: 0.0015,
+        withdrawalFee: 0.0012
+      },
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: "sunio",
+      name: "SUN.io Energy",
+      status: "maintenance",
+      pricePerEnergy: 0.000018,
+      availableEnergy: 200000,
+      reliability: 0.92,
+      avgResponseTime: 320.7,
+      minOrderSize: 2000,
+      maxOrderSize: 50000,
+      fees: {
+        tradingFee: 0.0025,
+        withdrawalFee: 0.002
+      },
+      lastUpdated: new Date().toISOString()
+    }
+  ];
+  
+  return providers;
+}
+
+function generateMarketSummary() {
+  const providers = generateExternalEnergyProviders();
+  const onlineProviders = providers.filter(p => p.status === 'online');
+  const prices = onlineProviders.map(p => p.pricePerEnergy);
+  
+  return {
+    bestPrice: Math.min(...prices),
+    bestProvider: onlineProviders.find(p => p.pricePerEnergy === Math.min(...prices))?.name || "Unknown",
+    totalProviders: providers.length,
+    activeProviders: onlineProviders.length,
+    avgPrice: prices.reduce((a, b) => a + b, 0) / prices.length,
+    priceChange24h: (Math.random() - 0.5) * 0.1, // -5% ~ +5%
+    totalVolume: Math.floor(Math.random() * 1000000) + 500000,
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+// External Energy API endpoints - 백엔드와 정확히 동일한 구조
+app.get('/api/v1/external-energy/providers', (req, res) => {
+  const providers = generateExternalEnergyProviders();
+  
+  // 백엔드와 동일한 응답 구조
+  res.json({
+    success: true,
+    data: providers
+  });
+});
+
+app.get('/api/v1/external-energy/providers/health', (req, res) => {
+  const providers = generateExternalEnergyProviders();
+  const healthData = providers.map(provider => ({
+    providerId: provider.id,
+    status: provider.status,
+    lastCheck: new Date().toISOString(),
+    responseTime: provider.avgResponseTime,
+    uptime: Math.random() * 100
+  }));
+  
+  res.json({
+    success: true,
+    data: healthData
+  });
+});
+
+app.get('/api/v1/external-energy/providers/:providerId', (req, res) => {
+  const { providerId } = req.params;
+  const providers = generateExternalEnergyProviders();
+  const provider = providers.find(p => p.id === providerId);
+  
+  if (!provider) {
+    return res.status(404).json({
+      success: false,
+      error: "Provider not found",
+      message: "공급자를 찾을 수 없습니다"
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: provider
+  });
+});
+
+app.get('/api/v1/external-energy/providers/:providerId/prices', (req, res) => {
+  const { providerId } = req.params;
+  const providers = generateExternalEnergyProviders();
+  const provider = providers.find(p => p.id === providerId);
+  
+  if (!provider) {
+    return res.status(404).json({
+      success: false,
+      error: "Provider not found"
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: {
+      providerId: provider.id,
+      currentPrice: provider.pricePerEnergy,
+      priceHistory: Array.from({ length: 24 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
+        price: provider.pricePerEnergy + (Math.random() - 0.5) * 0.000005
+      })),
+      lastUpdated: provider.lastUpdated
+    }
+  });
+});
+
+app.get('/api/v1/external-energy/providers/:providerId/balance', (req, res) => {
+  const { providerId } = req.params;
+  const { address } = req.query;
+  
+  if (!address) {
+    return res.status(400).json({
+      success: false,
+      error: "Address parameter required"
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: {
+      providerId,
+      address,
+      balance: Math.floor(Math.random() * 10000) + 1000,
+      lastUpdated: new Date().toISOString()
+    }
+  });
+});
+
+app.post('/api/v1/external-energy/purchase/multi-provider', (req, res) => {
+  const { providers, totalAmount, maxPrice } = req.body;
+  
+  const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  res.json({
+    success: true,
+    data: {
+      id: orderId,
+      userId: "mock_user",
+      totalAmount,
+      maxPrice,
+      providers: providers.map((p, index) => ({
+        providerId: p.providerId,
+        amount: p.amount,
+        price: 0.000012 + (index * 0.000001),
+        status: "pending"
+      })),
+      status: "pending",
+      totalCost: totalAmount * 0.000012,
+      createdAt: new Date().toISOString(),
+      estimatedCompletion: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+    }
+  });
+});
+
+app.get('/public/providers', (req, res) => {
+  const providers = generateExternalEnergyProviders()
+    .filter(p => p.status === 'online')
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      pricePerEnergy: p.pricePerEnergy,
+      availability: p.availableEnergy > 10000 ? 'high' : 'low'
+    }));
+  
+  res.json({
+    success: true,
+    data: providers
+  });
+});
+
+app.get('/public/providers/summary', (req, res) => {
+  const summary = generateMarketSummary();
+  
+  res.json({
+    success: true,
+    data: summary
+  });
+});
+
+// === Energy Management API endpoints ===
+
+function generateEnergyPool() {
+  return {
+    id: 1,
+    total_energy: 1000000,
+    available_energy: 750000,
+    reserved_energy: 150000,
+    tron_balance: 5000.0,
+    energy_price: 0.00002,
+    last_updated: new Date().toISOString(),
+    status: 'healthy'
+  };
+}
+
+function generateEnergyTransaction() {
+  const types = ['recharge', 'allocation', 'usage', 'refund'];
+  const statuses = ['completed', 'pending', 'failed'];
+  
+  return {
+    id: Math.floor(Math.random() * 1000000),
+    type: types[Math.floor(Math.random() * types.length)],
+    partner_id: Math.floor(Math.random() * 10) + 1,
+    amount: Math.floor(Math.random() * 10000) + 1000,
+    tron_cost: Math.random() * 100 + 10,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    transaction_hash: `0x${Math.random().toString(16).substr(2, 64)}`,
+    created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    completed_at: new Date().toISOString()
+  };
+}
+
+// Energy Pool endpoints
+app.get('/admin/energy/pool', (req, res) => {
+  const pool = generateEnergyPool();
+  res.json(pool);
+});
+
+app.post('/admin/energy/recharge', (req, res) => {
+  const { amount } = req.body;
+  
+  if (!amount || amount <= 0) {
+    return res.status(400).json({
+      error: 'Invalid amount',
+      message: 'Amount must be greater than 0'
+    });
+  }
+  
+  const transaction = {
+    ...generateEnergyTransaction(),
+    type: 'recharge',
+    amount: amount,
+    status: 'completed'
+  };
+  
+  res.json(transaction);
+});
+
+app.post('/admin/energy/allocate', (req, res) => {
+  const { partner_id, amount } = req.body;
+  
+  if (!partner_id || !amount || amount <= 0) {
+    return res.status(400).json({
+      error: 'Invalid parameters',
+      message: 'partner_id and positive amount are required'
+    });
+  }
+  
+  const transaction = {
+    ...generateEnergyTransaction(),
+    type: 'allocation',
+    partner_id: partner_id,
+    amount: amount,
+    status: 'completed'
+  };
+  
+  res.json(transaction);
+});
+
+app.get('/admin/energy/transactions', (req, res) => {
+  const { page = 1, size = 20 } = req.query;
+  const pageNum = parseInt(page);
+  const sizeNum = parseInt(size);
+  
+  const transactions = Array.from({ length: 50 }, () => generateEnergyTransaction());
+  
+  const startIndex = (pageNum - 1) * sizeNum;
+  const endIndex = startIndex + sizeNum;
+  const paginatedData = transactions.slice(startIndex, endIndex);
+  
+  res.json({
+    data: paginatedData,
+    total: transactions.length,
+    page: pageNum,
+    size: sizeNum,
+    pages: Math.ceil(transactions.length / sizeNum)
+  });
+});
+
+// === Fee Management API endpoints ===
+
+function generateFeeConfig() {
+  const feeTypes = ['withdrawal', 'transaction', 'energy_allocation'];
+  
+  return {
+    id: Math.floor(Math.random() * 100) + 1,
+    fee_type: feeTypes[Math.floor(Math.random() * feeTypes.length)],
+    percentage: Math.random() * 5 + 0.1, // 0.1% ~ 5.1%
+    fixed_amount: Math.random() * 10,
+    min_fee: Math.random() * 1,
+    max_fee: Math.random() * 100 + 50,
+    is_active: Math.random() > 0.2,
+    created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+function generateFeeRevenue() {
+  return {
+    id: Math.floor(Math.random() * 1000000),
+    partner_id: Math.floor(Math.random() * 10) + 1,
+    partner_name: `Partner ${Math.floor(Math.random() * 10) + 1}`,
+    fee_type: 'transaction',
+    amount: Math.random() * 1000 + 10,
+    transaction_count: Math.floor(Math.random() * 100) + 1,
+    collected_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+  };
+}
+
+// Fee Management endpoints
+app.get('/admin/fees/configs', (req, res) => {
+  const configs = Array.from({ length: 10 }, () => generateFeeConfig());
+  res.json(configs);
+});
+
+app.post('/admin/fees/configs', (req, res) => {
+  const newConfig = {
+    id: Date.now(),
+    ...req.body,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true
+  };
+  
+  res.status(201).json(newConfig);
+});
+
+app.put('/admin/fees/configs/:id', (req, res) => {
+  const { id } = req.params;
+  
+  const updatedConfig = {
+    id: parseInt(id),
+    ...req.body,
+    updated_at: new Date().toISOString()
+  };
+  
+  res.json(updatedConfig);
+});
+
+app.delete('/admin/fees/configs/:id', (req, res) => {
+  const { id } = req.params;
+  
+  res.json({
+    success: true,
+    message: `Fee config ${id} deleted successfully`
+  });
+});
+
+app.get('/admin/fees/revenue', (req, res) => {
+  const { page = 1, size = 20, partner_id } = req.query;
+  const pageNum = parseInt(page);
+  const sizeNum = parseInt(size);
+  
+  let revenues = Array.from({ length: 100 }, () => generateFeeRevenue());
+  
+  // Partner ID 필터링
+  if (partner_id) {
+    revenues = revenues.filter(r => r.partner_id === parseInt(partner_id));
+  }
+  
+  const startIndex = (pageNum - 1) * sizeNum;
+  const endIndex = startIndex + sizeNum;
+  const paginatedData = revenues.slice(startIndex, endIndex);
+  
+  res.json({
+    data: paginatedData,
+    total: revenues.length,
+    page: pageNum,
+    size: sizeNum,
+    pages: Math.ceil(revenues.length / sizeNum)
+  });
 });
 
 // Error handling middleware

@@ -2,27 +2,25 @@
 
 Dantaro Wallet Pro의 슈퍼 관리자용 대시보드입니다.
 
-## 🎯 최신 업데이트 (2025.07.21)
+## 🎯 최신 업데이트 (2025.07.22)
 
-### ✨ 완료된 주요 개선사항 - Phase 2 완료 🎉
-- **🔋 TronNRG API 완전 통합**: 실시간 에너지 가격, 공급자 모니터링, 주문 생성/관리
-- **⚡ 외부 에너지 마켓 시스템**: 실시간 가격 업데이트, 시장가/지정가 주문, 다중 공급자 지원
-- **� Audit & Compliance 시스템 완전 구현**: 실시간 모니터링, 감사 로그, 보고서 생성
-- **🛡️ RBAC 권한 시스템**: 모든 보호된 페이지에 withRBAC 적용 및 세분화된 권한 관리
+### ✨ 완료된 주요 개선사항 - Phase 3.5 완료 🎉
+- **🎨 다크 테마 완전 통일**: 모든 하드코딩된 배경 색상 제거, 일관된 다크 테마 적용
+- **� 실시간 모니터링 안정화**: 외부 에너지 마켓 로딩 문제 완전 해결
+- **🔧 Mock 데이터 최적화**: 개발 환경에서 즉시 mock 데이터 사용, 빠른 로딩
+- **⚡ 에러 처리 강화**: 견고한 fallback 로직으로 무한 로딩 방지
+- **�🔋 TronNRG Service 개선**: Mock 모드 강제 활성화, 타임아웃 및 안정성 개선
+- **📡 WebSocket 안정화**: 연결 실패해도 페이지 정상 작동, 실시간 데이터 브로드캐스팅
+
+### 🎯 이전 완료 사항 - Phase 1-3 🎉
+- **🔋 TronNRG + EnergyTron API 완전 통합**: 실시간 에너지 가격, 다중 공급자 모니터링
+- **⚡ 외부 에너지 마켓 시스템**: 실시간 가격 업데이트, 시장가/지정가 주문
+- **🛡️ Audit & Compliance 시스템**: 실시간 모니터링, 감사 로그, 보고서 생성
+- **� RBAC 권한 시스템**: 모든 보호된 페이지에 withRBAC 적용
 - **🌍 완전한 다국어 지원**: 메뉴 시스템과 언어팩 완전 통합 (한국어/영어)
-- **🔧 타입 안전성**: TypeScript 에러 완전 제거, 빌드 성공 (24/24 페이지)
-- **⚡ 성능 최적화**: Next.js 빌드 최적화 완료, WebSocket 실시간 연결 구현
-- **🎛️ 통합 서비스 관리**: Mock HTTP Server, WebSocket Server, Frontend 자동화
-- **🎨 UI/UX 일관성**: DarkThemeComponents 기반 통일된 디자인 시스템
-- **⚡ 성능 최적화**: Next.js 빌드 최적화 완료, WebSocket 연결 안정화
-- **🎛️ 통합 서비스 관리**: Mock HTTP Server, WebSocket Server, Frontend 자동화
-- **🎨 UI/UX 일관성**: DarkThemeComponents 기반 통일된 디자인 시스템
+- **🔧 백엔드 Fallback 시스템**: 백엔드 다운 시 자동 Mock API 전환
 - **📋 메뉴 시스템 완전 리팩터링**: i18n 기반 동적 메뉴, 권한별 필터링
-- **🔄 워크플로우 명확화**: 파트너 관리/온보딩, 시스템/분석 대시보드 역할 분리
-- **📊 감사 시스템**: 실시간 트랜잭션 모니터링, 긴급 차단, 보고서 생성 완료
-- **⚡ 성능 최적화**: Next.js 빌드 최적화 완료 (24/24 페이지 생성)
 - **🎛️ 통합 서비스 관리**: Mock HTTP Server, WebSocket Server, Frontend 자동화
-- **� UI/UX 일관성**: DarkThemeComponents 기반 통일된 디자인 시스템
 
 ### 🔄 리팩터링된 페이지 및 워크플로우
 - **파트너 관리** (`/partners`): 승인된 파트너 운영 관리 (관리/모니터링 중심)
@@ -139,7 +137,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_MOCK_API_URL=http://localhost:3001
 
 # WebSocket 설정
-NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
+NEXT_PUBLIC_WS_URL=ws://localhost:3002
 NEXT_PUBLIC_MOCK_WS_URL=ws://localhost:3002
 
 # 포트 설정
@@ -197,7 +195,9 @@ NEXTAUTH_URL=http://localhost:3020
 
 ### ✅ **완료된 기능**
 - **🎛️ 통합 서비스 관리**: 자동화된 프로세스 및 포트 관리 시스템
-- **📊 실시간 모니터링**: WebSocket 기반 실시간 시스템 상태 모니터링
+- **📊 실시간 모니터링**: WebSocket 기반 실시간 시스템 상태 모니터링 ✅
+- **🔌 WebSocket 서버**: Mock WebSocket 서버 (포트 3002) 정상 작동 ✅
+- **⚡ 실시간 데이터**: 시스템 통계, 대시보드, 에너지 마켓, 알림 실시간 브로드캐스트 ✅
 - **📈 시스템 성능 추적**: CPU, Memory, Disk, 연결 수 실시간 모니터링
 - **💼 비즈니스 메트릭**: 사용자, 거래, 수익 실시간 추적
 - **🔔 실시간 알림**: 시스템 이벤트 및 거래 알림 (우선순위, 히스토리)

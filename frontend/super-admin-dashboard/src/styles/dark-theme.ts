@@ -35,8 +35,8 @@ export const darkTheme = {
   
   // 카드 스타일
   card: {
-    background: 'bg-gray-800 border-gray-700',
-    shadow: 'shadow-lg shadow-black/20',
+    background: 'bg-gray-800 border border-gray-600',
+    shadow: 'shadow-xl shadow-black/30',
   }
 }
 

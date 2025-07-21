@@ -1,9 +1,9 @@
 'use client';
 
-import { Card } from '@/components/ui/Card';
 import { realtimeManager } from '@/lib/realtime-manager';
 import { AlertCircle, AlertTriangle, Bell, Clock, Info, TrendingUp, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createDarkClasses } from '@/styles/dark-theme';
 
 interface Alert {
   id: string;
@@ -35,42 +35,60 @@ export function RealtimeAlerts({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
+  // Type guard functions
+  const isAlert = (item: unknown): item is Alert => {
+    if (!item || typeof item !== 'object') return false;
+    const obj = item as Record<string, unknown>;
+    return typeof obj.message === 'string' &&
+      typeof obj.type === 'string' &&
+      ['error', 'warning', 'info'].includes(obj.type) &&
+      typeof obj.id === 'string' &&
+      typeof obj.timestamp === 'string';
+  };
+
+  const isTransaction = (item: unknown): item is Transaction => {
+    if (!item || typeof item !== 'object') return false;
+    const obj = item as Record<string, unknown>;
+    return typeof obj.amount === 'number' &&
+      typeof obj.status === 'string' &&
+      ['pending', 'completed', 'failed'].includes(obj.status) &&
+      typeof obj.id === 'string' &&
+      typeof obj.timestamp === 'string' &&
+      typeof obj.type === 'string';
+  };
+
   useEffect(() => {
-    // Subscribe to realtime alerts
+    // Subscribe to realtime alerts (both singular and plural forms)
     const unsubscribeAlerts = realtimeManager.subscribe('alerts', (data: Alert[]) => {
       if (Array.isArray(data)) {
         setAlerts(data.filter(alert => !dismissedAlerts.has(alert.id)).slice(0, maxAlerts));
       }
     });
 
-    // Subscribe to realtime transactions
+    const unsubscribeAlert = realtimeManager.subscribe('alert', (data: Alert) => {
+      if (data && typeof data === 'object' && isAlert(data)) {
+        setAlerts(prev => {
+          const filtered = prev.filter(alert => alert.id !== data.id && !dismissedAlerts.has(alert.id));
+          return [data, ...filtered].slice(0, maxAlerts);
+        });
+      }
+    });
+
+    // Subscribe to realtime transactions (both singular and plural forms)
     const unsubscribeTransactions = realtimeManager.subscribe('transactions', (data: Transaction[]) => {
       if (Array.isArray(data)) {
         setTransactions(data.slice(0, maxAlerts));
       }
     });
 
-    // Type guard functions
-    const isAlert = (item: unknown): item is Alert => {
-      if (!item || typeof item !== 'object') return false;
-      const obj = item as Record<string, unknown>;
-      return typeof obj.message === 'string' &&
-        typeof obj.type === 'string' &&
-        ['error', 'warning', 'info'].includes(obj.type) &&
-        typeof obj.id === 'string' &&
-        typeof obj.timestamp === 'string';
-    };
-
-    const isTransaction = (item: unknown): item is Transaction => {
-      if (!item || typeof item !== 'object') return false;
-      const obj = item as Record<string, unknown>;
-      return typeof obj.amount === 'number' &&
-        typeof obj.status === 'string' &&
-        ['pending', 'completed', 'failed'].includes(obj.status) &&
-        typeof obj.id === 'string' &&
-        typeof obj.timestamp === 'string' &&
-        typeof obj.type === 'string';
-    };
+    const unsubscribeTransaction = realtimeManager.subscribe('transaction', (data: Transaction) => {
+      if (data && typeof data === 'object' && isTransaction(data)) {
+        setTransactions(prev => {
+          const filtered = prev.filter(tx => tx.id !== data.id);
+          return [data, ...filtered].slice(0, maxAlerts);
+        });
+      }
+    });
 
     // Get initial data if available
     const initialAlerts = realtimeManager.getData('alerts');
@@ -87,7 +105,9 @@ export function RealtimeAlerts({
 
     return () => {
       unsubscribeAlerts();
+      unsubscribeAlert();
       unsubscribeTransactions();
+      unsubscribeTransaction();
     };
   }, [dismissedAlerts, maxAlerts]);
 
@@ -158,7 +178,7 @@ export function RealtimeAlerts({
   return (
     <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${className}`}>
       {/* Alerts Section */}
-      <Card className="p-6 bg-gray-800 border-gray-700">
+      <div className={`${createDarkClasses.card()} p-6`}>
         <div className="flex items-center space-x-2 mb-4">
           <Bell className="w-5 h-5 text-blue-400" />
           <h3 className="text-lg font-semibold text-white">System Alerts</h3>
@@ -171,7 +191,7 @@ export function RealtimeAlerts({
 
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {alerts.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">No alerts</p>
+            <p className="text-gray-200 text-center py-4">No alerts</p>
           ) : (
             alerts.map((alert) => (
               <div
@@ -202,11 +222,11 @@ export function RealtimeAlerts({
             ))
           )}
         </div>
-      </Card>
+      </div>
 
       {/* Recent Transactions Section */}
       {showTransactions && (
-        <Card className="p-6 bg-gray-800 border-gray-700">
+        <div className={`${createDarkClasses.card()} p-6`}>
           <div className="flex items-center space-x-2 mb-4">
             <TrendingUp className="w-5 h-5 text-green-400" />
             <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
@@ -219,7 +239,7 @@ export function RealtimeAlerts({
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {transactions.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No recent transactions</p>
+              <p className="text-gray-200 text-center py-4">No recent transactions</p>
             ) : (
               transactions.map((transaction) => (
                 <div

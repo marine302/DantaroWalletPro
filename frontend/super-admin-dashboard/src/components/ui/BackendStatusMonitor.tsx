@@ -98,7 +98,7 @@ export default function BackendStatusMonitor({ className = '' }: BackendStatusPr
       )}
       <button
         onClick={checkBackendStatus}
-        className="ml-2 px-2 py-1 text-xs rounded bg-white bg-opacity-50 hover:bg-opacity-75 transition-colors"
+        className="ml-2 px-2 py-1 text-xs rounded bg-gray-700 bg-opacity-50 hover:bg-opacity-75 transition-colors"
         disabled={backendStatus === 'checking'}
       >
         새로고침
@@ -133,7 +133,7 @@ export function BackendAPIToggle({ className = '' }: { className?: string }) {
 
   return (
     <div className={`flex items-center space-x-3 ${className}`}>
-      <span className="text-sm font-medium text-gray-700">백엔드 API 사용:</span>
+      <span className="text-sm font-medium text-gray-300">백엔드 API 사용:</span>
       <button
         onClick={toggleBackendAPI}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
@@ -141,12 +141,12 @@ export function BackendAPIToggle({ className = '' }: { className?: string }) {
         }`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-gray-200 transition-transform ${
             useBackendAPI ? 'translate-x-6' : 'translate-x-1'
           }`}
         />
       </button>
-      <span className="text-xs text-gray-500">
+      <span className="text-xs text-gray-400">
         {useBackendAPI ? '백엔드 API (Fallback: Mock)' : 'Mock API만 사용'}
       </span>
     </div>

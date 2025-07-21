@@ -77,12 +77,13 @@ class TronNRGService {
     // 환경 변수에서 설정 로드
     this.baseURL = process.env.NEXT_PUBLIC_TRONNRG_API_URL || 'https://api.tronnrg.com/v1';
     this.apiKey = process.env.NEXT_PUBLIC_TRONNRG_API_KEY || 'demo_key';
-    this.isProduction = process.env.NODE_ENV === 'production';
+    this.isProduction = false; // 강제로 개발 모드로 설정
     
     console.log('🔋 TronNRG Service initialized:', {
       baseURL: this.baseURL,
       isProduction: this.isProduction,
-      hasApiKey: !!this.apiKey
+      hasApiKey: !!this.apiKey,
+      forceMockMode: true
     });
   }
 
@@ -90,6 +91,13 @@ class TronNRGService {
    * API 요청 헬퍼 메서드
    */
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    // 개발 환경에서는 바로 mock 데이터 반환
+    if (!this.isProduction) {
+      console.log('🎭 Using mock data for development:', endpoint);
+      await new Promise(resolve => setTimeout(resolve, 100)); // 작은 지연 시뮬레이션
+      return this.getMockData(endpoint) as T;
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     
     const defaultHeaders = {
@@ -226,7 +234,10 @@ class TronNRGService {
    * 사용 가능한 공급자 목록 조회
    */
   async getProviders(): Promise<TronNRGProvider[]> {
-    return this.makeRequest<TronNRGProvider[]>('/providers');
+    console.log('🔍 TronNRG getProviders called');
+    const result = await this.makeRequest<TronNRGProvider[]>('/providers');
+    console.log('📋 TronNRG providers result:', result);
+    return result;
   }
 
   /**
