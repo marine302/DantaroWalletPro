@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { BasePage } from "@/components/ui/BasePage";
 import { Section, StatCard, Button } from '@/components/ui/DarkThemeComponents';
 import { RefreshCw, TrendingUp, TrendingDown, Zap, AlertCircle, CheckCircle } from 'lucide-react';
-import { tronNRGService, TronNRGProvider, TronNRGMarketData, TronNRGPrice } from '@/services/tron-nrg-service';
-import { energyTronService, EnergyTronProvider, EnergyTronMarketData, ProviderComparison } from '@/services/energytron-service';
+import { tronNRGService, TronNRGPrice } from '@/services/tron-nrg-service';
+import { energyTronService, EnergyTronMarketData, ProviderComparison } from '@/services/energytron-service';
 
 interface CombinedProvider {
   id: string;
@@ -144,12 +144,12 @@ export default function ExternalEnergyMarketPage() {
 
       // 공급자 데이터 통합
       const combined: CombinedProvider[] = [
-        ...tronProviders.map((p: any) => ({
+        ...tronProviders.map((p: Record<string, unknown>) => ({
           ...p,
           provider: 'TronNRG' as const,
           priceChangeStatus: 'stable' as const
         })),
-        ...energyProviders.map((p: any) => ({
+        ...energyProviders.map((p: Record<string, unknown>) => ({
           ...p,
           provider: 'EnergyTron' as const,
           priceChangeStatus: 'stable' as const
@@ -167,16 +167,16 @@ export default function ExternalEnergyMarketPage() {
         totalProviders: combined.length,
         activeProviders: combined.filter(p => p.status === 'online').length,
         avgPrice: allPrices.length > 0 ? allPrices.reduce((a, b) => a + b, 0) / allPrices.length : 0,
-        priceChange24h: ((tronMarketData as any)?.dailyChange || 0) + ((energyMarketData as any)?.dailyChange || 0) / 2,
-        totalVolume: ((tronMarketData as any)?.dailyVolume || 0) + ((energyMarketData as any)?.dailyVolume || 0),
+        priceChange24h: ((tronMarketData as Record<string, unknown>)?.dailyChange as number || 0) + ((energyMarketData as Record<string, unknown>)?.dailyChange as number || 0) / 2,
+        totalVolume: ((tronMarketData as Record<string, unknown>)?.dailyVolume as number || 0) + ((energyMarketData as Record<string, unknown>)?.dailyVolume as number || 0),
         lastUpdated: new Date().toISOString()
       };
 
       setCombinedProviders(combined);
       setMarketSummary(summary);
-      setTronNRGPrice(tronPrice as any);
-      setEnergyTronData(energyMarketData as any);
-      setProviderComparison(providerComparison as any);
+      setTronNRGPrice(tronPrice as TronNRGPrice);
+      setEnergyTronData(energyMarketData as EnergyTronMarketData);
+      setProviderComparison(providerComparison as ProviderComparison);
       setLastUpdate(new Date().toLocaleTimeString());
       setConnectionStatus('connected');
       
@@ -255,7 +255,7 @@ export default function ExternalEnergyMarketPage() {
       // EnergyTron 가격 스트림 (timeout 설정)
       setTimeout(() => {
         try {
-          const energyTronWS = energyTronService.connectPriceStream((data: any) => {
+          const energyTronWS = energyTronService.connectPriceStream((data: Record<string, unknown>) => {
             if (data.type === 'price_update') {
               setEnergyTronData(prev => prev ? {
                 ...prev,

@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.models.partner import Partner
 from app.models.wallet import Wallet
@@ -20,6 +21,9 @@ from app.core.logging import get_logger
 import logging
 
 logger = get_logger(__name__)
+
+# FastAPI Router
+router = APIRouter(prefix="/integrated-dashboard", tags=["Integrated Dashboard"])
 
 class IntegratedDashboard:
     """파트너사 종합 대시보드 서비스"""
@@ -608,3 +612,149 @@ class IntegratedDashboard:
         """성능 지표 조회"""
         # 구현 예정
         return {}
+
+
+# API 엔드포인트들
+@router.get("/overview/{partner_id}")
+async def get_dashboard_overview(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """파트너사 대시보드 개요 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_dashboard_data()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Dashboard overview error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/wallet-overview/{partner_id}")
+async def get_wallet_overview(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """지갑 개요 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_wallet_overview()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Wallet overview error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/transaction-flow/{partner_id}")
+async def get_transaction_flow(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """거래 흐름 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_transaction_flow()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Transaction flow error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/energy-status/{partner_id}")
+async def get_energy_status(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """에너지 상태 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_energy_status()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Energy status error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/system-health/{partner_id}")
+async def get_system_health(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """시스템 건강도 분석 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_system_health()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"System health error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/user-analytics/{partner_id}")
+async def get_user_analytics(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """사용자 분석 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_user_analytics()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"User analytics error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/revenue-metrics/{partner_id}")
+async def get_revenue_metrics(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """수익 지표 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_revenue_metrics()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Revenue metrics error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/risk-alerts/{partner_id}")
+async def get_risk_alerts(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """위험 알림 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_risk_alerts()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Risk alerts error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/predictions/{partner_id}")
+async def get_predictions(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """예측 데이터 조회"""
+    try:
+        dashboard = IntegratedDashboard(db, partner_id)
+        data = await dashboard.get_predictions()
+        return {"success": True, "data": data}
+    except Exception as e:
+        logger.error(f"Predictions error for partner {partner_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/test")
+async def test_dashboard():
+    """대시보드 연결 테스트"""
+    return {
+        "success": True,
+        "message": "Integrated Dashboard API is working",
+        "timestamp": datetime.utcnow().isoformat()
+    }

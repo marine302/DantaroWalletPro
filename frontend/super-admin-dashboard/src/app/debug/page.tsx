@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/api';
 export default function DebugPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
-  const [apiTestResults, setApiTestResults] = useState<any[]>([]);
+  const [apiTestResults, setApiTestResults] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     // 기존 console.error 래핑

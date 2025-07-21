@@ -9,7 +9,6 @@ import { UserManagement } from '@/components/auth/UserManagement';
 import { User } from '@/types/auth';
 
 function AdminsPage() {
-  const { t } = useI18n();
   const [users, setUsers] = useState<User[]>([
     {
       id: '1',

@@ -94,6 +94,9 @@ api_router.include_router(sweep.router, prefix="/sweep", tags=["sweep"])  # Depo
 api_router.include_router(audit_compliance.router)  # 🔍 Frontend: /app/audit-compliance/page.tsx
 # Note: Uses prefix="/audit-compliance" defined in the router itself
 
+# Integrated Dashboard - Comprehensive partner analytics dashboard
+api_router.include_router(integrated_dashboard.router, tags=["integrated_dashboard"])  # 🔍 Frontend: /app/integrated-dashboard/page.tsx
+
 # Analytics & Reporting
 # dashboard router는 하단에서 /dashboard로 등록되므로 여기서는 제거
 api_router.include_router(stats.router, tags=["statistics"])  # General system statistics
