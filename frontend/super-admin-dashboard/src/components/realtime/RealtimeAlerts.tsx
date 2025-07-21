@@ -4,20 +4,21 @@ import { realtimeManager } from '@/lib/realtime-manager';
 import { AlertCircle, AlertTriangle, Bell, Clock, Info, TrendingUp, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createDarkClasses } from '@/styles/dark-theme';
+import { AlertPriority, TransactionStatus, TransactionType, WithTimestamp, SafeRecord } from '@/types/common';
 
-interface Alert {
+// Local types for RealtimeAlerts
+interface Alert extends WithTimestamp {
   id: string;
-  type: 'error' | 'warning' | 'info';
+  type: 'success' | 'warning' | 'error' | 'info';
   message: string;
-  timestamp: string;
+  priority?: AlertPriority;
 }
 
-interface Transaction {
+interface Transaction extends WithTimestamp {
   id: string;
-  type: string;
+  type: TransactionType;
+  status: TransactionStatus;
   amount: number;
-  status: 'pending' | 'completed' | 'failed';
-  timestamp: string;
 }
 
 interface RealtimeAlertsProps {
@@ -35,81 +36,61 @@ export function RealtimeAlerts({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
-  // Type guard functions
-  const isAlert = (item: unknown): item is Alert => {
-    if (!item || typeof item !== 'object') return false;
-    const obj = item as Record<string, unknown>;
-    return typeof obj.message === 'string' &&
-      typeof obj.type === 'string' &&
-      ['error', 'warning', 'info'].includes(obj.type) &&
+  // 데이터 검증 함수들
+  const isAlert = (data: unknown): data is Alert => {
+    if (!data || typeof data !== 'object') return false;
+    const obj = data as Record<string, unknown>;
+    return (
       typeof obj.id === 'string' &&
-      typeof obj.timestamp === 'string';
+      typeof obj.message === 'string' &&
+      typeof obj.type === 'string' &&
+      ['success', 'warning', 'error', 'info'].includes(obj.type as string) &&
+      typeof obj.timestamp === 'string'
+    );
   };
 
-  const isTransaction = (item: unknown): item is Transaction => {
-    if (!item || typeof item !== 'object') return false;
-    const obj = item as Record<string, unknown>;
-    return typeof obj.amount === 'number' &&
-      typeof obj.status === 'string' &&
-      ['pending', 'completed', 'failed'].includes(obj.status) &&
+  const isTransaction = (data: unknown): data is Transaction => {
+    if (!data || typeof data !== 'object') return false;
+    const obj = data as Record<string, unknown>;
+    return (
       typeof obj.id === 'string' &&
-      typeof obj.timestamp === 'string' &&
-      typeof obj.type === 'string';
+      typeof obj.type === 'string' &&
+      typeof obj.status === 'string' &&
+      ['pending', 'completed', 'failed', 'cancelled'].includes(obj.status as string) &&
+      typeof obj.amount === 'number' &&
+      typeof obj.timestamp === 'string'
+    );
   };
 
   useEffect(() => {
-    // Subscribe to realtime alerts (both singular and plural forms)
-    const unsubscribeAlerts = realtimeManager.subscribe('alerts', (data: Alert[]) => {
-      if (Array.isArray(data)) {
-        setAlerts(data.filter(alert => !dismissedAlerts.has(alert.id)).slice(0, maxAlerts));
+    // Subscribe to realtime data
+    const unsubscribeAlerts = realtimeManager.subscribe('alerts', (data: unknown) => {
+      try {
+        if (Array.isArray(data)) {
+          const validAlerts = data.filter(isAlert);
+          setAlerts(validAlerts.filter(alert => !dismissedAlerts.has(alert.id)).slice(0, maxAlerts));
+        }
+      } catch (error) {
+        console.error('Error processing alerts:', error);
       }
     });
 
-    const unsubscribeAlert = realtimeManager.subscribe('alert', (data: Alert) => {
-      if (data && typeof data === 'object' && isAlert(data)) {
-        setAlerts(prev => {
-          const filtered = prev.filter(alert => alert.id !== data.id && !dismissedAlerts.has(alert.id));
-          return [data, ...filtered].slice(0, maxAlerts);
-        });
+    const unsubscribeTransactions = realtimeManager.subscribe('transactions', (data: unknown) => {
+      try {
+        if (Array.isArray(data)) {
+          const validTransactions = data.filter(isTransaction);
+          setTransactions(validTransactions.slice(0, 10)); // 최대 10개
+        }
+      } catch (error) {
+        console.error('Error processing transactions:', error);
       }
     });
-
-    // Subscribe to realtime transactions (both singular and plural forms)
-    const unsubscribeTransactions = realtimeManager.subscribe('transactions', (data: Transaction[]) => {
-      if (Array.isArray(data)) {
-        setTransactions(data.slice(0, maxAlerts));
-      }
-    });
-
-    const unsubscribeTransaction = realtimeManager.subscribe('transaction', (data: Transaction) => {
-      if (data && typeof data === 'object' && isTransaction(data)) {
-        setTransactions(prev => {
-          const filtered = prev.filter(tx => tx.id !== data.id);
-          return [data, ...filtered].slice(0, maxAlerts);
-        });
-      }
-    });
-
-    // Get initial data if available
-    const initialAlerts = realtimeManager.getData('alerts');
-    if (initialAlerts && Array.isArray(initialAlerts)) {
-      const validAlerts = initialAlerts.filter(isAlert);
-      setAlerts(validAlerts.filter(alert => !dismissedAlerts.has(alert.id)).slice(0, maxAlerts));
-    }
-
-    const initialTransactions = realtimeManager.getData('transactions');
-    if (initialTransactions && Array.isArray(initialTransactions)) {
-      const validTransactions = initialTransactions.filter(isTransaction);
-      setTransactions(validTransactions.slice(0, maxAlerts));
-    }
 
     return () => {
       unsubscribeAlerts();
-      unsubscribeAlert();
       unsubscribeTransactions();
-      unsubscribeTransaction();
     };
-  }, [dismissedAlerts, maxAlerts]);
+  }, [maxAlerts, dismissedAlerts]);
 
   const dismissAlert = (alertId: string) => {
     setDismissedAlerts(prev => new Set([...prev, alertId]));
@@ -271,7 +252,7 @@ export function RealtimeAlerts({
               ))
             )}
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

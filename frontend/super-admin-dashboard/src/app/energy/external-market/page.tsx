@@ -126,7 +126,9 @@ export default function ExternalEnergyMarketPage() {
         dailyChange: 0
       };
       
-      const tronProviders = tronNRGProviders.status === 'fulfilled' ? tronNRGProviders.value : [];
+      const tronProviders = tronNRGProviders.status === 'fulfilled' 
+        ? (Array.isArray(tronNRGProviders.value) ? tronNRGProviders.value : []) 
+        : [];
       const tronPrice = tronNRGPrice.status === 'fulfilled' ? tronNRGPrice.value : null;
       
       const energyMarketData = energyTronMarketData.status === 'fulfilled' ? energyTronMarketData.value : {
@@ -135,17 +137,19 @@ export default function ExternalEnergyMarketPage() {
         dailyChange: 0
       };
       
-      const energyProviders = energyTronProviders.status === 'fulfilled' ? energyTronProviders.value : [];
+      const energyProviders = energyTronProviders.status === 'fulfilled' 
+        ? (Array.isArray(energyTronProviders.value) ? energyTronProviders.value : [])
+        : [];
       const providerComparison = comparison.status === 'fulfilled' ? comparison.value : null;
 
       // 공급자 데이터 통합
       const combined: CombinedProvider[] = [
-        ...tronProviders.map(p => ({
+        ...tronProviders.map((p: any) => ({
           ...p,
           provider: 'TronNRG' as const,
           priceChangeStatus: 'stable' as const
         })),
-        ...energyProviders.map(p => ({
+        ...energyProviders.map((p: any) => ({
           ...p,
           provider: 'EnergyTron' as const,
           priceChangeStatus: 'stable' as const
@@ -163,16 +167,16 @@ export default function ExternalEnergyMarketPage() {
         totalProviders: combined.length,
         activeProviders: combined.filter(p => p.status === 'online').length,
         avgPrice: allPrices.length > 0 ? allPrices.reduce((a, b) => a + b, 0) / allPrices.length : 0,
-        priceChange24h: (tronMarketData.dailyChange + energyMarketData.dailyChange) / 2,
-        totalVolume: tronMarketData.dailyVolume + energyMarketData.dailyVolume,
+        priceChange24h: ((tronMarketData as any)?.dailyChange || 0) + ((energyMarketData as any)?.dailyChange || 0) / 2,
+        totalVolume: ((tronMarketData as any)?.dailyVolume || 0) + ((energyMarketData as any)?.dailyVolume || 0),
         lastUpdated: new Date().toISOString()
       };
 
       setCombinedProviders(combined);
       setMarketSummary(summary);
-      setTronNRGPrice(tronPrice);
-      setEnergyTronData(energyMarketData);
-      setProviderComparison(providerComparison);
+      setTronNRGPrice(tronPrice as any);
+      setEnergyTronData(energyMarketData as any);
+      setProviderComparison(providerComparison as any);
       setLastUpdate(new Date().toLocaleTimeString());
       setConnectionStatus('connected');
       

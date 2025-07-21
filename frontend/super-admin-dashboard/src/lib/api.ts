@@ -92,7 +92,7 @@ class ApiClient {
   /**
    * 백엔드 API 실패 시 자동으로 Mock API로 fallback하는 요청 메서드
    */
-  private async makeResilientRequest<T>(
+  public async makeResilientRequest<T>(
     endpoint: string, 
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any,
@@ -317,6 +317,23 @@ class ApiClient {
 
   async deleteSystemAdmin(id: number): Promise<void> {
     return this.makeResilientRequest<void>(`/admin/system/admins/${id}`, 'DELETE');
+  }
+
+  // 편의 메서드들 (external-energy-service 호환성을 위해)
+  async get<T>(endpoint: string, options?: any): Promise<T> {
+    return this.makeResilientRequest<T>(endpoint, 'GET', undefined, options);
+  }
+
+  async post<T>(endpoint: string, data?: any, options?: any): Promise<T> {
+    return this.makeResilientRequest<T>(endpoint, 'POST', data, options);
+  }
+
+  async put<T>(endpoint: string, data?: any, options?: any): Promise<T> {
+    return this.makeResilientRequest<T>(endpoint, 'PUT', data, options);
+  }
+
+  async delete<T>(endpoint: string, options?: any): Promise<T> {
+    return this.makeResilientRequest<T>(endpoint, 'DELETE', undefined, options);
   }
 }
 

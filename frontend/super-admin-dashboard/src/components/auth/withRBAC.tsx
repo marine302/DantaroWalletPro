@@ -3,9 +3,27 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Permission } from '@/types/auth';
-import { ROUTE_PERMISSIONS } from '../../../middleware';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+
+// Route permissions mapping (moved from deleted middleware.ts)
+const ROUTE_PERMISSIONS: Record<string, Permission[]> = {
+  '/': ['analytics.view'],
+  '/admins': ['users.view'],
+  '/partners': ['partners.view'],
+  '/partner-onboarding': ['partners.create', 'partners.edit'],
+  '/energy': ['energy.view'],
+  '/energy/auto-purchase': ['energy.trade'],
+  '/energy/external-market': ['energy.view'],
+  '/energy/external-market/purchase': ['energy.trade'],
+  '/energy/purchase-history': ['energy.view'],
+  '/energy-market': ['energy.view', 'energy.manage_providers'],
+  '/fees': ['finance.view', 'finance.manage_fees'],
+  '/analytics': ['analytics.view'],
+  '/integrated-dashboard': ['analytics.view'],
+  '/audit-compliance': ['audit.view'],
+  '/settings': ['system.manage_settings'],
+};
 
 interface WithRBACProps {
   requiredPermissions?: Permission[];
@@ -32,7 +50,7 @@ export function withRBAC<P extends object>(
       // Check route-based permissions
       const routePermissions = ROUTE_PERMISSIONS[pathname];
       if (routePermissions && user) {
-        const hasRouteAccess = routePermissions.some(permission => 
+        const hasRouteAccess = routePermissions.some((permission: Permission) => 
           hasPermission(permission)
         );
         

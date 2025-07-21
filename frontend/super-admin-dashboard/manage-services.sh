@@ -12,25 +12,31 @@ case "$1" in
         
         # 백그라운드에서 목업 서버들 시작
         echo "🔧 목업 서버들 시작 중..."
-        node unified-service-manager.js start &
-        MOCK_PID=$!
+        node mock-server.js &
+        MOCK_HTTP_PID=$!
+        
+        node mock-realtime-server.js &
+        MOCK_WS_PID=$!
         
         # 잠시 대기 (목업 서버들이 시작되도록)
         sleep 3
         
         echo "🌐 프론트엔드 개발 서버 시작 중..."
         # 프론트엔드 서버 시작
-        npm run dev:frontend-only
+        npm run frontend-only
         
         # 종료 시 목업 서버들도 정리
         echo "🛑 서비스들을 정리합니다..."
-        kill $MOCK_PID 2>/dev/null
-        node unified-service-manager.js stop
+        kill $MOCK_HTTP_PID 2>/dev/null
+        kill $MOCK_WS_PID 2>/dev/null
         ;;
         
     "stop")
         echo "🛑 모든 서비스를 중지합니다..."
-        node unified-service-manager.js stop
+        
+        # Mock 서버들 중지
+        pkill -f "mock-server.js" 2>/dev/null
+        pkill -f "mock-realtime-server.js" 2>/dev/null
         
         # 프론트엔드 서버도 중지
         pkill -f "next dev" 2>/dev/null
@@ -41,11 +47,24 @@ case "$1" in
         
     "status")
         echo "📊 서비스 상태를 확인합니다..."
-        node unified-service-manager.js status
+        
+        echo ""
+        echo "🔧 Mock 서버 상태:"
+        if curl -s http://localhost:3001/health > /dev/null 2>&1; then
+            echo "   ✅ HTTP Mock Server: http://localhost:3001 (정상)"
+        else
+            echo "   ❌ HTTP Mock Server: 중지됨"
+        fi
+        
+        if nc -z localhost 3002 2>/dev/null; then
+            echo "   ✅ WebSocket Mock Server: ws://localhost:3002 (정상)"
+        else
+            echo "   ❌ WebSocket Mock Server: 중지됨"
+        fi
         
         echo ""
         echo "🌐 프론트엔드 서버 상태:"
-        if curl -s http://localhost:3020 > /dev/null; then
+        if curl -s http://localhost:3020 > /dev/null 2>&1; then
             echo "   ✅ Frontend: http://localhost:3020 (정상)"
         else
             echo "   ❌ Frontend: 중지됨"
