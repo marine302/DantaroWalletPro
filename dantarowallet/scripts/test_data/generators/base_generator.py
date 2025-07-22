@@ -24,8 +24,8 @@ class BaseDataGenerator:
     """테스트 데이터 생성을 위한 기본 클래스"""
     
     def __init__(self):
-        self.engine = None
-        self.session_maker = None
+        self.engine: Optional[Any] = None
+        self.session_maker: Optional[Any] = None
         self.config_path = Path(__file__).parent.parent / "config"
         
     async def initialize_db(self):
@@ -80,9 +80,11 @@ class BaseDataGenerator:
         
     async def get_session(self) -> AsyncSession:
         """데이터베이스 세션 생성"""
+        if not self.session_maker:
+            raise RuntimeError("Database not initialized. Call initialize_db() first.")
         return self.session_maker()
         
-    def log_progress(self, message: str, current: int = None, total: int = None):
+    def log_progress(self, message: str, current: Optional[int] = None, total: Optional[int] = None):
         """진행 상황 로그"""
         if current is not None and total is not None:
             progress = f"({current}/{total}) "

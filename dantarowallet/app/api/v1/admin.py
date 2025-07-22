@@ -280,33 +280,6 @@ async def get_system_risk_summary(
     return await admin_service.get_system_risk_summary()
 
 
-# 대시보드 관련 엔드포인트
-@router.get("/dashboard/stats")
-async def get_dashboard_stats(
-    current_admin = Depends(get_current_super_admin),
-    db: AsyncSession = Depends(get_db),
-):
-    """대시보드 통계 조회"""
-    admin_service = AdminService(db)
-    return await admin_service.get_system_stats()
-
-
-@router.get("/system/health")  
-async def get_system_health(
-    current_admin = Depends(get_current_super_admin),
-):
-    """시스템 건강 상태 조회"""
-    return {
-        "status": "healthy",
-        "timestamp": "2025-07-06T11:20:00Z",
-        "services": {
-            "database": "healthy",
-            "tron_network": "degraded",  # TRON API 제한으로 인한 degraded 상태
-            "energy_pool": "healthy"
-        }
-    }
-
-
 # 새로 추가된 관리자 기능들 import
 from app.api.v1.endpoints.admin import energy, fees, partners
 

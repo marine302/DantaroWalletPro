@@ -9,6 +9,12 @@ api_router = APIRouter()
 
 from app.api.v1 import admin, dashboard
 
+# services 모듈 임포트 (separate from endpoints)
+from app.services.dashboard import integrated_dashboard
+
+# admin 모듈 임포트
+from app.api.v1.endpoints.admin import dashboard as admin_dashboard
+
 # 엔드포인트 모듈 임포트
 from app.api.v1.endpoints import (
     auth,
@@ -30,10 +36,9 @@ from app.api.v1.endpoints import (
     partner_onboarding,  # Doc #29: 파트너사 온보딩 자동화
     audit_compliance,  # Doc #30: 트랜잭션 감사 및 컴플라이언스
     external_energy,  # Doc #35(38): 외부 에너지 공급자 연동
-    integrated_dashboard,  # Doc #37(34): 파트너사 종합 대시보드
     optimization,  # 백엔드 최적화 관리
     tronlink,  # TronLink 연동 (메인 엔드포인트)
-    admin_dashboard,  # 슈퍼어드민 대시보드 통계
+    # admin_dashboard,  # 더미 데이터 → admin/dashboard.py로 교체
     websocket,  # WebSocket 실시간 데이터 스트리밍
 )
 
@@ -81,7 +86,7 @@ api_router.include_router(partner_onboarding.router, prefix="/partner-onboarding
 
 # System Administration
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])  # Core admin operations
-api_router.include_router(admin_dashboard.router, prefix="/superadmin", tags=["admin_dashboard"])  # Super admin dashboard stats
+api_router.include_router(admin_dashboard.router, tags=["admin_dashboard"])  # Super admin dashboard stats (using admin/dashboard.py)
 api_router.include_router(users.router, prefix="/users", tags=["users"])  # User management
 api_router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])  # Transaction admin
 

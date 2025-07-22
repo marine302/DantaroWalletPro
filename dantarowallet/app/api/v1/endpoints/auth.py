@@ -197,8 +197,10 @@ async def super_admin_login(user_data: UserLogin, db: AsyncSession = Depends(get
     
     logger.info(f"DB 해시: {admin.hashed_password}")
     logger.info(f"비밀번호 검증 시작")
-    # 임시로 bcrypt 우회 - 평문 비교
-    password_valid = (user_data.password == "Secret123!")
+    
+    # bcrypt 비밀번호 검증 (보안 강화)
+    from app.core.security import verify_password
+    password_valid = verify_password(user_data.password, str(admin.hashed_password))
     logger.info(f"비밀번호 검증 결과: {password_valid}")
     
     if not password_valid:

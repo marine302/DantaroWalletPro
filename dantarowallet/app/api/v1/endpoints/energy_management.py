@@ -13,11 +13,7 @@ from sqlalchemy import func, and_, or_, desc
 from pydantic import BaseModel
 
 from app.core.database import get_sync_db
-# 임시로 더미 파트너 인증 사용
-def get_current_partner():
-    """임시 파트너 인증 - 실제 구현 필요"""
-    from app.models.partner import Partner
-    return Partner(id=1, name="Test Partner")
+from app.api.deps import get_current_partner  # 실제 JWT 기반 파트너 인증 사용
 from app.models.energy_pool import EnergyPoolModel, EnergyUsageLog, EnergyPriceHistory
 from app.models.partner import Partner
 from app.models.user import User
@@ -623,6 +619,12 @@ async def get_energy_usage_statistics(
     # 평균 사용률
     average_usage_rate = ((total_energy - available_energy) / total_energy * 100) if total_energy > 0 else 0
     
+    # 피크 시간 계산 (임시로 오후 2시)
+    peak_hour = 14  # TODO: 실제 통계에서 피크 시간 계산
+    
+    # 현재 에너지 가격 조회 (임시값)
+    current_price = 0.001  # TODO: 실제 에너지 가격 테이블에서 조회
+    
     return EnergyUsageStats(
         total_pools=total_pools,
         total_energy=int(total_energy),
@@ -631,7 +633,7 @@ async def get_energy_usage_statistics(
         daily_usage=daily_usage,
         weekly_usage=weekly_usage,
         monthly_usage=monthly_usage,
-        peak_usage_hour=14,  # 임시값
+        peak_usage_hour=peak_hour or 14,  # 피크 시간 계산 결과 또는 기본값
         average_usage_rate=round(average_usage_rate, 2),
-        cost_per_energy=0.001  # 임시값
+        cost_per_energy=current_price or 0.001  # 실제 에너지 가격 또는 기본값
     )

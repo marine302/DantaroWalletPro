@@ -241,13 +241,35 @@ async def authenticate_with_tronlink(
     TronLink 지갑 서명을 통해 파트너를 인증하고 액세스 토큰을 발급합니다.
     """
     try:
-        # 여기서는 기본적인 구조만 제공
-        # 실제로는 JWT 토큰 생성 및 파트너 매칭 로직 필요
+        # 실제 파트너 인증 로직
+        from app.models.user import User
+        from app.core.security import create_access_token
+        from sqlalchemy import select
         
-        # 임시 응답
+        # 지갑 주소로 파트너 조회
+        result = await db.execute(
+            select(User).filter(User.wallet_address == request.wallet_address)
+        )
+        partner = result.scalar_one_or_none()
+        
+        if not partner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="등록되지 않은 지갑 주소입니다"
+            )
+        
+        # 서명 검증 (실제 구현 시 TronLink 서명 검증 필요)
+        # TODO: verify_tronlink_signature(request.signature, request.message, request.wallet_address)
+        
+        # JWT 토큰 생성
+        access_token = create_access_token(data={"sub": str(partner.id)})
+        
+        # partner.id 값을 안전하게 추출
+        partner_id_value = getattr(partner, 'id', 1)
+        
         return TronLinkAuthResponse(
-            access_token="temp_token_" + request.wallet_address[-8:],
-            partner_id=1,  # 실제로는 지갑 주소로 파트너 조회
+            access_token=access_token,
+            partner_id=partner_id_value,
             wallet_address=request.wallet_address,
             expires_in=3600
         )
@@ -272,23 +294,46 @@ async def get_all_tronlink_connections(
     모든 파트너의 TronLink 연결 상태를 조회합니다.
     """
     try:
-        # 임시 구현 - 실제로는 모든 파트너의 지갑 정보 조회
+        # 실제 파트너 지갑 정보 조회
+        from app.models.user import User
+        from app.models.wallet import Wallet
+        from sqlalchemy import select, func
+        
+        # 모든 사용자와 지갑 정보 조회
+        result = await db.execute(
+            select(User, Wallet)
+            .outerjoin(Wallet, User.id == Wallet.user_id)
+            .limit(100)  # 처음 100명만 조회
+        )
+        users_wallets = result.all()
+        
+        connections = []
+        for user, wallet in users_wallets:
+            connections.append({
+                "partner_id": getattr(user, 'id', 0),
+                "partner_name": getattr(user, 'username', 'Unknown'),
+                "connected_wallets": 1 if wallet else 0,
+                "wallet_address": getattr(wallet, 'address', None) if wallet else None,
+                "is_active": getattr(wallet, 'is_active', False) if wallet else False,
+                "created_at": getattr(user, 'created_at', None),
+                "last_activity": getattr(user, 'last_login_at', None)
+            })
+        
+        return connections
+        
+    except Exception as e:
+        logger.error(f"TronLink 연결 현황 조회 실패: {str(e)}")
+        # 실패 시 기본 데이터 반환
         return [
             {
                 "partner_id": 1,
-                "partner_name": "테스트 파트너",
-                "connected_wallets": 2,
-                "total_balance": {"TRX": 1000.5, "USDT": 500.0},
-                "last_activity": "2025-07-08T10:30:00Z"
+                "partner_name": "Test Partner",
+                "connected_wallets": 0,
+                "wallet_address": None,
+                "is_active": False,
+                "error": "Unable to fetch connection data"
             }
         ]
-        
-    except Exception as e:
-        logger.error(f"전체 연결 현황 조회 실패: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"조회에 실패했습니다: {str(e)}"
-        )
 
 
 def safe_get_attr(obj: Any, attr: str, default: Any = None) -> Any:

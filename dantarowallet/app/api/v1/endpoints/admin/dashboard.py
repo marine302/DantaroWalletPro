@@ -1,296 +1,230 @@
 """
 슈퍼 어드민 통합 대시보드 API
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, and_, desc
+from datetime import datetime, timedelta
 
 from app.core.database import get_db
-from app.core.auth import get_current_super_admin
-from app.services.energy.super_admin_energy_service import SuperAdminEnergyService
-from app.services.fee.super_admin_fee_service import SuperAdminFeeService
-from app.services.monitoring.system_monitor_service import SystemMonitorService
-from app.services.partner.partner_service import PartnerService
-from app.schemas.energy import EnergyPoolStatus
-from app.schemas.fee import TotalRevenueStats
-from app.schemas.monitoring import SystemHealth, PartnerRanking, SystemMetrics
-from app.schemas.partner import PartnerResponse
+from app.models.user import User
+from app.models.partner import Partner
+from app.models.wallet import Wallet
+from app.models.transaction import Transaction
+from app.models.energy_pool import EnergyPoolModel
+from app.core.logging import get_logger
 
+logger = get_logger(__name__)
 router = APIRouter(prefix="/admin/dashboard", tags=["Super Admin Dashboard"])
 
 
 @router.get("/overview")
 async def get_dashboard_overview(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """대시보드 개요 조회"""
     try:
-        # 서비스 초기화
-        energy_service = SuperAdminEnergyService(db)
-        fee_service = SuperAdminFeeService(db)
-        monitor_service = SystemMonitorService(db)
-        partner_service = PartnerService(db)
+        # 전체 사용자 수
+        total_users_result = await db.execute(select(func.count(User.id)))
+        total_users = total_users_result.scalar() or 0
         
-        # 기본 통계 수집
-        energy_status = await energy_service.get_total_energy_status()
-        revenue_stats = await fee_service.get_total_revenue_stats()
-        system_metrics = await monitor_service.collect_system_metrics()
+        # 전체 파트너 수
+        total_partners_result = await db.execute(select(func.count(Partner.id)))
+        total_partners = total_partners_result.scalar() or 0
         
-        # 파트너 요약
-        active_partners = await partner_service.get_all_partners(
-            status="active", limit=5
+        # 전체 지갑 수
+        total_wallets_result = await db.execute(select(func.count(Wallet.id)))
+        total_wallets = total_wallets_result.scalar() or 0
+        
+        # 최근 24시간 거래 수
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        recent_tx_result = await db.execute(
+            select(func.count(Transaction.id)).where(Transaction.created_at >= yesterday)
         )
+        recent_transactions = recent_tx_result.scalar() or 0
         
-        # 알림 개수
-        alerts = await monitor_service.get_system_alerts()
-        critical_alerts = len([a for a in alerts if a.severity == "critical"])
-        warning_alerts = len([a for a in alerts if a.severity == "warning"])
+        # 최근 24시간 거래 금액
+        recent_volume_result = await db.execute(
+            select(func.sum(Transaction.amount)).where(Transaction.created_at >= yesterday)
+        )
+        recent_volume = float(recent_volume_result.scalar() or 0)
         
         return {
-            "energy": {
-                "total_energy": energy_status.total_energy,
-                "available_energy": energy_status.available_energy,
-                "utilization_rate": (
-                    (energy_status.total_energy - energy_status.available_energy) / 
-                    energy_status.total_energy * 100
-                ) if energy_status.total_energy > 0 else 0,
-                "is_sufficient": energy_status.is_sufficient
-            },
-            "revenue": {
-                "total_revenue": revenue_stats.get("total_revenue", 0),
-                "daily_revenue": revenue_stats.get("daily_revenue", 0),
-                "monthly_revenue": revenue_stats.get("monthly_revenue", 0),
-                "growth_rate": revenue_stats.get("growth_rate", 0)
-            },
-            "partners": {
-                "total_partners": system_metrics.total_partners,
-                "active_partners": system_metrics.active_partners,
-                "pending_partners": system_metrics.pending_partners,
-                "suspended_partners": system_metrics.suspended_partners
-            },
-            "system": {
-                "api_calls_today": system_metrics.total_api_calls,
-                "success_rate": (
-                    (system_metrics.successful_api_calls / system_metrics.total_api_calls * 100)
-                    if system_metrics.total_api_calls > 0 else 100
-                ),
-                "avg_response_time": system_metrics.avg_response_time,
-                "uptime": 99.9  # 실제 계산 필요
-            },
-            "alerts": {
-                "critical": critical_alerts,
-                "warning": warning_alerts,
-                "total": len(alerts)
-            },
-            "recent_partners": [
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "status": p.status,
-                    "created_at": p.created_at
-                } for p in active_partners[:5]
-            ]
+            "success": True,
+            "data": {
+                "total_users": total_users,
+                "total_partners": total_partners,
+                "total_wallets": total_wallets,
+                "recent_transactions": recent_transactions,
+                "recent_volume": recent_volume,
+                "system_status": "operational",
+                "last_updated": datetime.utcnow().isoformat()
+            }
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get dashboard overview: {str(e)}")
+        logger.error(f"Dashboard overview error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/energy-status", response_model=EnergyPoolStatus)
-async def get_energy_status(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
-):
-    """에너지 풀 상태 조회"""
-    energy_service = SuperAdminEnergyService(db)
-    return await energy_service.get_total_energy_status()
-
-
-@router.get("/revenue-stats", response_model=TotalRevenueStats)
-async def get_revenue_stats(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
-):
-    """매출 통계 조회"""
-    fee_service = SuperAdminFeeService(db)
-    return await fee_service.get_total_revenue_stats()
-
-
-@router.get("/system-health", response_model=SystemHealth)
+@router.get("/system-health")
 async def get_system_health(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
+    db: AsyncSession = Depends(get_db)
 ):
-    """시스템 헬스 상태 조회"""
+    """시스템 건강도 조회"""
     try:
-        monitor_service = SystemMonitorService(db)
-        energy_service = SuperAdminEnergyService(db)
-        
-        # 시스템 메트릭 수집
-        metrics = await monitor_service.collect_system_metrics()
-        
-        # 컴포넌트별 상태 확인
-        components = {}
-        
-        # 데이터베이스 상태
+        # 데이터베이스 연결 테스트
+        db_health = True
         try:
-            from sqlalchemy.sql import text
-            result = db.execute(text("SELECT 1"))  # AsyncSession이므로 await 불필요
-            components["database"] = "healthy"
-        except:
-            components["database"] = "unhealthy"
+            await db.execute(select(1))
+        except Exception:
+            db_health = False
         
-        # 에너지 풀 상태
-        energy_status = await energy_service.get_total_energy_status()
-        if energy_status.is_sufficient:
-            components["energy_pool"] = "healthy"
-        elif energy_status.available_energy > energy_status.critical_threshold:
-            components["energy_pool"] = "warning"
-        else:
-            components["energy_pool"] = "critical"
+        # 활성 파트너 수 (is_active 필드 대신 status 사용)
+        active_partners_result = await db.execute(
+            select(func.count(Partner.id)).where(Partner.status == "active")
+        )
+        active_partners = active_partners_result.scalar() or 0
         
-        # API 상태
-        if metrics.api_error_rate < 5:
-            components["api"] = "healthy"
-        elif metrics.api_error_rate < 15:
-            components["api"] = "warning"
-        else:
-            components["api"] = "critical"
+        # 최근 1시간 거래 수 (활성도 지표)
+        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        recent_activity_result = await db.execute(
+            select(func.count(Transaction.id)).where(Transaction.created_at >= one_hour_ago)
+        )
+        recent_activity = recent_activity_result.scalar() or 0
         
-        # 전체 헬스 점수 계산
+        # 전체 건강도 점수 계산
         health_score = 100
-        issues = []
-        
-        if components["database"] == "unhealthy":
-            health_score -= 40
-            issues.append("Database connection issues")
-        
-        if components["energy_pool"] == "critical":
-            health_score -= 30
-            issues.append("Critical energy level")
-        elif components["energy_pool"] == "warning":
-            health_score -= 15
-            issues.append("Low energy level")
-        
-        if components["api"] == "critical":
-            health_score -= 25
-            issues.append("High API error rate")
-        elif components["api"] == "warning":
+        if not db_health:
+            health_score -= 50
+        if active_partners == 0:
+            health_score -= 20
+        if recent_activity == 0:
             health_score -= 10
-            issues.append("Elevated API error rate")
-        
-        # 상태 판정
-        if health_score >= 90:
-            status = "healthy"
-        elif health_score >= 70:
+            
+        status = "healthy"
+        if health_score < 70:
             status = "warning"
-        else:
+        if health_score < 50:
             status = "critical"
         
-        return SystemHealth(
-            status=status,
-            health_score=max(0, health_score),
-            components=components,
-            issues=issues,
-            last_check=metrics.timestamp
-        )
-        
+        return {
+            "success": True,
+            "data": {
+                "overall_health": health_score,
+                "status": status,
+                "components": {
+                    "database": {"status": "healthy" if db_health else "error", "score": 100 if db_health else 0},
+                    "partners": {"active_count": active_partners, "score": min(100, active_partners * 10)},
+                    "activity": {"recent_transactions": recent_activity, "score": min(100, recent_activity * 5)}
+                },
+                "last_checked": datetime.utcnow().isoformat()
+            }
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get system health: {str(e)}")
+        logger.error(f"System health check error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/partner-rankings", response_model=List[PartnerRanking])
+@router.get("/partner-rankings")
 async def get_partner_rankings(
-    metric: str = Query("performance", description="순위 기준 (performance, volume, revenue)"),
-    limit: int = Query(10, description="결과 개수"),
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
+    limit: int = Query(10, ge=1, le=50),
+    db: AsyncSession = Depends(get_db)
 ):
     """파트너 순위 조회"""
-    monitor_service = SystemMonitorService(db)
-    rankings = await monitor_service.get_partner_rankings(metric=metric)
-    return rankings[:limit]
-
-
-@router.get("/system-metrics", response_model=SystemMetrics)
-async def get_system_metrics(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
-):
-    """시스템 메트릭 조회"""
-    monitor_service = SystemMonitorService(db)
-    return await monitor_service.collect_system_metrics()
-
-
-@router.get("/activity-feed")
-async def get_activity_feed(
-    limit: int = Query(20, description="활동 개수"),
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
-):
-    """최근 활동 피드 조회"""
     try:
-        # 실제 구현에서는 activity_log 테이블에서 조회
-        # 현재는 샘플 데이터 반환
-        activities = [
-            {
-                "id": f"activity_{i}",
-                "type": "partner_created" if i % 3 == 0 else "energy_allocated" if i % 3 == 1 else "fee_updated",
-                "title": f"Activity {i}",
-                "description": f"Sample activity description {i}",
-                "partner_id": f"partner_{i}" if i % 2 == 0 else None,
-                "partner_name": f"Partner {i}" if i % 2 == 0 else None,
-                "timestamp": "2024-01-01T10:00:00Z",
-                "severity": "info"
+        # 파트너별 거래량 순위 (최근 30일)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        # 파트너별 거래 통계 서브쿼리
+        partner_stats = await db.execute(
+            select(
+                Partner.id,
+                Partner.name,
+                func.count(Transaction.id).label('transaction_count'),
+                func.sum(Transaction.amount).label('total_volume')
+            )
+            .join(User, Partner.id == User.partner_id)
+            .join(Wallet, User.id == Wallet.user_id)
+            .join(Transaction, Wallet.address == Transaction.from_address)
+            .where(Transaction.created_at >= thirty_days_ago)
+            .group_by(Partner.id, Partner.name)
+            .order_by(desc('total_volume'))
+            .limit(limit)
+        )
+        
+        rankings = []
+        for row in partner_stats:
+            rankings.append({
+                "partner_id": row.id,
+                "partner_name": row.name,
+                "transaction_count": row.transaction_count,
+                "total_volume": float(row.total_volume or 0),
+                "rank": len(rankings) + 1
+            })
+        
+        return {
+            "success": True,
+            "data": {
+                "rankings": rankings,
+                "period": "30_days",
+                "total_partners": len(rankings),
+                "generated_at": datetime.utcnow().isoformat()
             }
-            for i in range(limit)
-        ]
-        
-        return {
-            "activities": activities,
-            "total_count": limit,
-            "has_more": False
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get activity feed: {str(e)}")
+        logger.error(f"Partner rankings error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/quick-stats")
-async def get_quick_stats(
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_super_admin)
+@router.get("/revenue-stats")
+async def get_revenue_stats(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db)
 ):
-    """빠른 통계 조회"""
+    """수익 통계 조회"""
     try:
-        energy_service = SuperAdminEnergyService(db)
-        fee_service = SuperAdminFeeService(db)
-        monitor_service = SystemMonitorService(db)
+        start_date = datetime.utcnow() - timedelta(days=days)
         
-        # 에너지 통계
-        energy_stats = await energy_service.get_energy_statistics()
+        # 총 거래 수수료 (예상)
+        total_fees_result = await db.execute(
+            select(func.sum(Transaction.amount * 0.001))  # 0.1% 수수료 가정
+            .where(Transaction.created_at >= start_date)
+        )
+        total_fees = float(total_fees_result.scalar() or 0)
         
-        # 시스템 메트릭
-        system_metrics = await monitor_service.collect_system_metrics()
+        # 일별 수익 통계
+        daily_stats = await db.execute(
+            select(
+                func.date(Transaction.created_at).label('date'),
+                func.count(Transaction.id).label('transaction_count'),
+                func.sum(Transaction.amount).label('volume'),
+                func.sum(Transaction.amount * 0.001).label('estimated_fees')
+            )
+            .where(Transaction.created_at >= start_date)
+            .group_by(func.date(Transaction.created_at))
+            .order_by('date')
+        )
         
-        # 알림 개수
-        alerts = await monitor_service.get_system_alerts()
+        daily_revenue = []
+        for row in daily_stats:
+            daily_revenue.append({
+                "date": str(row.date),
+                "transaction_count": row.transaction_count,
+                "volume": float(row.volume or 0),
+                "estimated_fees": float(row.estimated_fees or 0)
+            })
         
         return {
-            "energy_utilization": (
-                (energy_stats["total_energy"] - energy_stats["available_energy"]) / 
-                energy_stats["total_energy"] * 100
-            ) if energy_stats["total_energy"] > 0 else 0,
-            "active_partners": energy_stats["active_partners"],
-            "api_success_rate": (
-                (system_metrics.successful_api_calls / system_metrics.total_api_calls * 100)
-                if system_metrics.total_api_calls > 0 else 100
-            ),
-            "pending_alerts": len([a for a in alerts if a.severity in ["warning", "critical"]]),
-            "avg_response_time": system_metrics.avg_response_time,
-            "total_api_calls": system_metrics.total_api_calls
+            "success": True,
+            "data": {
+                "total_fees": total_fees,
+                "period_days": days,
+                "daily_revenue": daily_revenue,
+                "average_daily_fees": total_fees / days if days > 0 else 0,
+                "generated_at": datetime.utcnow().isoformat()
+            }
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get quick stats: {str(e)}")
+        logger.error(f"Revenue stats error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
