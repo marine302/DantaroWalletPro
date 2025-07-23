@@ -1,0 +1,70 @@
+import React from 'react';
+import { render, screen } from '@/test-utils/test-utils';
+import { StatCard } from '../DarkThemeComponents';
+import { Users } from 'lucide-react';
+
+describe('StatCard Component', () => {
+  const defaultProps = {
+    title: 'Test Metric',
+    value: '1,234',
+  };
+
+  it('renders correctly with basic props', () => {
+    render(<StatCard {...defaultProps} />);
+    
+    expect(screen.getByText('Test Metric')).toBeInTheDocument();
+    expect(screen.getByText('1,234')).toBeInTheDocument();
+  });
+
+  it('renders with icon when provided', () => {
+    const icon = <Users data-testid="users-icon" />;
+    render(<StatCard {...defaultProps} icon={icon} />);
+    
+    expect(screen.getByTestId('users-icon')).toBeInTheDocument();
+  });
+
+  it('applies correct trend colors', () => {
+    const { rerender } = render(
+      <StatCard {...defaultProps} trend="up" description="Increasing" />
+    );
+    
+    const description = screen.getByText('Increasing');
+    expect(description).toHaveClass('text-green-400');
+
+    rerender(<StatCard {...defaultProps} trend="down" description="Decreasing" />);
+    expect(screen.getByText('Decreasing')).toHaveClass('text-red-400');
+
+    rerender(<StatCard {...defaultProps} trend="neutral" description="Stable" />);
+    expect(screen.getByText('Stable')).toHaveClass('text-gray-300');
+  });
+
+  it('formats numeric values correctly', () => {
+    render(<StatCard title="Test" value={1234567} />);
+    
+    // The component should format the number with locale-specific formatting
+    expect(screen.getByText('1,234,567')).toBeInTheDocument();
+  });
+
+  it('handles string values correctly', () => {
+    render(<StatCard title="Test" value="Custom Value" />);
+    
+    expect(screen.getByText('Custom Value')).toBeInTheDocument();
+  });
+
+  it('renders without description when not provided', () => {
+    render(<StatCard {...defaultProps} />);
+    
+    // Should not find any trend-related elements
+    expect(screen.queryByText(/Increasing|Decreasing|Stable/)).not.toBeInTheDocument();
+  });
+
+  it('has accessible structure', () => {
+    render(<StatCard {...defaultProps} />);
+    
+    const container = screen.getByText('Test Metric').closest('div');
+    expect(container).toHaveClass('bg-gray-800');
+    
+    const value = screen.getByText('1,234');
+    expect(value).toHaveClass('text-2xl', 'font-bold', 'text-white');
+  });
+});

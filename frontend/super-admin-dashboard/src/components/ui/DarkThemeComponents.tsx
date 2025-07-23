@@ -1,5 +1,8 @@
 'use client';
 
+import React, { useMemo } from 'react';
+import { createDarkClasses } from '@/styles/dark-theme'; client';
+
 import React from 'react'
 import { createDarkClasses } from '@/styles/dark-theme'
 
@@ -35,20 +38,27 @@ interface StatCardProps {
   description?: string
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ 
+export const StatCard: React.FC<StatCardProps> = React.memo(({ 
   title, 
   value, 
   icon, 
   trend, 
   description 
 }) => {
-  const getTrendColor = () => {
+  const getTrendColor = useMemo(() => {
     switch (trend) {
       case 'up': return 'text-green-400'
       case 'down': return 'text-red-400'
       default: return 'text-gray-300'
     }
-  }
+  }, [trend]);
+
+  const formattedValue = useMemo(() => {
+    if (typeof value === 'number') {
+      return value.toLocaleString();
+    }
+    return value;
+  }, [value]);
 
   return (
     <div className={createDarkClasses.statCard()}>
@@ -57,16 +67,18 @@ export const StatCard: React.FC<StatCardProps> = ({
         {icon && <div className="text-blue-400">{icon}</div>}
       </div>
       <div className={`text-2xl font-bold text-white`}>
-        {value}
+        {formattedValue}
       </div>
       {description && (
-        <div className={`text-xs mt-1 ${getTrendColor()}`}>
+        <div className={`text-xs mt-1 ${getTrendColor}`}>
           {description}
         </div>
       )}
     </div>
   )
-}
+});
+
+StatCard.displayName = 'StatCard';
 
 interface SectionProps {
   title: string
@@ -74,14 +86,21 @@ interface SectionProps {
   className?: string
 }
 
-export const Section: React.FC<SectionProps> = ({ title, children, className = '' }) => {
+export const Section: React.FC<SectionProps> = React.memo(({ title, children, className = '' }) => {
+  const sectionClasses = useMemo(() => 
+    `${createDarkClasses.card()} ${className}`, 
+    [className]
+  );
+
   return (
-    <div className={`${createDarkClasses.card()} ${className}`}>
+    <div className={sectionClasses}>
       <h3 className={createDarkClasses.sectionTitle()}>{title}</h3>
       {children}
     </div>
   )
-}
+});
+
+Section.displayName = 'Section';
 
 interface FormFieldProps {
   label: string

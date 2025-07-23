@@ -93,6 +93,62 @@ function generateAnalyticsData() {
   };
 }
 
+// Audit & Compliance APIs - 백엔드 호환성
+app.get('/audit-compliance/logs', (req, res) => {
+  const logs = Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1,
+    user_id: Math.floor(Math.random() * 100) + 1,
+    action: ['login', 'transfer', 'withdrawal', 'deposit', 'profile_update'][Math.floor(Math.random() * 5)],
+    resource: ['user', 'transaction', 'partner', 'system'][Math.floor(Math.random() * 4)],
+    ip_address: `192.168.1.${Math.floor(Math.random() * 255)}`,
+    user_agent: 'Mozilla/5.0 (compatible)',
+    timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    risk_level: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+    compliance_status: ['compliant', 'flagged', 'under_review'][Math.floor(Math.random() * 3)]
+  }));
+
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      items: logs,
+      total: 200,
+      page: 1,
+      size: 20
+    }
+  });
+});
+
+app.post('/audit-compliance/kyc-check', (req, res) => {
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      check_id: `kyc_${Date.now()}`,
+      user_id: req.body.user_id || 1,
+      status: Math.random() > 0.2 ? 'passed' : 'failed',
+      risk_score: Math.floor(Math.random() * 100),
+      flagged_items: Math.random() > 0.8 ? ['document_verification', 'address_verification'] : [],
+      created_at: new Date().toISOString()
+    }
+  });
+});
+
+app.post('/audit-compliance/aml-check', (req, res) => {
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      check_id: `aml_${Date.now()}`,
+      transaction_id: req.body.transaction_id || `tx_${Date.now()}`,
+      status: Math.random() > 0.1 ? 'passed' : 'flagged',
+      risk_score: Math.floor(Math.random() * 100),
+      flagged_patterns: Math.random() > 0.9 ? ['unusual_amount', 'frequent_transactions'] : [],
+      created_at: new Date().toISOString()
+    }
+  });
+});
+
 // Authentication endpoints
 app.post('/auth/login', (req, res) => {
   const { email, password } = req.body;
@@ -316,6 +372,104 @@ app.delete('/admin/system/admins/:id', (req, res) => {
   res.json({ 
     success: true,
     message: `System admin ${id} deleted successfully` 
+  });
+});
+
+// Energy Management APIs - 백엔드 호환성
+app.get('/admin/energy/pool', (req, res) => {
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      id: 1,
+      total_energy: 1000000,
+      available_energy: 750000,
+      reserved_energy: 150000,
+      tron_balance: 50000.0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  });
+});
+
+app.get('/admin/energy/status', (req, res) => {
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      total_energy: 1000000,
+      used_energy: 250000,
+      available_energy: 750000,
+      active_pools: 3,
+      total_partners: 15,
+      energy_utilization_rate: 0.25,
+      critical_pools: 0,
+      warning_pools: 1
+    }
+  });
+});
+
+app.get('/admin/energy/transactions', (req, res) => {
+  const transactions = Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    partner_id: Math.floor(Math.random() * 5) + 1,
+    amount: Math.floor(Math.random() * 10000) + 1000,
+    type: Math.random() > 0.5 ? 'allocation' : 'consumption',
+    status: ['completed', 'pending', 'failed'][Math.floor(Math.random() * 3)],
+    created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+  }));
+
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      items: transactions,
+      total: 50,
+      page: 1,
+      size: 10
+    }
+  });
+});
+
+// Fee Management APIs - 백엔드 호환성
+app.get('/admin/fees/configs', (req, res) => {
+  const configs = Array.from({ length: 5 }, (_, i) => ({
+    id: i + 1,
+    partner_id: i + 1,
+    fee_percentage: (Math.random() * 0.5 + 0.1).toFixed(3),
+    min_withdrawal_amount: 100,
+    max_withdrawal_amount: 100000,
+    daily_withdrawal_limit: 50000,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
+
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: configs
+  });
+});
+
+app.get('/admin/fees/revenue', (req, res) => {
+  const revenue = Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    partner_id: Math.floor(Math.random() * 5) + 1,
+    transaction_id: `tx_${Date.now()}_${i}`,
+    fee_amount: (Math.random() * 100).toFixed(2),
+    revenue_share: (Math.random() * 50).toFixed(2),
+    date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+  }));
+
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      items: revenue,
+      total: 100,
+      page: 1,
+      size: 10
+    }
   });
 });
 

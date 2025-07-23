@@ -266,9 +266,13 @@ class ApiClient {
     );
   }
 
-  // Energy Management
+  // Energy Management - 백엔드 엔드포인트 사용
   async getEnergyPool(): Promise<EnergyPool> {
     return this.makeResilientRequest<EnergyPool>('/admin/energy/pool');
+  }
+
+  async getEnergyStatus(): Promise<any> {
+    return this.makeResilientRequest<any>('/admin/energy/status');
   }
 
   async rechargeEnergy(amount: number): Promise<EnergyTransaction> {
@@ -288,7 +292,7 @@ class ApiClient {
     });
   }
 
-  // Fee Management
+  // Fee Management - 백엔드 엔드포인트 사용
   async getFeeConfigs(): Promise<FeeConfig[]> {
     return this.makeResilientRequest<FeeConfig[]>('/admin/fees/configs');
   }

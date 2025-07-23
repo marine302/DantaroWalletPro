@@ -3,7 +3,13 @@
 import { withRBAC } from '@/components/auth/withRBAC';
 import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { Loading } from '@/components/ui/Loading';
+import { 
+  RealtimeTransactionMonitorLazy,
+  EmergencyBlockingPanelLazy,
+  AuditLogSearchLazy
+} from '@/components/lazy/LazyComponents';
 
 // 임시 i18n mock (I18nContext가 없으므로)
 const mockI18n = {
