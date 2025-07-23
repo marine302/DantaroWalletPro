@@ -91,58 +91,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      // Mock login for development
-      if (process.env.NODE_ENV === 'development') {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const token = 'mock-jwt-token';
-        const user = mockUser;
-        
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser', JSON.stringify(user));
-        
-        setState({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false
-        });
-        
-        // Log login activity
-        logActivity({
-          user,
-          action: 'login',
-          resource: 'dashboard',
-          details: { loginMethod: 'email' }
-        });
-        
-        return;
-      }
-
-      // Real API login would go here
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(credentials)
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data: LoginResponse = await response.json();
+      // 실제 API 클라이언트를 사용한 슈퍼 어드민 로그인
+      const { apiClient } = await import('@/lib/api');
+      const response = await apiClient.superAdminLogin(credentials);
       
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('authUser', JSON.stringify(data.user));
+      // Mock user 데이터 (실제로는 백엔드에서 사용자 정보를 받아와야 함)
+      const user = {
+        ...mockUser,
+        email: credentials.email
+      };
+      
+      localStorage.setItem('authToken', response.access_token);
+      localStorage.setItem('authUser', JSON.stringify(user));
       
       setState({
-        user: data.user,
-        token: data.token,
+        user,
+        token: response.access_token,
         isAuthenticated: true,
         isLoading: false
+      });
+      
+      // Log login activity
+      logActivity({
+        user,
+        action: 'login',
+        resource: 'dashboard',
+        details: { loginMethod: 'super-admin' }
       });
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

@@ -206,9 +206,10 @@ class ApiClient {
   }
 
   async superAdminLogin(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('Attempting login with:', { email: credentials.email });
-    const response = await this.makeResilientRequest<AuthResponse>('/auth/login', 'POST', credentials);
-    console.log('Login response:', response);
+    console.log('Attempting super admin login with:', { email: credentials.email });
+    // 슈퍼 어드민 로그인은 별도 엔드포인트 사용
+    const response = await this.makeResilientRequest<AuthResponse>('/auth/super-admin/login', 'POST', credentials);
+    console.log('Super admin login response:', response);
     this.setAuthToken(response.access_token);
     return response;
   }

@@ -93,6 +93,48 @@ function generateAnalyticsData() {
   };
 }
 
+// Authentication endpoints
+app.post('/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // 간단한 인증 로직
+  if (email === 'admin@dantaro.com' && password === 'admin123') {
+    res.json({
+      access_token: 'mock-jwt-token-12345',
+      refresh_token: 'mock-refresh-token-67890',
+      token_type: 'bearer',
+      expires_in: 3600
+    });
+  } else {
+    res.status(401).json({
+      error: 'AUTH_ERROR',
+      message: '이메일 또는 비밀번호가 올바르지 않습니다'
+    });
+  }
+});
+
+// 슈퍼 어드민 로그인 엔드포인트 (백엔드 호환성)
+app.post('/auth/super-admin/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // 백엔드 API 응답 형태로 변환
+  if (email === 'admin@dantaro.com' && password === 'admin123') {
+    res.json({
+      access_token: 'mock-super-admin-jwt-token-12345',
+      refresh_token: 'mock-super-admin-refresh-token-67890',
+      token_type: 'bearer',
+      expires_in: 1800
+    });
+  } else {
+    res.status(401).json({
+      error: 'AUTH_ERROR',
+      message: '이메일 또는 비밀번호가 올바르지 않습니다',
+      details: null,
+      request_id: Date.now().toString()
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
