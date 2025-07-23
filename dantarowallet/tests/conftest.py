@@ -1,18 +1,20 @@
 """
 Pytest configuration and fixtures for DantaroWallet tests.
 """
+
 import asyncio
 from typing import Any, AsyncGenerator, Dict, Generator
 
 import pytest
 import pytest_asyncio
 import sqlalchemy
-from app.core.database import Base, engine, get_db
-from app.core.security import get_password_hash, verify_token
-from app.main import app
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import Base, engine, get_db
+from app.core.security import get_password_hash, verify_token
+from app.main import app
 
 
 @pytest.fixture(scope="session")
@@ -43,9 +45,10 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest_asyncio.fixture
 async def user_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str, str]:
     """Get auth headers for a test user."""
+    from sqlalchemy import select
+
     from app.models.balance import Balance
     from app.models.user import User
-    from sqlalchemy import select
 
     # 기존 사용자 확인 및 삭제
     result = await db.execute(select(User).where(User.email == "test@example.com"))
@@ -90,8 +93,9 @@ async def user_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str,
 async def admin_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str, str]:
     """Get auth headers for an admin user."""
     # DB에 직접 관리자 생성 (register endpoint 대신 직접 DB에 쓰기)
-    from app.models.user import User
     from sqlalchemy import select, update
+
+    from app.models.user import User
 
     # 기존 사용자 확인 및 삭제
     result = await db.execute(select(User).where(User.email == "admin@example.com"))
@@ -131,15 +135,14 @@ async def admin_token_headers(client: AsyncClient, db: AsyncSession) -> Dict[str
 @pytest_asyncio.fixture
 async def test_user(db: AsyncSession) -> Any:
     """테스트용 일반 사용자 ORM 객체 반환"""
-    from app.models.user import User
     from sqlalchemy import select
 
+    from app.models.user import User
+
     # 기존 사용자 확인
-    result = await db.execute(
-        select(User).where(User.email == "test@example.com")
-    )
+    result = await db.execute(select(User).where(User.email == "test@example.com"))
     test_user = result.scalar_one_or_none()
-    
+
     # 사용자가 없으면 생성
     if not test_user:
         password_hash = get_password_hash("TestPassword123!")
@@ -153,19 +156,18 @@ async def test_user(db: AsyncSession) -> Any:
         db.add(test_user)
         await db.commit()
         await db.refresh(test_user)
-    
+
     return test_user
 
 
 @pytest_asyncio.fixture
 async def test_admin_user(db: AsyncSession) -> Any:
     """테스트용 관리자 ORM 객체 반환"""
-    from app.models.user import User
     from sqlalchemy import select
 
-    result = await db.execute(
-        select(User).where(User.email == "admin@example.com")
-    )
+    from app.models.user import User
+
+    result = await db.execute(select(User).where(User.email == "admin@example.com"))
     admin_user = result.scalar_one_or_none()
     return admin_user
 

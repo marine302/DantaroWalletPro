@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  notificationManager, 
+import {
+  notificationManager,
   addNotification as addNotificationToManager,
   markAsRead as markNotificationAsRead,
   getNotifications as getNotificationsFromManager
 } from '@/lib/notification-manager';
-import { 
-  Notification, 
-  NotificationPriority, 
-  NotificationType, 
+import {
+  Notification,
+  NotificationPriority,
+  NotificationType,
   NotificationChannel,
   NotificationSettings,
-  NotificationStats 
+  NotificationStats
 } from '@/types/notification';
 
 export function useNotifications() {
@@ -23,7 +23,7 @@ export function useNotifications() {
 
   // Update state when notifications change
   useEffect(() => {
-    const unsubscribe = notificationManager.subscribe((updatedNotifications) => {
+    const _unsubscribe = notificationManager.subscribe((updatedNotifications) => {
       setNotifications(updatedNotifications);
       setStats(notificationManager.getStats());
     });
@@ -37,53 +37,53 @@ export function useNotifications() {
   }, []);
 
   // Add notification
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const _addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     return addNotificationToManager(notification);
   }, []);
 
   // Mark as read
-  const markAsRead = useCallback((notificationId: string) => {
+  const _markAsRead = useCallback((notificationId: string) => {
     markNotificationAsRead(notificationId);
   }, []);
 
   // Mark all as read
-  const markAllAsRead = useCallback(() => {
+  const _markAllAsRead = useCallback(() => {
     notificationManager.markAllAsRead();
   }, []);
 
   // Delete notification
-  const deleteNotification = useCallback((notificationId: string) => {
+  const _deleteNotification = useCallback((notificationId: string) => {
     notificationManager.deleteNotification(notificationId);
   }, []);
 
   // Clear all notifications
-  const clearAll = useCallback(() => {
+  const _clearAll = useCallback(() => {
     notificationManager.clearAll();
   }, []);
 
   // Get filtered notifications
-  const getFilteredNotifications = useCallback(() => {
+  const _getFilteredNotifications = useCallback(() => {
     return getNotificationsFromManager();
   }, []);
 
   // Update settings
-  const updateSettings = useCallback((newSettings: Partial<NotificationSettings>) => {
+  const _updateSettings = useCallback((newSettings: Partial<NotificationSettings>) => {
     notificationManager.updateSettings(newSettings);
     setSettings(notificationManager.getSettings());
   }, []);
 
   // Request browser notification permission
-  const requestPermission = useCallback(async () => {
+  const _requestPermission = useCallback(async () => {
     return await notificationManager.requestPermission();
   }, []);
 
   // Convenience getters
-  const unreadCount = stats?.unread || 0;
-  const unreadNotifications = notifications.filter(n => !n.read);
-  const criticalNotifications = notifications.filter(n => n.priority === NotificationPriority.CRITICAL && !n.read);
+  const _unreadCount = stats?.unread || 0;
+  const _unreadNotifications = notifications.filter(n => !n.read);
+  const _criticalNotifications = notifications.filter(n => n.priority === NotificationPriority.CRITICAL && !n.read);
 
   // Quick notification creators
-  const addSystemNotification = useCallback((title: string, message: string) => {
+  const _addSystemNotification = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -93,7 +93,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addSecurityAlert = useCallback((title: string, message: string) => {
+  const _addSecurityAlert = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -103,7 +103,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addCriticalAlert = useCallback((title: string, message: string) => {
+  const _addCriticalAlert = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -113,7 +113,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addSecurityBreach = useCallback((title: string, message: string) => {
+  const _addSecurityBreach = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -123,7 +123,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addUserNotification = useCallback((title: string, message: string) => {
+  const _addUserNotification = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -133,7 +133,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addPartnerUpdate = useCallback((title: string, message: string) => {
+  const _addPartnerUpdate = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -143,7 +143,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addEnergyAlert = useCallback((title: string, message: string) => {
+  const _addEnergyAlert = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -153,7 +153,7 @@ export function useNotifications() {
     });
   }, [addNotification]);
 
-  const addEmergencyAlert = useCallback((title: string, message: string) => {
+  const _addEmergencyAlert = useCallback((title: string, message: string) => {
     return addNotification({
       title,
       message,
@@ -170,10 +170,10 @@ export function useNotifications() {
     criticalNotifications,
     settings,
     stats,
-    
+
     // Counts
     unreadCount,
-    
+
     // Actions
     addNotification,
     markAsRead,
@@ -183,7 +183,7 @@ export function useNotifications() {
     getFilteredNotifications,
     updateSettings,
     requestPermission,
-    
+
     // Quick creators
     addSystemNotification,
     addSecurityAlert,

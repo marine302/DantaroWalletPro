@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { notificationManager } from '@/lib/notification-manager';
 import { useNotifications } from '@/hooks/useNotifications';
-import { 
-  Notification, 
-  NotificationPriority, 
+import {
+  Notification,
+  NotificationPriority,
   NotificationChannel,
-  NotificationFilter 
+  NotificationFilter
 } from '@/types/notification';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -29,7 +29,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
   const [itemsPerPage] = useState(20);
 
   useEffect(() => {
-    const unsubscribe = notificationManager.subscribeToHistory((newHistory) => {
+    const _unsubscribe = notificationManager.subscribeToHistory((newHistory) => {
       setHistory(newHistory);
     });
 
@@ -43,13 +43,13 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
     notificationManager.updateFilters(filters);
   }, [filters]);
 
-  const handleFilterChange = (key: keyof NotificationFilter, value: any) => {
+  const _handleFilterChange = (key: keyof NotificationFilter, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1); // 필터 변경시 첫 페이지로
   };
 
-  const handleDateRangeChange = (type: 'start' | 'end', date: string) => {
-    const newDateRange = filters.dateRange || { start: new Date(), end: new Date() };
+  const _handleDateRangeChange = (type: 'start' | 'end', date: string) => {
+    const _newDateRange = filters.dateRange || { start: new Date(), end: new Date() };
     if (type === 'start') {
       newDateRange.start = new Date(date);
     } else {
@@ -58,11 +58,11 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
     handleFilterChange('dateRange', newDateRange);
   };
 
-  const clearDateFilter = () => {
+  const _clearDateFilter = () => {
     handleFilterChange('dateRange', null);
   };
 
-  const getPriorityColor = (priority: NotificationPriority) => {
+  const _getPriorityColor = (priority: NotificationPriority) => {
     switch (priority) {
       case NotificationPriority.CRITICAL:
         return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
@@ -77,7 +77,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
     }
   };
 
-  const getChannelIcon = (channel: NotificationChannel) => {
+  const _getChannelIcon = (channel: NotificationChannel) => {
     switch (channel) {
       case NotificationChannel.SYSTEM:
         return '⚙️';
@@ -94,7 +94,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
     }
   };
 
-  const formatDate = (date: Date) => {
+  const _formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: '2-digit',
@@ -105,14 +105,14 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
   };
 
   // 페이지네이션 계산
-  const totalItems = history.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = history.slice(startIndex, endIndex);
+  const _totalItems = history.length;
+  const _totalPages = Math.ceil(totalItems / itemsPerPage);
+  const _startIndex = (currentPage - 1) * itemsPerPage;
+  const _endIndex = startIndex + itemsPerPage;
+  const _currentItems = history.slice(startIndex, endIndex);
 
-  const exportToCSV = () => {
-    const csvData = history.map(notification => ({
+  const _exportToCSV = () => {
+    const _csvData = history.map(notification => ({
       ID: notification.id,
       Title: notification.title,
       Message: notification.message,
@@ -122,15 +122,15 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
       Read: notification.read ? 'Yes' : 'No'
     }));
 
-    const headers = Object.keys(csvData[0] || {});
-    const csvContent = [
+    const _headers = Object.keys(csvData[0] || {});
+    const _csvContent = [
       headers.join(','),
       ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const _blob = new Blob([csvContent], { type: 'text/csv' });
+    const _url = window.URL.createObjectURL(blob);
+    const _a = document.createElement('a');
     a.href = url;
     a.download = `notification-history-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
@@ -152,8 +152,8 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             📊 CSV 내보내기
           </Button>
           {onClose && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
             >
@@ -168,7 +168,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           필터
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* 검색 */}
           <div>
@@ -209,7 +209,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               multiple
               value={filters.priorities}
               onChange={(e) => {
-                const selected = Array.from(e.target.selectedOptions, option => option.value as NotificationPriority);
+                const _selected = Array.from(e.target.selectedOptions, option => option.value as NotificationPriority);
                 handleFilterChange('priorities', selected);
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -232,7 +232,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               multiple
               value={filters.channels}
               onChange={(e) => {
-                const selected = Array.from(e.target.selectedOptions, option => option.value as NotificationChannel);
+                const _selected = Array.from(e.target.selectedOptions, option => option.value as NotificationChannel);
                 handleFilterChange('channels', selected);
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -292,7 +292,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             알림 히스토리 ({totalItems}개)
           </h3>
-          
+
           {/* 페이지네이션 정보 */}
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {startIndex + 1}-{Math.min(endIndex, totalItems)} / {totalItems}
@@ -309,8 +309,8 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               <div
                 key={notification.id}
                 className={`border rounded-lg p-4 transition-colors ${
-                  notification.read 
-                    ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' 
+                  notification.read
+                    ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                     : 'bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800'
                 }`}
               >
@@ -328,11 +328,11 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
                         <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       )}
                     </div>
-                    
+
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
                       {notification.title}
                     </h4>
-                    
+
                     <p className="text-gray-600 dark:text-gray-300 text-sm">
                       {notification.message}
                     </p>
@@ -366,20 +366,20 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             >
               이전
             </Button>
-            
+
             <div className="flex space-x-1">
               {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1;
-                const isCurrentPage = page === currentPage;
-                const showPage = page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2);
-                
+                const _page = index + 1;
+                const _isCurrentPage = page === currentPage;
+                const _showPage = page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2);
+
                 if (!showPage) {
                   if (page === currentPage - 3 || page === currentPage + 3) {
                     return <span key={page} className="px-2 text-gray-400">...</span>;
                   }
                   return null;
                 }
-                
+
                 return (
                   <Button
                     key={page}
@@ -393,7 +393,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
                 );
               })}
             </div>
-            
+
             <Button
               variant="outline"
               disabled={currentPage === totalPages}

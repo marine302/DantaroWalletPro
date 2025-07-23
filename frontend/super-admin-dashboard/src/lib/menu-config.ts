@@ -1,10 +1,10 @@
-import { 
-  BarChart3, 
-  Settings, 
-  Users, 
-  Zap, 
-  DollarSign, 
-  Shield, 
+import {
+  BarChart3,
+  Settings,
+  Users,
+  Zap,
+  DollarSign,
+  Shield,
   UserPlus,
   TrendingUp,
   Activity,
@@ -188,7 +188,7 @@ export function getMenuPath(id: string, menuItems: MenuItem[]): MenuItem[] {
     for (const item of items) {
       const newPath = [...currentPath, item];
       if (item.id === targetId) return newPath;
-      
+
       if (item.children) {
         const found = findPath(item.children, targetId, newPath);
         if (found) return found;
@@ -202,16 +202,16 @@ export function getMenuPath(id: string, menuItems: MenuItem[]): MenuItem[] {
 export function filterMenuByPermissions(items: MenuItem[], userPermissions: string[]): MenuItem[] {
   return items.filter(item => {
     // 권한이 필요하지 않거나, 사용자가 필요한 권한을 가지고 있는 경우
-    const hasPermission = !item.requiredPermissions || 
+    const hasPermission = !item.requiredPermissions ||
       item.requiredPermissions.some(permission => userPermissions.includes(permission));
-    
+
     if (!hasPermission) return false;
-    
+
     // 자식 메뉴가 있는 경우 재귀적으로 필터링
     if (item.children) {
       item.children = filterMenuByPermissions(item.children, userPermissions);
     }
-    
+
     return true;
   });
 }

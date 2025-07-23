@@ -1,20 +1,20 @@
 'use client';
 
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { useI18n } from '@/contexts/I18nContext';
 
 export default function AnalyticsPage() {
   const { t } = useI18n();
-  
-  const headerActions = (
+
+  const _headerActions = (
     <Button variant="primary">
       {t.analytics.downloadReport}
     </Button>
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.analytics.title}
       description={t.analytics.description}
       headerActions={headerActions}

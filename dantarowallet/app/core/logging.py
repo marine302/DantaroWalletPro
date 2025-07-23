@@ -2,13 +2,15 @@
 로깅 시스템 설정 모듈.
 애플리케이션 전체에서 사용할 표준화된 로깅 시스템을 구성합니다.
 """
+
 import logging
 import os
 import sys
 from datetime import datetime
 
-from app.core.config import settings
 from pythonjsonlogger.json import JsonFormatter
+
+from app.core.config import settings
 
 
 class CustomJsonFormatter(JsonFormatter):

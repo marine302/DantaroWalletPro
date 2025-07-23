@@ -89,3 +89,41 @@ quality-gate:
 install-quality-tools:
 	poetry add --group dev radon bandit isort black mypy flake8
 	@echo "✅ Quality tools installed"
+
+# 개발 시 자동 품질 검사 명령어들
+auto-fix:
+	@echo "🔧 자동 코드 수정 시작..."
+	poetry run black app tests scripts
+	poetry run isort app tests scripts
+	@echo "✅ 자동 수정 완료!"
+
+auto-check:
+	@echo "🔍 코드 품질 검사 시작..."
+	poetry run black --check app tests scripts
+	poetry run isort --check-only app tests scripts
+	poetry run flake8 app tests scripts
+	poetry run mypy app
+	poetry run bandit -r app/
+	@echo "✅ 품질 검사 완료!"
+
+dev-check: auto-fix auto-check test
+	@echo "🚀 개발 전 모든 검사 완료! 개발 시작하세요."
+
+build-test:
+	@echo "🏗️ 빌드 테스트 시작..."
+	poetry check
+	poetry run python -m app.main --help > /dev/null 2>&1 || echo "❌ 앱 로드 실패"
+	poetry run pytest tests/test_app.py::test_app_startup -v
+	@echo "✅ 빌드 테스트 완료!"
+
+pre-dev: install auto-fix auto-check build-test
+	@echo "🎯 개발 환경 준비 완료!"
+	@echo "   ✅ 의존성 설치"
+	@echo "   ✅ 코드 자동 수정"
+	@echo "   ✅ 품질 검사"
+	@echo "   ✅ 빌드 테스트"
+	@echo "🚀 이제 'make dev'로 서버를 시작하세요!"
+
+watch-dev:
+	@echo "👀 개발 모드: 파일 변경 시 자동 검사"
+	poetry run watchdog --recursive --ignore-directories=__pycache__ --ignore-directories=.git --patterns="*.py" --command="make auto-fix && make auto-check" app/

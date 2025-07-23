@@ -1,6 +1,7 @@
 """
 기본 Energy Pool 설정 스크립트
 """
+
 import asyncio
 import os
 import sys
@@ -9,10 +10,11 @@ from decimal import Decimal
 # 프로젝트 경로 추가
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.database import AsyncSessionLocal
-from app.models.energy_pool import EnergyPool
-from app.services.energy_pool_service import EnergyPoolService
 from sqlalchemy import update
+
+from app.core.database import AsyncSessionLocal
+from app.models.energy_pool import EnergyPoolModel
+from app.services.energy_pool_service import EnergyPoolService
 
 
 async def setup_default_energy_pool():

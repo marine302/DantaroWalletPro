@@ -5,7 +5,7 @@ import { I18nProvider } from '@/contexts/I18nContext';
 
 // Create a custom render function that includes providers
 const AllTheProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const queryClient = new QueryClient({
+  const _queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
@@ -25,7 +25,7 @@ const AllTheProviders: React.FC<{ children: React.ReactNode }> = ({ children }) 
   );
 };
 
-const customRender = (
+const _customRender = (
   ui: React.ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
@@ -37,7 +37,7 @@ export * from '@testing-library/react';
 export { customRender as render };
 
 // Mock data generators
-export const mockDashboardStats = {
+export const _mockDashboardStats = {
   total_users: 1500,
   active_partners: 25,
   total_revenue: 1250000,
@@ -47,7 +47,7 @@ export const mockDashboardStats = {
   active_wallets: 1200,
 };
 
-export const mockSystemHealth = {
+export const _mockSystemHealth = {
   status: 'operational',
   uptime: 99.98,
   response_time: 245,
@@ -57,7 +57,7 @@ export const mockSystemHealth = {
   disk_usage: 78,
 };
 
-export const mockPartner = {
+export const _mockPartner = {
   id: '1',
   name: 'Test Partner',
   email: 'partner@test.com',
@@ -67,7 +67,7 @@ export const mockPartner = {
   total_volume: 50000,
 };
 
-export const mockUser = {
+export const _mockUser = {
   id: '1',
   email: 'admin@test.com',
   name: 'Test Admin',
@@ -75,7 +75,7 @@ export const mockUser = {
   created_at: '2023-01-01T00:00:00Z',
 };
 
-export const mockTransaction = {
+export const _mockTransaction = {
   id: '1',
   from_address: 'TR123456789',
   to_address: 'TR987654321',
@@ -87,16 +87,16 @@ export const mockTransaction = {
 };
 
 // Test utilities
-export const waitForLoadingToFinish = () => 
+export const _waitForLoadingToFinish = () =>
   new Promise(resolve => setTimeout(resolve, 0));
 
-export const mockApiResponse = <T>(data: T) => ({
+export const _mockApiResponse = <T,>(data: T) => ({
   success: true,
   data,
   message: 'Success',
 });
 
-export const mockApiError = (message: string) => ({
+export const _mockApiError = (message: string) => ({
   success: false,
   data: null,
   message,

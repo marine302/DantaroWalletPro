@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 
 interface PageTemplateProps {
@@ -11,7 +11,7 @@ interface PageTemplateProps {
 
 export function PageTemplate({ title, description, headerActions, children }: PageTemplateProps) {
   return (
-    <BasePage 
+    <BasePage
       title={title}
       description={description}
       headerActions={headerActions}
@@ -66,7 +66,7 @@ interface ContentGridProps {
 }
 
 export function ContentGrid({ children, columns = 2 }: ContentGridProps) {
-  const gridClass = {
+  const _gridClass = {
     1: 'grid-cols-1',
     2: 'grid-cols-1 lg:grid-cols-2',
     3: 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3',

@@ -2,17 +2,19 @@
 트랜잭션 패턴 감지 서비스
 의심스러운 거래 패턴을 탐지하고 분석합니다.
 """
+
 import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.transaction import Transaction, TransactionStatus
 from app.schemas.transaction_analytics import (
     SuspiciousPatternAlert,
     TransactionMonitoringConfig,
 )
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +112,11 @@ class PatternDetectionService:
                         "max_amount": float(row.max_amount),
                         "threshold": float(threshold),
                     },
-                    recommendations=["사용자 신원 재확인", "거래 목적 문의", "추가 KYC 검증 고려"],
+                    recommendations=[
+                        "사용자 신원 재확인",
+                        "거래 목적 문의",
+                        "추가 KYC 검증 고려",
+                    ],
                 )
             )
 
@@ -158,7 +164,11 @@ class PatternDetectionService:
                         "threshold": hourly_threshold,
                         "time_window": "1_hour",
                     },
-                    recommendations=["계정 활동 모니터링 강화", "거래 패턴 분석", "일시적 거래 제한 고려"],
+                    recommendations=[
+                        "계정 활동 모니터링 강화",
+                        "거래 패턴 분석",
+                        "일시적 거래 제한 고려",
+                    ],
                 )
             )
 
@@ -201,7 +211,11 @@ class PatternDetectionService:
                         "unusual_hour_count": row.count,
                         "time_range": "02:00-06:00",
                     },
-                    recommendations=["사용자 활동 시간 패턴 분석", "지역/시간대 확인", "계정 보안 검토"],
+                    recommendations=[
+                        "사용자 활동 시간 패턴 분석",
+                        "지역/시간대 확인",
+                        "계정 보안 검토",
+                    ],
                 )
             )
 
@@ -421,6 +435,8 @@ class VelocityCheckService:
                     recommendations.append(f"{window} 거래 금액 제한 초과")
 
         if recommendations:
-            recommendations.extend(["거래 제한 적용 권장", "사용자 신원 재확인 필요", "거래 목적 문의"])
+            recommendations.extend(
+                ["거래 제한 적용 권장", "사용자 신원 재확인 필요", "거래 목적 문의"]
+            )
 
         return recommendations

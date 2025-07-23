@@ -1,10 +1,10 @@
 """
 트랜잭션 분석 및 모니터링 모델
 """
+
 from decimal import Decimal
 from enum import Enum
 
-from app.models.base import BaseModel
 from sqlalchemy import (
     Boolean,
     Column,
@@ -17,6 +17,8 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
+
+from app.models.base import BaseModel
 
 
 class AlertLevel(str, Enum):
@@ -133,6 +135,7 @@ class TransactionSummary(BaseModel):
 
 class SystemTransactionAlert(BaseModel):
     """시스템 트랜잭션 관련 알림 모델"""
+
     __tablename__ = "system_transaction_alerts"
 
     # 알림 정보
@@ -160,6 +163,4 @@ class SystemTransactionAlert(BaseModel):
     )
 
     def __repr__(self):
-        return (
-            f"<SystemTransactionAlert(id={self.id}, type={self.alert_type}, level={self.level})>"
-        )
+        return f"<SystemTransactionAlert(id={self.id}, type={self.alert_type}, level={self.level})>"

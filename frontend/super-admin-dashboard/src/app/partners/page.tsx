@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section } from '@/components/ui/DarkThemeComponents';
 import { apiClient } from '@/lib/api';
 import { Partner } from '@/types';
@@ -17,14 +17,14 @@ function PartnersPage() {
 
   useEffect(() => {
     fetchPartners();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
-  const fetchPartners = async () => {
+  const _fetchPartners = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // 임시 목 데이터 (백엔드 연동 전까지)
       const mockPartners: Partner[] = [
         {
@@ -61,10 +61,10 @@ function PartnersPage() {
           updated_at: "2025-07-16T18:30:00Z",
         }
       ];
-      
+
       // 실제 API 호출 시도, 실패하면 목 데이터 사용
       try {
-        const response = await apiClient.getPartners();
+        const _response = await apiClient.getPartners();
         setPartners(response.items || mockPartners);
       } catch (apiErr) {
         console.warn('API failed, using mock data:', apiErr);
@@ -78,11 +78,11 @@ function PartnersPage() {
     }
   };
 
-  const handleViewOnboarding = () => {
+  const _handleViewOnboarding = () => {
     window.location.href = '/partner-onboarding';
   };
 
-  const headerActions = (
+  const _headerActions = (
     <div className="flex gap-2">
       <Button variant="secondary" onClick={handleViewOnboarding}>
         신규 파트너 온보딩
@@ -94,7 +94,7 @@ function PartnersPage() {
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.partners.title}
       description={t.partners.description}
       headerActions={headerActions}
@@ -176,13 +176,13 @@ function PartnersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        partner.status === 'active' 
+                        partner.status === 'active'
                           ? 'bg-green-900/30 text-green-300'
                           : partner.status === 'inactive'
                           ? 'bg-red-900/30 text-red-300'
                           : 'bg-yellow-900/30 text-yellow-300'
                       }`}>
-                        {partner.status === 'active' ? t.partners.active : 
+                        {partner.status === 'active' ? t.partners.active :
                          partner.status === 'inactive' ? t.partners.suspended :
                          t.partners.pending}
                       </span>
@@ -214,6 +214,6 @@ function PartnersPage() {
 }
 
 // Export protected component
-export default withRBAC(PartnersPage, { 
+export default withRBAC(PartnersPage, {
   requiredPermissions: ['partners.view']
 });

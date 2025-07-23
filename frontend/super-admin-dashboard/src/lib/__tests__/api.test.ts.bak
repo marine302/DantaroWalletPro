@@ -2,7 +2,7 @@ import { apiClient } from '../api';
 import { mockApiResponse, mockApiError } from '@/test-utils/test-utils';
 
 // Mock fetch
-const mockFetch = jest.fn();
+const _mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe('API Client', () => {
@@ -14,7 +14,7 @@ describe('API Client', () => {
 
   describe('getDashboardStats', () => {
     it('returns dashboard stats from backend API when available', async () => {
-      const mockStats = {
+      const _mockStats = {
         total_users: 1500,
         active_partners: 25,
         total_revenue: 1250000,
@@ -25,7 +25,7 @@ describe('API Client', () => {
         json: async () => mockApiResponse(mockStats),
       });
 
-      const result = await apiClient.getDashboardStats();
+      const _result = await apiClient.getDashboardStats();
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/admin/dashboard/overview',
@@ -45,13 +45,13 @@ describe('API Client', () => {
       mockFetch.mockRejectedValueOnce(new Error('Backend unavailable'));
 
       // Second call to mock API succeeds
-      const mockStats = { total_users: 100, active_partners: 5 };
+      const _mockStats = { total_users: 100, active_partners: 5 };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockStats,
       });
 
-      const result = await apiClient.getDashboardStats();
+      const _result = await apiClient.getDashboardStats();
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(mockFetch).toHaveBeenNthCalledWith(2,
@@ -65,7 +65,7 @@ describe('API Client', () => {
     it('returns default data when all APIs fail', async () => {
       mockFetch.mockRejectedValue(new Error('All APIs failed'));
 
-      const result = await apiClient.getDashboardStats();
+      const _result = await apiClient.getDashboardStats();
 
       expect(result).toEqual({
         total_users: 0,
@@ -81,7 +81,7 @@ describe('API Client', () => {
 
   describe('login', () => {
     it('successfully authenticates with valid credentials', async () => {
-      const mockResponse = {
+      const _mockResponse = {
         token: 'mock-jwt-token',
         user: { id: '1', email: 'admin@test.com', role: 'super_admin' },
       };
@@ -91,7 +91,7 @@ describe('API Client', () => {
         json: async () => mockApiResponse(mockResponse),
       });
 
-      const result = await apiClient.login('admin@test.com', 'password');
+      const _result = await apiClient.login('admin@test.com', 'password');
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/auth/super-admin/login',
@@ -122,7 +122,7 @@ describe('API Client', () => {
 
   describe('getPartners', () => {
     it('fetches partners with pagination', async () => {
-      const mockPartners = {
+      const _mockPartners = {
         partners: [
           { id: '1', name: 'Partner 1', status: 'active' },
           { id: '2', name: 'Partner 2', status: 'pending' },
@@ -137,7 +137,7 @@ describe('API Client', () => {
         json: async () => mockApiResponse(mockPartners),
       });
 
-      const result = await apiClient.getPartners(1, 10);
+      const _result = await apiClient.getPartners(1, 10);
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/partners/?page=1&limit=10',
@@ -191,7 +191,7 @@ describe('API Client', () => {
 
       await apiClient.getDashboardStats();
 
-      const headers = mockFetch.mock.calls[0][1].headers;
+      const _headers = mockFetch.mock.calls[0][1].headers;
       expect(headers).not.toHaveProperty('Authorization');
     });
   });
@@ -200,7 +200,7 @@ describe('API Client', () => {
     it('handles network errors gracefully', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await apiClient.getDashboardStats();
+      const _result = await apiClient.getDashboardStats();
 
       // Should return default data instead of throwing
       expect(result).toBeDefined();
@@ -220,7 +220,7 @@ describe('API Client', () => {
         json: async () => ({ total_users: 100 }),
       });
 
-      const result = await apiClient.getDashboardStats();
+      const _result = await apiClient.getDashboardStats();
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result).toBeDefined();

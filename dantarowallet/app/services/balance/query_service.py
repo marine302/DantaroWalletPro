@@ -2,15 +2,17 @@
 잔고 조회 서비스
 사용자 잔고 조회 및 요약 정보 기능을 제공합니다.
 """
+
 import logging
 from decimal import Decimal
 from typing import Any, Dict, List
 
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.balance import Balance
 from app.models.transaction import Transaction, TransactionDirection, TransactionStatus
 from app.services.balance.base_service import BaseBalanceService
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

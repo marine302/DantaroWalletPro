@@ -56,13 +56,13 @@ export function TransactionTrendChart({ data, height = 300 }: TransactionTrendCh
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="date" 
+          <XAxis
+            dataKey="date"
             stroke="#9CA3AF"
             fontSize={12}
           />
           <YAxis stroke="#9CA3AF" fontSize={12} />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: '#1F2937',
               border: '1px solid #374151',
@@ -70,10 +70,10 @@ export function TransactionTrendChart({ data, height = 300 }: TransactionTrendCh
               color: '#F3F4F6'
             }}
           />
-          <Line 
-            type="monotone" 
-            dataKey="transactions" 
-            stroke="#3B82F6" 
+          <Line
+            type="monotone"
+            dataKey="transactions"
+            stroke="#3B82F6"
             strokeWidth={2}
             dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
             activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
@@ -91,13 +91,13 @@ export function VolumeAreaChart({ data, height = 300 }: TransactionTrendChartPro
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="date" 
+          <XAxis
+            dataKey="date"
             stroke="#9CA3AF"
             fontSize={12}
           />
           <YAxis stroke="#9CA3AF" fontSize={12} />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: '#1F2937',
               border: '1px solid #374151',
@@ -138,7 +138,7 @@ export function WalletDistributionChart({ data, height = 300 }: WalletDistributi
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: '#1F2937',
               border: '1px solid #374151',
@@ -160,13 +160,13 @@ export function RevenueBarChart({ data, height = 300 }: RevenueChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="date" 
+          <XAxis
+            dataKey="date"
             stroke="#9CA3AF"
             fontSize={12}
           />
           <YAxis stroke="#9CA3AF" fontSize={12} />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: '#1F2937',
               border: '1px solid #374151',
@@ -174,8 +174,8 @@ export function RevenueBarChart({ data, height = 300 }: RevenueChartProps) {
               color: '#F3F4F6'
             }}
           />
-          <Bar 
-            dataKey="revenue" 
+          <Bar
+            dataKey="revenue"
             fill="#8B5CF6"
             radius={[4, 4, 0, 0]}
           />
@@ -187,13 +187,13 @@ export function RevenueBarChart({ data, height = 300 }: RevenueChartProps) {
 
 // 차트 데이터 생성 함수들
 export function generateTransactionTrendData(): ChartData[] {
-  const days = 7;
+  const _days = 7;
   const data: ChartData[] = [];
-  
-  for (let i = 0; i < days; i++) {
-    const date = new Date();
+
+  for (let _i = 0; i < days; i++) {
+    const _date = new Date();
     date.setDate(date.getDate() - (days - 1 - i));
-    
+
     data.push({
       date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
       transactions: Math.floor(Math.random() * 500) + 300,
@@ -201,7 +201,7 @@ export function generateTransactionTrendData(): ChartData[] {
       revenue: Math.floor(Math.random() * 50000) + 25000
     });
   }
-  
+
   return data;
 }
 

@@ -2,14 +2,16 @@
 출금 관련 모델.
 사용자의 출금 요청과 처리 상태를 관리합니다.
 """
+
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
-from app.models.base import BaseModel
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey, Index, Integer, Numeric, String, Text
+
+from app.models.base import BaseModel
 
 
 class WithdrawalStatus(str, Enum):
@@ -61,7 +63,9 @@ class Withdrawal(BaseModel):
     to_address = Column(String(42), nullable=False, index=True)  # 수신 주소
     amount = Column(Numeric(precision=28, scale=8), nullable=False)  # 출금 금액
     fee = Column(Numeric(precision=28, scale=8), nullable=False)  # 출금 수수료
-    net_amount = Column(Numeric(precision=28, scale=8), nullable=False)  # 실제 받을 금액
+    net_amount = Column(
+        Numeric(precision=28, scale=8), nullable=False
+    )  # 실제 받을 금액
     asset = Column(String(10), nullable=False, default="USDT")  # 자산 종류
 
     # 상태 정보
@@ -92,7 +96,9 @@ class Withdrawal(BaseModel):
     batch_id = Column(String(36), nullable=True, index=True)  # 배치 처리 ID
     auto_approved = Column(Boolean, nullable=False, default=False)  # 자동 승인 여부
     risk_score = Column(Integer, nullable=True)  # 위험 점수
-    whitelist_verified = Column(Boolean, nullable=False, default=False)  # 화이트리스트 검증
+    whitelist_verified = Column(
+        Boolean, nullable=False, default=False
+    )  # 화이트리스트 검증
     policy_applied = Column(String(50), nullable=True)  # 적용된 정책 타입
 
     # 트랜잭션 정보
@@ -140,7 +146,7 @@ class WithdrawalBatch(BaseModel):
     # 배치 정보
     batch_id = Column(String(36), nullable=False, unique=True, index=True)  # UUID
     partner_id = Column(String(50), nullable=False, index=True)
-    
+
     # 상태 정보
     status = Column(
         SQLEnum(WithdrawalBatchStatus),
@@ -148,31 +154,35 @@ class WithdrawalBatch(BaseModel):
         default=WithdrawalBatchStatus.PENDING,
         index=True,
     )
-    
+
     # 처리 정보
     withdrawal_count = Column(Integer, nullable=False, default=0)  # 출금 건수
-    total_amount = Column(Numeric(precision=28, scale=8), nullable=False, default=0)  # 총 출금 금액
-    total_fee = Column(Numeric(precision=28, scale=8), nullable=False, default=0)  # 총 수수료
-    
+    total_amount = Column(
+        Numeric(precision=28, scale=8), nullable=False, default=0
+    )  # 총 출금 금액
+    total_fee = Column(
+        Numeric(precision=28, scale=8), nullable=False, default=0
+    )  # 총 수수료
+
     # 스케줄링 정보
     scheduled_at = Column(DateTime(timezone=True), nullable=True)  # 예약 시간
     started_at = Column(DateTime(timezone=True), nullable=True)  # 시작 시간
     completed_at = Column(DateTime(timezone=True), nullable=True)  # 완료 시간
-    
+
     # 결과 정보
     success_count = Column(Integer, nullable=False, default=0)  # 성공 건수
     failed_count = Column(Integer, nullable=False, default=0)  # 실패 건수
-    
+
     # 트랜잭션 정보
     tx_hash = Column(String(66), nullable=True, index=True)  # 배치 트랜잭션 해시
     block_number = Column(Integer, nullable=True)  # 블록 번호
     gas_used = Column(Integer, nullable=True)  # 사용된 가스
     energy_used = Column(Integer, nullable=True)  # 사용된 에너지
-    
+
     # 관리자 정보
     created_by = Column(Integer, nullable=False)
     processed_by = Column(Integer, nullable=True)
-    
+
     # 추가 메타데이터
     extra_data = Column(Text, nullable=True)  # JSON 형태의 추가 정보
     error_message = Column(Text, nullable=True)  # 오류 메시지
@@ -198,10 +208,10 @@ class WithdrawalBatch(BaseModel):
     @property
     def average_amount(self) -> Decimal:
         """평균 출금 금액"""
-        count = getattr(self, 'withdrawal_count', 0)
+        count = getattr(self, "withdrawal_count", 0)
         if count == 0:
             return Decimal("0")
-        total = getattr(self, 'total_amount', 0)
+        total = getattr(self, "total_amount", 0)
         return Decimal(str(total)) / Decimal(str(count))
 
 

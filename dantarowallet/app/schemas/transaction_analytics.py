@@ -1,9 +1,12 @@
 """
 트랜잭션 분석 및 모니터링 스키마
 """
+
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.transaction import (
     TransactionDirection,
@@ -11,7 +14,6 @@ from app.models.transaction import (
     TransactionType,
 )
 from app.models.transaction_analytics import AlertLevel, AlertType
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TransactionAnalyticsFilter(BaseModel):

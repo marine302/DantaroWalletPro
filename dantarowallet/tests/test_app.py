@@ -1,11 +1,13 @@
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+
 """
 기본 애플리케이션 기능 테스트.
 미들웨어, 핵심 엔드포인트 및 오류 처리를 검증합니다.
 """
 import pytest
-from app.main import app
 from httpx import AsyncClient
+
+from app.main import app
 
 
 @pytest.mark.asyncio

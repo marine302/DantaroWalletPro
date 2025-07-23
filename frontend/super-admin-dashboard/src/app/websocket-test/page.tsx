@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button, Section } from '@/components/ui/DarkThemeComponents';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 
 export default function WebSocketTestPage() {
   const [connectionStatus, setConnectionStatus] = useState('Not connected');
@@ -10,10 +10,10 @@ export default function WebSocketTestPage() {
   const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
+    const _wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
     console.log('🔌 Attempting to connect to WebSocket:', wsUrl);
-    
-    const ws = new WebSocket(wsUrl);
+
+    const _ws = new WebSocket(wsUrl);
     setWsInstance(ws);
 
     ws.onopen = () => {
@@ -24,7 +24,7 @@ export default function WebSocketTestPage() {
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
+        const _data = JSON.parse(event.data);
         console.log('📨 Received data:', data);
         setMessages(prev => [...prev, `📨 ${data.type}: ${JSON.stringify(data, null, 2)}`]);
       } catch (error) {
@@ -52,18 +52,18 @@ export default function WebSocketTestPage() {
     };
   }, []);
 
-  const sendTestMessage = () => {
+  const _sendTestMessage = () => {
     if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
       wsInstance.send(JSON.stringify({ type: 'ping', timestamp: new Date().toISOString() }));
       setMessages(prev => [...prev, `📤 Sent ping at ${new Date().toLocaleTimeString()}`]);
     }
   };
 
-  const clearMessages = () => {
+  const _clearMessages = () => {
     setMessages([]);
   };
 
-  const reconnect = () => {
+  const _reconnect = () => {
     if (wsInstance) {
       wsInstance.close();
     }
@@ -81,8 +81,8 @@ export default function WebSocketTestPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              connectionStatus === 'Connected' 
-                ? 'bg-green-900/30 text-green-300' 
+              connectionStatus === 'Connected'
+                ? 'bg-green-900/30 text-green-300'
                 : connectionStatus === 'Error'
                 ? 'bg-red-900/30 text-red-300'
                 : 'bg-yellow-900/30 text-yellow-300'
@@ -107,14 +107,14 @@ export default function WebSocketTestPage() {
       {/* 제어 패널 */}
       <Section title="제어 패널">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Button 
-            onClick={sendTestMessage} 
+          <Button
+            onClick={sendTestMessage}
             disabled={connectionStatus !== 'Connected'}
             className="w-full"
           >
             📡 Ping 전송
           </Button>
-          <Button 
+          <Button
             onClick={() => {
               if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
                 wsInstance.send(JSON.stringify({ type: 'subscribe', channel: 'dashboardStats' }));
@@ -126,7 +126,7 @@ export default function WebSocketTestPage() {
           >
             📊 대시보드 구독
           </Button>
-          <Button 
+          <Button
             onClick={() => {
               if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
                 wsInstance.send(JSON.stringify({ type: 'subscribe', channel: 'energyMarket' }));
@@ -138,7 +138,7 @@ export default function WebSocketTestPage() {
           >
             ⚡ 에너지 구독
           </Button>
-          <Button 
+          <Button
             onClick={clearMessages}
             variant="danger"
             className="w-full"

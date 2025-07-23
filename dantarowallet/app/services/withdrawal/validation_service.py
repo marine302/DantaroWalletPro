@@ -2,15 +2,17 @@
 출금 검증 서비스
 출금 요청에 대한 유효성 검증 로직을 제공합니다.
 """
+
 import logging
 from datetime import datetime
 from decimal import Decimal
 
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions import InsufficientBalanceError, ValidationError
 from app.models.withdrawal import Withdrawal, WithdrawalStatus
 from app.services.withdrawal.base_service import BaseWithdrawalService
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,9 @@ class WithdrawalValidationService(BaseWithdrawalService):
 
         # 1. 금액 검증
         if amount < self.min_withdrawal:
-            raise ValidationError(f"최소 출금 금액은 {self.min_withdrawal} {asset}입니다")
+            raise ValidationError(
+                f"최소 출금 금액은 {self.min_withdrawal} {asset}입니다"
+            )
 
         if amount > self.max_withdrawal_per_tx:
             raise ValidationError(
@@ -41,7 +45,9 @@ class WithdrawalValidationService(BaseWithdrawalService):
         daily_total = await self._get_daily_withdrawal_total(user_id, asset)
         if daily_total + amount > self.max_withdrawal_per_day:
             remaining = self.max_withdrawal_per_day - daily_total
-            raise ValidationError(f"일일 출금 한도를 초과했습니다. 잔여 한도: {remaining} {asset}")
+            raise ValidationError(
+                f"일일 출금 한도를 초과했습니다. 잔여 한도: {remaining} {asset}"
+            )
 
         # 4. 잔고 확인
         balance = await self.balance_service.get_balance(user_id, asset)

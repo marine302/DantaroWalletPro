@@ -16,10 +16,10 @@ export function useAuditLogs(page: number = 1, limit: number = 20) {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getAuditLogs(page, limit);
+      const _data = await superAdminService.getAuditLogs(page, limit);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch audit logs' });
@@ -40,10 +40,10 @@ export function useComplianceStats() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getComplianceStats();
+      const _data = await superAdminService.getComplianceStats();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch compliance stats' });
@@ -64,17 +64,17 @@ export function useSuspiciousActivities() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getSuspiciousActivities();
+      const _data = await superAdminService.getSuspiciousActivities();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch suspicious activities' });
     }
   }, []);
 
-  const updateActivityStatus = useCallback(async (id: string, status: SuspiciousActivity['status']) => {
+  const _updateActivityStatus = useCallback(async (id: string, status: SuspiciousActivity['status']) => {
     try {
       await superAdminService.updateSuspiciousActivityStatus(id, status);
       await fetchData(); // 데이터 새로고침
@@ -98,17 +98,17 @@ export function useEnergyProviders() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getEnergyProviders();
+      const _data = await superAdminService.getEnergyProviders();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch energy providers' });
     }
   }, []);
 
-  const updateProviderStatus = useCallback(async (providerId: number, isActive: boolean) => {
+  const _updateProviderStatus = useCallback(async (providerId: number, isActive: boolean) => {
     try {
       await superAdminService.updateProviderStatus(providerId, isActive);
       await fetchData(); // 데이터 새로고침
@@ -131,10 +131,10 @@ export function useMarketStats() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getMarketStats();
+      const _data = await superAdminService.getMarketStats();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch market stats' });
@@ -155,17 +155,17 @@ export function useEnergyPurchases() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getEnergyPurchases();
+      const _data = await superAdminService.getEnergyPurchases();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch energy purchases' });
     }
   }, []);
 
-  const createPurchase = useCallback(async (purchase: { providerId: number; energyAmount: number; margin: number; }) => {
+  const _createPurchase = useCallback(async (purchase: { providerId: number; energyAmount: number; margin: number; }) => {
     try {
       await superAdminService.createEnergyPurchase(purchase);
       await fetchData(); // 데이터 새로고침
@@ -191,17 +191,17 @@ export function usePartners(page: number = 1, limit: number = 20) {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getPartners(page, limit);
+      const _data = await superAdminService.getPartners(page, limit);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch partners' });
     }
   }, [page, limit]);
 
-  const approvePartner = useCallback(async (partnerId: number) => {
+  const _approvePartner = useCallback(async (partnerId: number) => {
     try {
       await superAdminService.approvePartner(partnerId);
       await fetchData(); // 데이터 새로고침
@@ -212,7 +212,7 @@ export function usePartners(page: number = 1, limit: number = 20) {
     }
   }, [fetchData]);
 
-  const rejectPartner = useCallback(async (partnerId: number, reason: string) => {
+  const _rejectPartner = useCallback(async (partnerId: number, reason: string) => {
     try {
       await superAdminService.rejectPartner(partnerId, reason);
       await fetchData(); // 데이터 새로고침
@@ -223,7 +223,7 @@ export function usePartners(page: number = 1, limit: number = 20) {
     }
   }, [fetchData]);
 
-  const advancePartnerStage = useCallback(async (partnerId: number) => {
+  const _advancePartnerStage = useCallback(async (partnerId: number) => {
     try {
       await superAdminService.advancePartnerStage(partnerId);
       await fetchData(); // 데이터 새로고침
@@ -238,12 +238,12 @@ export function usePartners(page: number = 1, limit: number = 20) {
     fetchData();
   }, [fetchData]);
 
-  return { 
-    ...state, 
-    refetch: fetchData, 
-    approvePartner, 
-    rejectPartner, 
-    advancePartnerStage 
+  return {
+    ...state,
+    refetch: fetchData,
+    approvePartner,
+    rejectPartner,
+    advancePartnerStage
   };
 }
 
@@ -254,10 +254,10 @@ export function useOnboardingStats() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const _fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await superAdminService.getOnboardingStats();
+      const _data = await superAdminService.getOnboardingStats();
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error instanceof Error ? error.message : 'Failed to fetch onboarding stats' });
@@ -274,7 +274,7 @@ export function useOnboardingStats() {
 // 실시간 업데이트를 위한 폴링 훅
 export function usePolling(callback: () => void, interval: number = 30000) {
   useEffect(() => {
-    const timer = setInterval(callback, interval);
+    const _timer = setInterval(callback, interval);
     return () => clearInterval(timer);
   }, [callback, interval]);
 }

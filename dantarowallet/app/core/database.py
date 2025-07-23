@@ -2,14 +2,16 @@
 데이터베이스 연결 및 세션 관리 모듈.
 SQLAlchemy 2.0 기반 비동기 ORM을 설정합니다.
 """
+
 import logging
 from typing import AsyncGenerator
 
-from app.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool
 from sqlalchemy.sql import text
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +109,7 @@ async def drop_tables() -> None:
         await conn.run_sync(Base.metadata.drop_all)
         logger.info("Database tables dropped")
 
+
 # 동기 데이터베이스 세션 (파트너 관리용)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -115,11 +118,14 @@ from sqlalchemy.orm import sessionmaker
 sync_engine = create_engine(
     settings.SYNC_DATABASE_URL,
     echo=False,  # SQL 로깅 비활성화
-    connect_args={"check_same_thread": False} if "sqlite" in settings.SYNC_DATABASE_URL else {},
+    connect_args=(
+        {"check_same_thread": False} if "sqlite" in settings.SYNC_DATABASE_URL else {}
+    ),
 )
 
 # 동기 세션 로컬
 SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+
 
 def get_sync_db():
     """동기 DB 세션 의존성"""
@@ -129,10 +135,11 @@ def get_sync_db():
     finally:
         db.close()
 
+
 def get_db_session():
     """
     동기 데이터베이스 세션을 반환합니다.
-    
+
     Returns:
         Session: SQLAlchemy 동기 세션 인스턴스
     """

@@ -2,58 +2,49 @@
 Sweep 자동화 API 엔드포인트
 입금 Sweep 자동화 시스템 관리를 위한 RESTful API
 """
+
 from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status as http_status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db, get_current_partner
+from app.api.deps import get_current_partner, get_db
 from app.models.partner import Partner
-from app.services.sweep.sweep_service import SweepService
-from app.services.sweep.hd_wallet_service import HDWalletService
-from app.schemas.sweep import (
-    # Configuration schemas
-    SweepConfigurationCreate,
-    SweepConfigurationUpdate,
-    SweepConfigurationResponse,
-    
-    # HD Wallet schemas
-    HDWalletMasterResponse,
-    UserDepositAddressCreate,
-    UserDepositAddressUpdate,
-    UserDepositAddressResponse,
-    
-    # Sweep operation schemas
-    ManualSweepRequest,
-    ManualSweepResponse,
-    EmergencySweepRequest,
-    EmergencySweepResponse,
+from app.schemas.sweep import (  # Configuration schemas; HD Wallet schemas; Sweep operation schemas; Log and queue schemas; Analytics schemas; Enums
     BatchSweepRequest,
     BatchSweepResponse,
-    
-    # Log and queue schemas
+    EmergencySweepRequest,
+    EmergencySweepResponse,
+    HDWalletMasterResponse,
+    ManualSweepRequest,
+    ManualSweepResponse,
+    QueueStatus,
+    QueueType,
+    SweepAnalytics,
+    SweepConfigurationCreate,
+    SweepConfigurationResponse,
+    SweepConfigurationUpdate,
     SweepLogResponse,
     SweepQueueResponse,
-    
-    # Analytics schemas
     SweepStatistics,
-    SweepAnalytics,
-    
-    # Enums
     SweepStatus,
-    QueueStatus,
-    QueueType
+    UserDepositAddressCreate,
+    UserDepositAddressResponse,
+    UserDepositAddressUpdate,
 )
+from app.services.sweep.hd_wallet_service import HDWalletService
+from app.services.sweep.sweep_service import SweepService
 
 router = APIRouter()
 
 
 # ===== HD Wallet Management =====
 
+
 @router.post("/wallets/master", response_model=HDWalletMasterResponse)
 async def create_master_wallet(
-    partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    partner: Partner = Depends(get_current_partner), db: AsyncSession = Depends(get_db)
 ):
     """파트너용 마스터 HD 지갑 생성"""
     try:
@@ -63,34 +54,33 @@ async def create_master_wallet(
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create master wallet: {str(e)}"
+            detail=f"Failed to create master wallet: {str(e)}",
         )
 
 
 @router.get("/wallets/master", response_model=HDWalletMasterResponse)
 async def get_master_wallet(
-    partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    partner: Partner = Depends(get_current_partner), db: AsyncSession = Depends(get_db)
 ):
     """마스터 HD 지갑 조회"""
     try:
         hd_service = HDWalletService(db)
         wallet_data = await hd_service.get_master_wallet_stats(str(partner.id))
-        
+
         # wallet_data에 exists가 있다면 이전 버전 형식이므로 처리
         if isinstance(wallet_data, dict) and wallet_data.get("exists") is False:
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
-                detail="Master wallet not found"
+                detail="Master wallet not found",
             )
-            
+
         return wallet_data
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get master wallet: {str(e)}"
+            detail=f"Failed to get master wallet: {str(e)}",
         )
 
 
@@ -98,21 +88,19 @@ async def get_master_wallet(
 async def create_deposit_address(
     request: UserDepositAddressCreate,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """사용자 입금 주소 생성"""
     try:
         hd_service = HDWalletService(db)
         address = await hd_service.generate_deposit_address(
-            partner_id=str(partner.id),
-            user_id=request.user_id,
-            force_new=False
+            partner_id=str(partner.id), user_id=request.user_id, force_new=False
         )
         return address
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create deposit address: {str(e)}"
+            detail=f"Failed to create deposit address: {str(e)}",
         )
 
 
@@ -124,7 +112,7 @@ async def list_deposit_addresses(
     limit: int = Query(100, ge=1, le=1000, description="조회 개수 제한"),
     offset: int = Query(0, ge=0, description="조회 시작 위치"),
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """입금 주소 목록 조회"""
     try:
@@ -135,13 +123,13 @@ async def list_deposit_addresses(
             is_active=is_active,
             is_monitored=is_monitored,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
         return addresses
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list deposit addresses: {str(e)}"
+            detail=f"Failed to list deposit addresses: {str(e)}",
         )
 
 
@@ -150,7 +138,7 @@ async def update_deposit_address(
     address_id: int,
     request: UserDepositAddressUpdate,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """입금 주소 업데이트"""
     try:
@@ -158,12 +146,12 @@ async def update_deposit_address(
         # 현재는 간단하게 구현
         raise HTTPException(
             status_code=http_status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Address update not implemented yet"
+            detail="Address update not implemented yet",
         )
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update deposit address: {str(e)}"
+            detail=f"Failed to update deposit address: {str(e)}",
         )
 
 
@@ -171,7 +159,7 @@ async def update_deposit_address(
 async def deactivate_deposit_address(
     address_id: int,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """입금 주소 비활성화"""
     try:
@@ -181,17 +169,18 @@ async def deactivate_deposit_address(
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to deactivate address: {str(e)}"
+            detail=f"Failed to deactivate address: {str(e)}",
         )
 
 
 # ===== Sweep Configuration =====
 
+
 @router.post("/config", response_model=SweepConfigurationResponse)
 async def create_sweep_configuration(
     request: SweepConfigurationCreate,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Sweep 설정 생성"""
     try:
@@ -199,20 +188,19 @@ async def create_sweep_configuration(
         config = await sweep_service.create_sweep_configuration(
             partner_id=str(partner.id),
             destination_wallet_id=request.destination_wallet_id,
-            **request.dict(exclude={"partner_id", "destination_wallet_id"})
+            **request.dict(exclude={"partner_id", "destination_wallet_id"}),
         )
         return config
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create sweep configuration: {str(e)}"
+            detail=f"Failed to create sweep configuration: {str(e)}",
         )
 
 
 @router.get("/config", response_model=SweepConfigurationResponse)
 async def get_sweep_configuration(
-    partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    partner: Partner = Depends(get_current_partner), db: AsyncSession = Depends(get_db)
 ):
     """Sweep 설정 조회"""
     try:
@@ -221,7 +209,7 @@ async def get_sweep_configuration(
         if not config:
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
-                detail="Sweep configuration not found"
+                detail="Sweep configuration not found",
             )
         return config
     except HTTPException:
@@ -229,7 +217,7 @@ async def get_sweep_configuration(
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get sweep configuration: {str(e)}"
+            detail=f"Failed to get sweep configuration: {str(e)}",
         )
 
 
@@ -237,30 +225,30 @@ async def get_sweep_configuration(
 async def update_sweep_configuration(
     request: SweepConfigurationUpdate,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Sweep 설정 업데이트"""
     try:
         sweep_service = SweepService(db)
         config = await sweep_service.update_sweep_configuration(
-            partner_id=str(partner.id),
-            **request.dict(exclude_unset=True)
+            partner_id=str(partner.id), **request.dict(exclude_unset=True)
         )
         return config
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update sweep configuration: {str(e)}"
+            detail=f"Failed to update sweep configuration: {str(e)}",
         )
 
 
 # ===== Manual Sweep Operations =====
 
+
 @router.post("/manual", response_model=ManualSweepResponse)
 async def manual_sweep(
     request: ManualSweepRequest,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """단일 주소 수동 Sweep"""
     try:
@@ -269,13 +257,13 @@ async def manual_sweep(
             partner_id=str(partner.id),
             address=request.address,
             amount=request.amount,
-            force=request.force
+            force=request.force,
         )
         return result
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to execute manual sweep: {str(e)}"
+            detail=f"Failed to execute manual sweep: {str(e)}",
         )
 
 
@@ -283,7 +271,7 @@ async def manual_sweep(
 async def batch_manual_sweep(
     request: BatchSweepRequest,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """배치 수동 Sweep"""
     try:
@@ -292,13 +280,13 @@ async def batch_manual_sweep(
             partner_id=str(partner.id),
             addresses=request.addresses,
             force=request.force,
-            priority=request.priority
+            priority=request.priority,
         )
         return result
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to execute batch manual sweep: {str(e)}"
+            detail=f"Failed to execute batch manual sweep: {str(e)}",
         )
 
 
@@ -306,7 +294,7 @@ async def batch_manual_sweep(
 async def emergency_sweep(
     request: EmergencySweepRequest,
     partner: Partner = Depends(get_current_partner),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """긴급 Sweep"""
     try:
@@ -314,11 +302,11 @@ async def emergency_sweep(
         result = await sweep_service.emergency_sweep(
             partner_id=str(partner.id),
             addresses=request.addresses,
-            reason=request.reason
+            reason=request.reason,
         )
         return result
     except Exception as e:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to execute emergency sweep: {str(e)}"
+            detail=f"Failed to execute emergency sweep: {str(e)}",
         )

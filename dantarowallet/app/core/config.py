@@ -2,6 +2,7 @@
 Core configuration module for DantaroWallet.
 Implements clean architecture principles for configuration management.
 """
+
 from typing import List, Union
 
 from pydantic import AnyHttpUrl, field_validator
@@ -22,7 +23,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
-    
+
     # .env 파일에서 사용되는 추가 필드들
     SYNC_DATABASE_URL: str = "sqlite:///./dev.db"
     API_V1_STR: str = "/api/v1"
@@ -48,12 +49,12 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
     REDIS_PASSWORD: str = ""
-    
-    @property 
+
+    @property
     def REDIS_URL_DYNAMIC(self) -> str:
         """동적 Redis URL 생성"""
         return f"redis://localhost:{self.REDIS_PORT}/0"
-    
+
     REDIS_URL: str = "redis://localhost:6379/0"  # 기본값 (호환성 유지)
 
     # TRON Network Configuration
@@ -62,11 +63,11 @@ class Settings(BaseSettings):
     TRON_FULL_NODE_URL: str = "https://nile.trongrid.io"
     TRON_SOLIDITY_NODE_URL: str = "https://nile.trongrid.io"
     TRON_EVENT_SERVER_URL: str = "https://nile.trongrid.io"
-    
+
     # External Wallet Configuration
     EXTERNAL_WALLET_SIGNATURE_EXPIRY: int = 300  # 5 minutes
     EXTERNAL_WALLET_CONNECTION_TIMEOUT: int = 30  # seconds
-    
+
     # TronLink Configuration
     TRONLINK_CONNECT_MESSAGE: str = "Connect to DantaroWallet"
     TRONLINK_VERIFY_DOMAIN: str = "dantarowallet.com"
@@ -74,7 +75,7 @@ class Settings(BaseSettings):
     TRON_NODE_URL: str = "https://api.nileex.io"  # Testnet default
     TRON_SCAN_URL: str = "https://nile.tronscan.org"
     TRON_DEFAULT_FEE_LIMIT: int = 100000000  # 100 TRX default
-    
+
     # TRON Monitoring Configuration
     BLOCKS_TO_CHECK_ON_START: int = 10
     BLOCK_CONFIRMATION_COUNT: int = 19
@@ -105,41 +106,45 @@ class Settings(BaseSettings):
 
     # CORS Configuration - 개발용으로 모든 origin 허용
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
-    
+
     # Port Configuration
     BACKEND_PORT: int = 8000  # 백엔드 서버 포트 (기본 8000)
-    
+
     # 프론트엔드 포트 설정 (두 개의 대시보드)
-    SUPER_ADMIN_FRONTEND_PORT: int = 3020    # 슈퍼 어드민 대시보드
+    SUPER_ADMIN_FRONTEND_PORT: int = 3020  # 슈퍼 어드민 대시보드
     PARTNER_ADMIN_FRONTEND_PORT: int = 3030  # 파트너 어드민 템플릿
-    
+
     # 개발용 추가 포트들
     DEV_FRONTEND_PORTS: List[int] = [3000, 3001, 3010, 3020, 3030]
     REDIS_PORT: int = 6379  # Redis 포트
     DATABASE_PORT: int = 5432  # PostgreSQL 포트 (운영시)
-    
+
     # 동적 CORS origins 생성
     @property
     def DYNAMIC_CORS_ORIGINS(self) -> List[str]:
         """동적으로 CORS origins 생성"""
         origins = []
-        
+
         # 두 개의 메인 프론트엔드 포트
         main_ports = [self.SUPER_ADMIN_FRONTEND_PORT, self.PARTNER_ADMIN_FRONTEND_PORT]
         for port in main_ports:
-            origins.extend([
-                f"http://localhost:{port}",
-                f"http://127.0.0.1:{port}",
-                f"https://localhost:{port}",
-            ])
-        
+            origins.extend(
+                [
+                    f"http://localhost:{port}",
+                    f"http://127.0.0.1:{port}",
+                    f"https://localhost:{port}",
+                ]
+            )
+
         # 개발용 포트들
         for port in self.DEV_FRONTEND_PORTS:
-            origins.extend([
-                f"http://localhost:{port}",
-                f"http://127.0.0.1:{port}",
-            ])
-            
+            origins.extend(
+                [
+                    f"http://localhost:{port}",
+                    f"http://127.0.0.1:{port}",
+                ]
+            )
+
         return origins
 
     # 보안 설정

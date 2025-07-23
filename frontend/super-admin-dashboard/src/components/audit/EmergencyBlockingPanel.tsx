@@ -50,14 +50,14 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
     }
   ]);
 
-  const actionTypes = [
+  const _actionTypes = [
     { value: 'block_transaction', label: '🚫 Block Transaction', impact: 'medium' },
     { value: 'freeze_account', label: '🧊 Freeze Account', impact: 'high' },
     { value: 'suspend_partner', label: '⏸️ Suspend Partner', impact: 'critical' },
     { value: 'emergency_halt', label: '🛑 Emergency System Halt', impact: 'critical' }
   ];
 
-  const reasonTemplates = [
+  const _reasonTemplates = [
     'Suspicious transaction pattern detected',
     'AML/KYC compliance violation',
     'Large amount threshold exceeded',
@@ -87,14 +87,14 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
     };
 
     setRecentActions(prev => [action, ...prev]);
-    
+
     if (onAction) {
       onAction(action);
     }
 
     // 성공 알림
     alert(`✅ Emergency action executed: ${actionType} for ${targetId}`);
-    
+
     // 폼 리셋
     setTargetId('');
     setReason('');
@@ -234,7 +234,7 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
               <h3 className="text-lg font-semibold text-white mb-4">
                 🚨 Execute Emergency Action
               </h3>
-              
+
               <div className="space-y-4">
                 {/* Action Type */}
                 <div>

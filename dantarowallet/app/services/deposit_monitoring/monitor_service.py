@@ -1,15 +1,17 @@
 """
 입금 모니터링 메인 서비스
 """
+
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.models.deposit import Deposit
 from app.models.wallet import Wallet
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base_monitor import BaseMonitorService
 from .blockchain_service import DepositBlockchainService
@@ -44,7 +46,9 @@ class DepositMonitoringService(BaseMonitorService):
                         1, current_block - settings.BLOCKS_TO_CHECK_ON_START
                     )
 
-                logger.info(f"블록 확인 중: {self.last_checked_block} → {current_block}")
+                logger.info(
+                    f"블록 확인 중: {self.last_checked_block} → {current_block}"
+                )
 
                 # 1. 대기 중인 입금 트랜잭션 처리
                 await self._process_pending_deposits(db)
@@ -102,7 +106,9 @@ class DepositMonitoringService(BaseMonitorService):
             logger.info("활성화된 지갑이 없습니다")
             return
 
-        logger.info(f"{len(active_wallets)}개의 활성화된 지갑에 대해 새로운 입금을 확인합니다")
+        logger.info(
+            f"{len(active_wallets)}개의 활성화된 지갑에 대해 새로운 입금을 확인합니다"
+        )
 
         for wallet in active_wallets:
             # 각 지갑 주소에 대한 새로운 트랜잭션 조회
@@ -113,7 +119,9 @@ class DepositMonitoringService(BaseMonitorService):
             if not transactions:
                 continue
 
-            logger.info(f"지갑 {wallet.address}에 {len(transactions)}개의 새로운 트랜잭션이 있습니다")
+            logger.info(
+                f"지갑 {wallet.address}에 {len(transactions)}개의 새로운 트랜잭션이 있습니다"
+            )
 
             # 각 트랜잭션 처리
             for tx in transactions:
@@ -130,7 +138,9 @@ class DepositMonitoringService(BaseMonitorService):
                     amount = tx.get("value", 0)
                     asset = tx.get("token", "TRX")
 
-                    logger.info(f"새로운 입금 발견: {amount} {asset}, 트랜잭션 {tx.get('txID')}")
+                    logger.info(
+                        f"새로운 입금 발견: {amount} {asset}, 트랜잭션 {tx.get('txID')}"
+                    )
 
                     # 입금 처리
                     try:

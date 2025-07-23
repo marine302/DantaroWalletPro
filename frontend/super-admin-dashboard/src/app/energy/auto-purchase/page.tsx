@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BasePage } from "@/components/ui/BasePage";
+import BasePage from "@/components/ui/BasePage";
 import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { Save, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle } from 'lucide-react';
 
@@ -46,7 +46,7 @@ export default function AutoPurchaseSettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = async () => {
+  const _handleSave = async () => {
     setIsSaving(true);
     // 모의 저장 프로세스
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -54,14 +54,14 @@ export default function AutoPurchaseSettingsPage() {
     alert('설정이 저장되었습니다.');
   };
 
-  const updateConfig = (field: keyof AutoPurchaseConfig, value: number | boolean | string[]) => {
+  const _updateConfig = (field: keyof AutoPurchaseConfig, value: number | boolean | string[]) => {
     setConfig(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const updateNotificationSetting = (setting: keyof AutoPurchaseConfig['notificationSettings'], value: boolean) => {
+  const _updateNotificationSetting = (setting: keyof AutoPurchaseConfig['notificationSettings'], value: boolean) => {
     setConfig(prev => ({
       ...prev,
       notificationSettings: {
@@ -110,8 +110,8 @@ export default function AutoPurchaseSettingsPage() {
                 onClick={() => updateConfig('enabled', !config.enabled)}
                 className="text-2xl"
               >
-                {config.enabled ? 
-                  <ToggleRight className="w-8 h-8 text-green-400" /> : 
+                {config.enabled ?
+                  <ToggleRight className="w-8 h-8 text-green-400" /> :
                   <ToggleLeft className="w-8 h-8 text-gray-400" />
                 }
               </button>
@@ -197,8 +197,8 @@ export default function AutoPurchaseSettingsPage() {
                 onClick={() => updateConfig('requireApproval', !config.requireApproval)}
                 className="text-2xl"
               >
-                {config.requireApproval ? 
-                  <ToggleRight className="w-8 h-8 text-green-400" /> : 
+                {config.requireApproval ?
+                  <ToggleRight className="w-8 h-8 text-green-400" /> :
                   <ToggleLeft className="w-8 h-8 text-gray-400" />
                 }
               </button>
@@ -218,8 +218,8 @@ export default function AutoPurchaseSettingsPage() {
                 onClick={() => updateNotificationSetting('email', !config.notificationSettings.email)}
                 className="text-2xl"
               >
-                {config.notificationSettings.email ? 
-                  <ToggleRight className="w-8 h-8 text-green-400" /> : 
+                {config.notificationSettings.email ?
+                  <ToggleRight className="w-8 h-8 text-green-400" /> :
                   <ToggleLeft className="w-8 h-8 text-gray-400" />
                 }
               </button>
@@ -234,8 +234,8 @@ export default function AutoPurchaseSettingsPage() {
                 onClick={() => updateNotificationSetting('sms', !config.notificationSettings.sms)}
                 className="text-2xl"
               >
-                {config.notificationSettings.sms ? 
-                  <ToggleRight className="w-8 h-8 text-green-400" /> : 
+                {config.notificationSettings.sms ?
+                  <ToggleRight className="w-8 h-8 text-green-400" /> :
                   <ToggleLeft className="w-8 h-8 text-gray-400" />
                 }
               </button>
@@ -250,8 +250,8 @@ export default function AutoPurchaseSettingsPage() {
                 onClick={() => updateNotificationSetting('webhook', !config.notificationSettings.webhook)}
                 className="text-2xl"
               >
-                {config.notificationSettings.webhook ? 
-                  <ToggleRight className="w-8 h-8 text-green-400" /> : 
+                {config.notificationSettings.webhook ?
+                  <ToggleRight className="w-8 h-8 text-green-400" /> :
                   <ToggleLeft className="w-8 h-8 text-gray-400" />
                 }
               </button>

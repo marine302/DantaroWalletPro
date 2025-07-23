@@ -1,6 +1,6 @@
-import { 
-  Notification as INotification, 
-  NotificationPriority, 
+import {
+  Notification as INotification,
+  NotificationPriority,
   NotificationChannel,
   NotificationSettings,
   NotificationFilter,
@@ -83,16 +83,16 @@ class NotificationManager {
     if (!this.audioContext) return;
 
     // 프로그래매틱하게 사운드 생성 (실제 파일 대신)
-    const createBeepBuffer = (frequency: number, duration: number) => {
-      const sampleRate = this.audioContext!.sampleRate;
-      const numSamples = sampleRate * duration;
-      const buffer = this.audioContext!.createBuffer(1, numSamples, sampleRate);
-      const channelData = buffer.getChannelData(0);
-      
-      for (let i = 0; i < numSamples; i++) {
+    const _createBeepBuffer = (frequency: number, duration: number) => {
+      const _sampleRate = this.audioContext!.sampleRate;
+      const _numSamples = sampleRate * duration;
+      const _buffer = this.audioContext!.createBuffer(1, numSamples, sampleRate);
+      const _channelData = buffer.getChannelData(0);
+
+      for (let _i = 0; i < numSamples; i++) {
         channelData[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.3;
       }
-      
+
       return buffer;
     };
 
@@ -112,9 +112,9 @@ class NotificationManager {
     }
 
     try {
-      const audioBuffer = this.sounds.get(priority);
+      const _audioBuffer = this.sounds.get(priority);
       if (audioBuffer) {
-        const source = this.audioContext.createBufferSource();
+        const _source = this.audioContext.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(this.audioContext.destination);
         source.start();
@@ -131,12 +131,12 @@ class NotificationManager {
     if (typeof window === 'undefined') return;
 
     try {
-      const savedSettings = localStorage.getItem('notification-settings');
+      const _savedSettings = localStorage.getItem('notification-settings');
       if (savedSettings) {
         this.store.settings = { ...this.store.settings, ...JSON.parse(savedSettings) };
       }
 
-      const savedHistory = localStorage.getItem('notification-history');
+      const _savedHistory = localStorage.getItem('notification-history');
       if (savedHistory) {
         this.store.history = JSON.parse(savedHistory);
         this.cleanupOldHistory();
@@ -164,9 +164,9 @@ class NotificationManager {
    * Cleanup old notification history based on retention policy
    */
   private cleanupOldHistory() {
-    const cutoffDate = new Date();
+    const _cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.store.settings.historyRetentionDays);
-    
+
     this.store.history = this.store.history.filter(
       notification => new Date(notification.timestamp) > cutoffDate
     );
@@ -200,7 +200,7 @@ class NotificationManager {
 
     // Maintain max active notifications limit
     if (this.store.active.length > this.store.settings.maxActiveNotifications) {
-      const removed = this.store.active.splice(this.store.settings.maxActiveNotifications);
+      const _removed = this.store.active.splice(this.store.settings.maxActiveNotifications);
       this.store.history.unshift(...removed);
     }
 
@@ -224,7 +224,7 @@ class NotificationManager {
 
     this.persistData();
     this.notifyListeners();
-    
+
     return newNotification;
   }
 
@@ -247,7 +247,7 @@ class NotificationManager {
         console.warn('Failed to send push notification:', error);
       }
     } else if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
+      const _permission = await Notification.requestPermission();
       if (permission === 'granted') {
         this.sendPushNotification(notification);
       }
@@ -272,7 +272,7 @@ class NotificationManager {
    * Apply filters to the notifications
    */
   private applyFilters(notifications: INotification[]): INotification[] {
-    let filtered = notifications;
+    const _filtered = notifications;
 
     // Filter by priorities
     if (this.store.filters.priorities.length > 0) {
@@ -293,8 +293,8 @@ class NotificationManager {
 
     // Filter by search query
     if (this.store.filters.searchQuery) {
-      const query = this.store.filters.searchQuery.toLowerCase();
-      filtered = filtered.filter(n => 
+      const _query = this.store.filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(n =>
         n.title.toLowerCase().includes(query) ||
         n.message.toLowerCase().includes(query)
       );
@@ -304,7 +304,7 @@ class NotificationManager {
     if (this.store.filters.dateRange) {
       const { start, end } = this.store.filters.dateRange;
       filtered = filtered.filter(n => {
-        const date = new Date(n.timestamp);
+        const _date = new Date(n.timestamp);
         return date >= start && date <= end;
       });
     }
@@ -332,13 +332,13 @@ class NotificationManager {
    */
   public markAsRead(id: string): void {
     // Mark in active notifications
-    const activeIndex = this.store.active.findIndex(n => n.id === id);
+    const _activeIndex = this.store.active.findIndex(n => n.id === id);
     if (activeIndex !== -1) {
       this.store.active[activeIndex].read = true;
     }
 
     // Mark in history
-    const historyIndex = this.store.history.findIndex(n => n.id === id);
+    const _historyIndex = this.store.history.findIndex(n => n.id === id);
     if (historyIndex !== -1) {
       this.store.history[historyIndex].read = true;
     }
@@ -396,7 +396,7 @@ class NotificationManager {
    * Get notification statistics
    */
   public getStats(): NotificationStats {
-    const active = this.store.active;
+    const _active = this.store.active;
     const stats: NotificationStats = {
       total: active.length,
       unread: active.filter(n => !n.read).length,
@@ -412,7 +412,7 @@ class NotificationManager {
         [NotificationChannel.COMPLIANCE]: active.filter(n => n.channel === NotificationChannel.COMPLIANCE).length,
       }
     };
-    
+
     return stats;
   }
 
@@ -438,7 +438,7 @@ class NotificationManager {
     }
 
     if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
+      const _permission = await Notification.requestPermission();
       return permission;
     }
 

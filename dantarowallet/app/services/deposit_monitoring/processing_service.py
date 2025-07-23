@@ -1,14 +1,16 @@
 """
 입금 처리 서비스
 """
+
 import logging
 from decimal import Decimal
 from typing import Any, Dict, List
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.balance import Balance
 from app.models.deposit import Deposit
 from app.services.balance_service import BalanceService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +122,9 @@ class DepositProcessingService:
                     )
 
                 except Exception as e:
-                    logger.error(f"대기 입금 처리 중 오류 발생: ID {deposit.id}, 오류: {e}")
+                    logger.error(
+                        f"대기 입금 처리 중 오류 발생: ID {deposit.id}, 오류: {e}"
+                    )
                     deposit.status = "failed"
                     deposit.error_message = str(e)
                     await db.flush()

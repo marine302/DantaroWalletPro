@@ -2,6 +2,7 @@
 애플리케이션의 커스텀 예외 정의.
 일관된 API 오류 처리와 응답 형식을 위한 예외 계층.
 """
+
 from typing import Any, Dict, Optional
 
 from fastapi import status

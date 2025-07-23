@@ -2,12 +2,14 @@
 입금 모델 정의.
 블록체인에서 감지된 입금 트랜잭션 정보를 저장합니다.
 """
+
 from decimal import Decimal
 from enum import Enum
 
-from app.models.base import BaseModel
 from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, Numeric, String
 from sqlalchemy.orm import relationship
+
+from app.models.base import BaseModel
 
 
 class DepositStatus(str, Enum):
@@ -48,7 +50,9 @@ class Deposit(BaseModel):
     min_confirmations = Column(Integer, nullable=False, default=19)  # TRON 권장 확인 수
 
     # 처리 상태
-    status = Column(String(20), nullable=False, default=DepositStatus.PENDING, comment="입금 상태")
+    status = Column(
+        String(20), nullable=False, default=DepositStatus.PENDING, comment="입금 상태"
+    )
     is_processed = Column(Boolean, nullable=False, default=False)
     processed_at = Column(String, nullable=True)
 

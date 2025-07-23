@@ -44,7 +44,7 @@ export const en: TranslationMessages = {
     warning: 'Warning',
     info: 'Info',
   },
-  
+
   nav: {
     dashboard: 'System Dashboard',
     dashboardDesc: 'Overall system status and real-time monitoring',
@@ -86,7 +86,7 @@ export const en: TranslationMessages = {
     debugDesc: 'Debug information and logs',
     logout: 'Logout',
   },
-  
+
   partners: {
     title: 'Partner Management',
     description: 'Manage and monitor all partner accounts and activities.',
@@ -108,7 +108,7 @@ export const en: TranslationMessages = {
     pendingApproval: 'Pending Approval',
     monthlyRevenue: 'Monthly Revenue',
   },
-  
+
   dashboard: {
     title: 'Dashboard',
     description: 'Super Admin Dashboard Main Page',
@@ -139,7 +139,7 @@ export const en: TranslationMessages = {
     healthy: 'Healthy',
     critical: 'Critical',
   },
-  
+
   energy: {
     title: 'Energy Management',
     description: 'Energy pool status and management',
@@ -160,7 +160,7 @@ export const en: TranslationMessages = {
     externalEnergyMarket: 'External Energy Market',
     purchaseEnergyExternal: 'Purchase Energy from External Sources',
   },
-  
+
   fees: {
     title: 'Fee Management',
     description: 'Fee configuration and revenue management',
@@ -178,7 +178,7 @@ export const en: TranslationMessages = {
     revenueOverview: 'Revenue Overview',
     recentTransactions: 'Recent Transactions',
   },
-  
+
   analytics: {
     title: 'Analytics',
     description: 'System analytics and statistics',
@@ -195,7 +195,7 @@ export const en: TranslationMessages = {
     performanceMetrics: 'Performance Metrics',
     recentActivity: 'Recent Activity',
   },
-  
+
   admins: {
     title: 'System Administrators',
     description: 'Manage system administrator accounts, roles, and permissions.',
@@ -217,7 +217,7 @@ export const en: TranslationMessages = {
     disable: 'Disable',
     recentAdminActivity: 'Recent Admin Activity',
   },
-  
+
   integratedDashboard: {
     title: 'Partner Integrated Dashboard',
     description: 'Real-time statistics and analytics data for partners',
@@ -268,7 +268,7 @@ export const en: TranslationMessages = {
       growthRate: 'Growth Rate',
     },
   },
-  
+
   auditCompliance: {
     title: 'Audit & Compliance',
     description: 'Manage system audit, compliance monitoring and regulatory compliance',
@@ -284,7 +284,7 @@ export const en: TranslationMessages = {
     realtimeTransactionMonitor: 'Real-time Transaction Monitor',
     emergencyBlockingPanel: 'Emergency Blocking Panel',
     auditLogSearch: 'Audit Log Search',
-    
+
     // Metrics
     totalAudits: 'Total Audits',
     passedAudits: 'Passed',
@@ -294,7 +294,7 @@ export const en: TranslationMessages = {
     criticalAlerts: 'Critical Alerts',
     monthlyReports: 'Monthly Reports',
     lastAuditTime: 'Last Audit',
-    
+
     // Buttons/Actions
     generateReport: 'Generate Report',
     runAudit: 'Run Audit',
@@ -308,7 +308,7 @@ export const en: TranslationMessages = {
     emergencyTab: 'Emergency',
     searchTab: 'Search',
     reportsTab: 'Reports',
-    
+
     // Status
     statusActive: 'Active',
     statusInactive: 'Inactive',
@@ -316,7 +316,7 @@ export const en: TranslationMessages = {
     statusSuspicious: 'Suspicious',
     statusCompliant: 'Compliant',
     statusViolation: 'Violation',
-    
+
     // Search & Filter
     searchPlaceholder: 'Search audit logs...',
     filterByDate: 'Filter by Date',
@@ -324,7 +324,7 @@ export const en: TranslationMessages = {
     filterByType: 'Filter by Type',
     filterByUser: 'Filter by User',
     filterByPartner: 'Filter by Partner',
-    
+
     // Table Headers
     timestamp: 'Timestamp',
     eventType: 'Event Type',
@@ -335,31 +335,31 @@ export const en: TranslationMessages = {
     partnerId: 'Partner ID',
     ipAddress: 'IP Address',
     details: 'Details',
-    
+
     // Severity Levels
     severityInfo: 'Info',
     severityWarning: 'Warning',
     severityCritical: 'Critical',
-    
+
     // Event Types
     eventTransaction: 'Transaction',
     eventCompliance: 'Compliance',
     eventSecurity: 'Security',
     eventSystem: 'System',
-    
+
     // Status
     riskLevel: 'Risk Level',
     low: 'Low',
     medium: 'Medium',
     high: 'High',
     critical: 'Critical',
-    
+
     // Filters
     allLogs: 'All Logs',
     successLogs: 'Success',
     failedLogs: 'Failed',
     warningLogs: 'Warning',
-    
+
     // Compliance Tools
     complianceTools: 'Compliance Tools',
     amlReport: 'AML Report',
@@ -367,7 +367,7 @@ export const en: TranslationMessages = {
     complianceCheckTool: 'Compliance Check',
     suspiciousTransactionReport: 'Suspicious Transaction Report',
   },
-  
+
   partnerOnboarding: {
     title: 'Partner Onboarding',
     description: 'Manage new partner onboarding process.',
@@ -381,7 +381,7 @@ export const en: TranslationMessages = {
     partnerApplication: 'Partner Application',
     reviewStatus: 'Review Status',
   },
-  
+
   energyMarket: {
     title: 'Energy Market',
     description: 'Manage energy trading and marketplace.',
@@ -396,7 +396,7 @@ export const en: TranslationMessages = {
     tradingInterface: 'Trading Interface',
     marketData: 'Market Data',
   },
-  
+
   settings: {
     title: 'Settings',
     description: 'Manage system settings and configurations.',

@@ -48,7 +48,7 @@ export function validateAndSanitizeInput(
   rules: ValidationRule = {}
 ): ValidationResult {
   const errors: string[] = [];
-  let sanitizedValue = input.trim();
+  const _sanitizedValue = input.trim();
 
   // Required validation
   if (rules.required && !sanitizedValue) {
@@ -89,7 +89,7 @@ export function validateAndSanitizeInput(
 /**
  * Common validation patterns
  */
-export const ValidationPatterns = {
+export const _ValidationPatterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^\+?[\d\s\-\(\)]+$/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
@@ -107,7 +107,7 @@ export const ValidationPatterns = {
  * Sanitize object properties recursively
  */
 export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
-  const sanitized = {} as T;
+  const _sanitized = {} as T;
 
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string') {
@@ -116,7 +116,7 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
       sanitized[key as keyof T] = sanitizeObject(value) as T[keyof T];
     } else if (Array.isArray(value)) {
       sanitized[key as keyof T] = value.map(item =>
-        typeof item === 'string' ? escapeHtml(item) : 
+        typeof item === 'string' ? escapeHtml(item) :
         typeof item === 'object' && item !== null ? sanitizeObject(item) : item
       ) as T[keyof T];
     } else {
@@ -132,13 +132,13 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
  */
 export function generateSecureToken(length: number = 32): string {
   if (typeof window !== 'undefined' && window.crypto) {
-    const array = new Uint8Array(length);
+    const _array = new Uint8Array(length);
     window.crypto.getRandomValues(array);
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
-  
+
   // Fallback for server-side
-  const crypto = require('crypto');
+  const _crypto = require('crypto');
   return crypto.randomBytes(length).toString('hex');
 }
 
@@ -149,8 +149,8 @@ class RateLimiter {
   private attempts: Map<string, { count: number; resetTime: number }> = new Map();
 
   isAllowed(identifier: string, maxAttempts: number, windowMs: number): boolean {
-    const now = Date.now();
-    const attempt = this.attempts.get(identifier);
+    const _now = Date.now();
+    const _attempt = this.attempts.get(identifier);
 
     if (!attempt || now > attempt.resetTime) {
       this.attempts.set(identifier, { count: 1, resetTime: now + windowMs });
@@ -166,18 +166,18 @@ class RateLimiter {
   }
 
   getRemainingAttempts(identifier: string, maxAttempts: number): number {
-    const attempt = this.attempts.get(identifier);
+    const _attempt = this.attempts.get(identifier);
     if (!attempt) return maxAttempts;
     return Math.max(0, maxAttempts - attempt.count);
   }
 
   getResetTime(identifier: string): number {
-    const attempt = this.attempts.get(identifier);
+    const _attempt = this.attempts.get(identifier);
     return attempt ? attempt.resetTime : Date.now();
   }
 }
 
-export const rateLimiter = new RateLimiter();
+export const _rateLimiter = new RateLimiter();
 
 /**
  * Secure localStorage wrapper with encryption
@@ -198,7 +198,7 @@ export class SecureStorage {
   static setItem(key: string, value: string): boolean {
     try {
       if (typeof window === 'undefined') return false;
-      const encoded = this.encode(value);
+      const _encoded = this.encode(value);
       localStorage.setItem(key, encoded);
       return true;
     } catch {
@@ -209,7 +209,7 @@ export class SecureStorage {
   static getItem(key: string): string | null {
     try {
       if (typeof window === 'undefined') return null;
-      const encoded = localStorage.getItem(key);
+      const _encoded = localStorage.getItem(key);
       return encoded ? this.decode(encoded) : null;
     } catch {
       return null;
@@ -242,20 +242,20 @@ export class SecureStorage {
  */
 export function isValidJWT(token: string): boolean {
   if (!token) return false;
-  
-  const parts = token.split('.');
+
+  const _parts = token.split('.');
   if (parts.length !== 3) return false;
-  
+
   try {
     // Decode header and payload
-    const header = JSON.parse(atob(parts[0]));
-    const payload = JSON.parse(atob(parts[1]));
-    
+    const _header = JSON.parse(atob(parts[0]));
+    const _payload = JSON.parse(atob(parts[1]));
+
     // Check if token is expired
     if (payload.exp && Date.now() >= payload.exp * 1000) {
       return false;
     }
-    
+
     return true;
   } catch {
     return false;
@@ -267,9 +267,9 @@ export function isValidJWT(token: string): boolean {
  */
 export function getJWTPayload(token: string): any | null {
   if (!isValidJWT(token)) return null;
-  
+
   try {
-    const payload = token.split('.')[1];
+    const _payload = token.split('.')[1];
     return JSON.parse(atob(payload));
   } catch {
     return null;

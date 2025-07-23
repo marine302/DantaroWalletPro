@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { securityHeaders } from "./src/lib/security";
+import { _securityHeaders } from "./src/lib/security";
 
 const nextConfig: NextConfig = {
   /* Performance Optimizations */
@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/(.*)',
-        headers: securityHeaders,
+        headers: _securityHeaders,
       },
     ];
   },

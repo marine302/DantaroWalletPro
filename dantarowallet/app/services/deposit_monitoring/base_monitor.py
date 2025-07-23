@@ -1,6 +1,7 @@
 """
 입금 모니터링 서비스 기본 클래스
 """
+
 import asyncio
 import logging
 from typing import Optional

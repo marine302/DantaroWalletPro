@@ -46,7 +46,7 @@ export interface TranslationMessages {
     warning: string;
     info: string;
   };
-  
+
   // 네비게이션
   nav: {
     dashboard: string;
@@ -89,7 +89,7 @@ export interface TranslationMessages {
     debugDesc: string;
     logout: string;
   };
-  
+
   // 파트너 관리
   partners: {
     title: string;
@@ -112,7 +112,7 @@ export interface TranslationMessages {
     pendingApproval: string;
     monthlyRevenue: string;
   };
-  
+
   // 대시보드
   dashboard: {
     title: string;
@@ -136,7 +136,7 @@ export interface TranslationMessages {
     healthy: string;
     critical: string;
   };
-  
+
   // 에너지 관리
   energy: {
     title: string;
@@ -158,7 +158,7 @@ export interface TranslationMessages {
     externalEnergyMarket: string;
     purchaseEnergyExternal: string;
   };
-  
+
   // 수수료 관리
   fees: {
     title: string;
@@ -177,7 +177,7 @@ export interface TranslationMessages {
     revenueOverview: string;
     recentTransactions: string;
   };
-  
+
   // 분석
   analytics: {
     title: string;
@@ -195,7 +195,7 @@ export interface TranslationMessages {
     performanceMetrics: string;
     recentActivity: string;
   };
-  
+
   // 관리자 관리
   admins: {
     title: string;
@@ -218,7 +218,7 @@ export interface TranslationMessages {
     disable: string;
     recentAdminActivity: string;
   };
-  
+
   // 통합 대시보드
   integratedDashboard: {
     title: string;
@@ -270,7 +270,7 @@ export interface TranslationMessages {
       growthRate: string;
     };
   };
-  
+
   // 감사 및 컴플라이언스
   auditCompliance: {
     title: string;
@@ -360,7 +360,7 @@ export interface TranslationMessages {
     complianceCheckTool: string;
     suspiciousTransactionReport: string;
   };
-  
+
   // 파트너 온보딩
   partnerOnboarding: {
     title: string;
@@ -375,7 +375,7 @@ export interface TranslationMessages {
     partnerApplication: string;
     reviewStatus: string;
   };
-  
+
   // 에너지 마켓
   energyMarket: {
     title: string;
@@ -391,7 +391,7 @@ export interface TranslationMessages {
     tradingInterface: string;
     marketData: string;
   };
-  
+
   // 설정
   settings: {
     title: string;

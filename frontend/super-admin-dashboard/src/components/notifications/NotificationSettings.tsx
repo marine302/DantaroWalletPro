@@ -10,52 +10,52 @@ interface NotificationSettingsProps {
   onClose?: () => void;
 }
 
-export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> = ({ 
-  onClose 
+export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> = ({
+  onClose
 }) => {
   const [settings, setSettings] = useState<NotificationSettings>(notificationManager.getSettings());
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    const currentSettings = notificationManager.getSettings();
+    const _currentSettings = notificationManager.getSettings();
     setSettings(currentSettings);
   }, []);
 
-  const handleSettingChange = (key: keyof NotificationSettings, value: any) => {
-    const newSettings = { ...settings, [key]: value };
+  const _handleSettingChange = (key: keyof NotificationSettings, value: any) => {
+    const _newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     setHasChanges(true);
   };
 
-  const handlePriorityChange = (priority: NotificationPriority, enabled: boolean) => {
-    const newPriorities = { ...settings.priorities, [priority]: enabled };
+  const _handlePriorityChange = (priority: NotificationPriority, enabled: boolean) => {
+    const _newPriorities = { ...settings.priorities, [priority]: enabled };
     handleSettingChange('priorities', newPriorities);
   };
 
-  const handleChannelChange = (channel: NotificationChannel, enabled: boolean) => {
-    const newChannels = { ...settings.channels, [channel]: enabled };
+  const _handleChannelChange = (channel: NotificationChannel, enabled: boolean) => {
+    const _newChannels = { ...settings.channels, [channel]: enabled };
     handleSettingChange('channels', newChannels);
   };
 
-  const handleSave = () => {
+  const _handleSave = () => {
     notificationManager.updateSettings(settings);
     setHasChanges(false);
     onClose?.();
   };
 
-  const handleReset = () => {
-    const currentSettings = notificationManager.getSettings();
+  const _handleReset = () => {
+    const _currentSettings = notificationManager.getSettings();
     setSettings(currentSettings);
     setHasChanges(false);
   };
 
-  const requestNotificationPermission = async () => {
+  const _requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
       alert('이 브라우저는 데스크톱 알림을 지원하지 않습니다.');
       return;
     }
 
-    const permission = await Notification.requestPermission();
+    const _permission = await Notification.requestPermission();
     if (permission === 'granted') {
       handleSettingChange('pushEnabled', true);
     }
@@ -68,8 +68,8 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
           알림 설정
         </h2>
         {onClose && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >

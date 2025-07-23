@@ -38,13 +38,13 @@ class ApiClient {
     });
 
     // 기본 클라이언트 설정 (환경에 따라 결정)
-    const baseURL = process.env.NODE_ENV === 'development' 
+    const _baseURL = process.env.NODE_ENV === 'development'
       ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001")
       : (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1");
-    
+
     // 백엔드 API 사용 여부 결정
     this.useBackendAPI = process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true';
-    
+
     console.log('🔧 API Client Configuration:', {
       baseURL,
       useBackendAPI: this.useBackendAPI,
@@ -52,7 +52,7 @@ class ApiClient {
       mockURL: "http://localhost:3001",
       backendURL: process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000/api/v1"
     });
-    
+
     this.client = axios.create({
       baseURL,
       timeout: 10000,
@@ -62,7 +62,7 @@ class ApiClient {
     [this.client, this.mockClient, this.backendClient].forEach(client => {
       client.interceptors.request.use(
         (config) => {
-          const token = this.getAuthToken();
+          const _token = this.getAuthToken();
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
@@ -93,12 +93,12 @@ class ApiClient {
    * 백엔드 API 실패 시 자동으로 Mock API로 fallback하는 요청 메서드
    */
   public async makeResilientRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any,
     options?: any
   ): Promise<T> {
-    const requestConfig = {
+    const _requestConfig = {
       method: method.toLowerCase(),
       ...options,
       ...(data && ['post', 'put'].includes(method.toLowerCase()) && { data })
@@ -113,14 +113,14 @@ class ApiClient {
           ...requestConfig
         });
         console.log(`✅ Backend API Success: ${method} ${endpoint}`);
-        
+
         // 백엔드 응답이 { success: true, data: {...} } 형태인 경우 data 추출
         if (response.data && typeof response.data === 'object' && response.data.success && response.data.data) {
           return response.data.data as T;
         }
         // PaginatedResponse의 경우 페이지네이션 정보도 처리
         if (response.data && typeof response.data === 'object' && response.data.success && response.data.data && response.data.data.items) {
-          const data = response.data.data;
+          const _data = response.data.data;
           return {
             items: data.items,
             total: data.total,
@@ -147,7 +147,7 @@ class ApiClient {
       return response.data;
     } catch (mockError) {
       console.error(`❌ Mock API Also Failed: ${method} ${endpoint}`, mockError);
-      
+
       // 3. 최종 fallback: 기본 클라이언트 사용
       try {
         console.log(`🔄 Using Default Client: ${method} ${endpoint}`);
@@ -168,7 +168,7 @@ class ApiClient {
    */
   async checkBackendHealth(): Promise<boolean> {
     if (!this.useBackendAPI) return false;
-    
+
     try {
       await this.backendClient.get('/health', { timeout: 3000 });
       console.log('✅ Backend API is healthy');
@@ -200,7 +200,7 @@ class ApiClient {
 
   // Authentication
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await this.makeResilientRequest<AuthResponse>('/auth/login', 'POST', credentials);
+    const _response = await this.makeResilientRequest<AuthResponse>('/auth/login', 'POST', credentials);
     this.setAuthToken(response.access_token);
     return response;
   }
@@ -208,7 +208,7 @@ class ApiClient {
   async superAdminLogin(credentials: LoginRequest): Promise<AuthResponse> {
     console.log('Attempting super admin login with:', { email: credentials.email });
     // 슈퍼 어드민 로그인은 별도 엔드포인트 사용
-    const response = await this.makeResilientRequest<AuthResponse>('/auth/super-admin/login', 'POST', credentials);
+    const _response = await this.makeResilientRequest<AuthResponse>('/auth/super-admin/login', 'POST', credentials);
     console.log('Super admin login response:', response);
     this.setAuthToken(response.access_token);
     return response;

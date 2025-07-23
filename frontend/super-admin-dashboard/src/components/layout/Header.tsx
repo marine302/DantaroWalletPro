@@ -6,7 +6,7 @@ import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageSelector';
 import BackendStatusMonitor from '@/components/ui/BackendStatusMonitor';
-import { useI18n } from '@/contexts/I18nContext';
+// import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -17,14 +17,14 @@ interface HeaderProps {
 export function Header({ setSidebarOpen }: HeaderProps) {
   const { t } = useI18n();
   const { user, logout } = useAuth();
-  const router = useRouter();
-  
-  const handleLogout = () => {
+  const _router = useRouter();
+
+  const _handleLogout = () => {
     logout();
     router.push('/login');
   };
-  
-  const userNavigation = [
+
+  const _userNavigation = [
     { name: t.common.profile, href: '#' },
     { name: t.settings.title, href: '/settings' },
     { name: t.nav.logout, href: '#', onClick: handleLogout },
@@ -48,7 +48,7 @@ export function Header({ setSidebarOpen }: HeaderProps) {
         <div className="flex items-center gap-x-4 lg:gap-x-6">
           {/* Language Toggle */}
           <LanguageToggle />
-          
+
           {/* Notifications */}
 
           {/* Separator */}

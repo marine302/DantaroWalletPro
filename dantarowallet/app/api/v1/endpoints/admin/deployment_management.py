@@ -1,15 +1,17 @@
 """
 슈퍼 어드민용 배포 관리 API
 """
-from typing import List, Optional, Dict, Any
+
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.database import get_sync_db
 from app.api.deps import get_current_admin_user
+from app.core.database import get_sync_db
+from app.core.logger import get_logger
 from app.models.user import User
 from app.services.deployment.deployment_service import DeploymentService
-from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["배포 관리"])
@@ -25,16 +27,17 @@ async def deploy_partner_instance(
     """파트너 인스턴스 배포"""
     try:
         deployment_service = DeploymentService(db)
-        result = await deployment_service.create_partner_instance(partner_id, template_type)
-        
+        result = await deployment_service.create_partner_instance(
+            partner_id, template_type
+        )
+
         logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 인스턴스 배포")
         return result
-        
+
     except Exception as e:
         logger.error(f"파트너 인스턴스 배포 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="파트너 인스턴스 배포 중 오류가 발생했습니다."
+            status_code=500, detail="파트너 인스턴스 배포 중 오류가 발생했습니다."
         )
 
 
@@ -48,19 +51,23 @@ async def configure_partner_environment(
     """파트너 환경 설정"""
     try:
         deployment_service = DeploymentService(db)
-        success = await deployment_service.configure_partner_environment(partner_id, config_data)
-        
+        success = await deployment_service.configure_partner_environment(
+            partner_id, config_data
+        )
+
         if success:
             logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 환경 설정")
-            return {"message": "파트너 환경 설정이 완료되었습니다.", "partner_id": partner_id}
+            return {
+                "message": "파트너 환경 설정이 완료되었습니다.",
+                "partner_id": partner_id,
+            }
         else:
             raise HTTPException(status_code=400, detail="환경 설정 실패")
-            
+
     except Exception as e:
         logger.error(f"파트너 환경 설정 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="파트너 환경 설정 중 오류가 발생했습니다."
+            status_code=500, detail="파트너 환경 설정 중 오류가 발생했습니다."
         )
 
 
@@ -74,18 +81,22 @@ async def setup_partner_database(
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.setup_partner_database(partner_id)
-        
+
         if success:
-            logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 데이터베이스 설정")
-            return {"message": "파트너 데이터베이스 설정이 완료되었습니다.", "partner_id": partner_id}
+            logger.info(
+                f"관리자 {current_admin.id}가 파트너 {partner_id} 데이터베이스 설정"
+            )
+            return {
+                "message": "파트너 데이터베이스 설정이 완료되었습니다.",
+                "partner_id": partner_id,
+            }
         else:
             raise HTTPException(status_code=400, detail="데이터베이스 설정 실패")
-            
+
     except Exception as e:
         logger.error(f"파트너 데이터베이스 설정 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="파트너 데이터베이스 설정 중 오류가 발생했습니다."
+            status_code=500, detail="파트너 데이터베이스 설정 중 오류가 발생했습니다."
         )
 
 
@@ -100,15 +111,14 @@ async def deploy_partner_templates(
     try:
         deployment_service = DeploymentService(db)
         status_result = await deployment_service.deploy_partner_templates(partner_id)
-        
+
         logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 템플릿 배포")
         return status_result
-        
+
     except Exception as e:
         logger.error(f"파트너 템플릿 배포 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="파트너 템플릿 배포 중 오류가 발생했습니다."
+            status_code=500, detail="파트너 템플릿 배포 중 오류가 발생했습니다."
         )
 
 
@@ -122,15 +132,14 @@ async def get_deployment_status(
     try:
         deployment_service = DeploymentService(db)
         status = await deployment_service.get_deployment_status(partner_id)
-        
+
         logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 배포 상태 조회")
         return status
-        
+
     except Exception as e:
         logger.error(f"배포 상태 조회 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="배포 상태 조회 중 오류가 발생했습니다."
+            status_code=500, detail="배포 상태 조회 중 오류가 발생했습니다."
         )
 
 
@@ -144,18 +153,20 @@ async def remove_partner_deployment(
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.remove_partner_deployment(partner_id)
-        
+
         if success:
             logger.info(f"관리자 {current_admin.id}가 파트너 {partner_id} 배포 제거")
-            return {"message": "파트너 배포가 제거되었습니다.", "partner_id": partner_id}
+            return {
+                "message": "파트너 배포가 제거되었습니다.",
+                "partner_id": partner_id,
+            }
         else:
             raise HTTPException(status_code=400, detail="배포 제거 실패")
-            
+
     except Exception as e:
         logger.error(f"파트너 배포 제거 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="파트너 배포 제거 중 오류가 발생했습니다."
+            status_code=500, detail="파트너 배포 제거 중 오류가 발생했습니다."
         )
 
 
@@ -168,15 +179,14 @@ async def get_available_templates(
     try:
         deployment_service = DeploymentService(db)
         templates = await deployment_service.get_available_templates()
-        
+
         logger.info(f"관리자 {current_admin.id}가 템플릿 목록 조회")
         return templates
-        
+
     except Exception as e:
         logger.error(f"템플릿 목록 조회 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="템플릿 목록 조회 중 오류가 발생했습니다."
+            status_code=500, detail="템플릿 목록 조회 중 오류가 발생했습니다."
         )
 
 
@@ -189,16 +199,17 @@ async def create_template(
     """새 템플릿 생성"""
     try:
         deployment_service = DeploymentService(db)
-        template = await deployment_service.create_template(template_data, str(current_admin.id))
-        
+        template = await deployment_service.create_template(
+            template_data, str(current_admin.id)
+        )
+
         logger.info(f"관리자 {current_admin.id}가 새 템플릿 생성: {template['name']}")
         return template
-        
+
     except Exception as e:
         logger.error(f"템플릿 생성 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="템플릿 생성 중 오류가 발생했습니다."
+            status_code=500, detail="템플릿 생성 중 오류가 발생했습니다."
         )
 
 
@@ -213,15 +224,14 @@ async def get_all_deployments(
     try:
         deployment_service = DeploymentService(db)
         deployments = await deployment_service.get_all_deployments(status_filter, limit)
-        
+
         logger.info(f"관리자 {current_admin.id}가 전체 배포 현황 조회")
         return deployments
-        
+
     except Exception as e:
         logger.error(f"배포 현황 조회 실패: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="배포 현황 조회 중 오류가 발생했습니다."
+            status_code=500, detail="배포 현황 조회 중 오류가 발생했습니다."
         )
 
 
@@ -234,17 +244,19 @@ async def rollback_deployment(
     """배포 롤백"""
     try:
         deployment_service = DeploymentService(db)
-        success = await deployment_service.rollback_deployment(deployment_id, f"Rollback by admin {current_admin.id}")
-        
+        success = await deployment_service.rollback_deployment(
+            deployment_id, f"Rollback by admin {current_admin.id}"
+        )
+
         if success:
             logger.info(f"관리자 {current_admin.id}가 배포 {deployment_id} 롤백")
-            return {"message": "배포 롤백이 완료되었습니다.", "deployment_id": deployment_id}
+            return {
+                "message": "배포 롤백이 완료되었습니다.",
+                "deployment_id": deployment_id,
+            }
         else:
             raise HTTPException(status_code=400, detail="배포 롤백 실패")
-            
+
     except Exception as e:
         logger.error(f"배포 롤백 실패: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="배포 롤백 중 오류가 발생했습니다."
-        )
+        raise HTTPException(status_code=500, detail="배포 롤백 중 오류가 발생했습니다.")

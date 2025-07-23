@@ -78,7 +78,7 @@ class TronNRGService {
     this.baseURL = process.env.NEXT_PUBLIC_TRONNRG_API_URL || 'https://api.tronnrg.com/v1';
     this.apiKey = process.env.NEXT_PUBLIC_TRONNRG_API_KEY || 'demo_key';
     this.isProduction = false; // 강제로 개발 모드로 설정
-    
+
     console.log('🔋 TronNRG Service initialized:', {
       baseURL: this.baseURL,
       isProduction: this.isProduction,
@@ -98,9 +98,9 @@ class TronNRGService {
       return this.getMockData(endpoint) as T;
     }
 
-    const url = `${this.baseURL}${endpoint}`;
-    
-    const defaultHeaders = {
+    const _url = `${this.baseURL}${endpoint}`;
+
+    const _defaultHeaders = {
       'Content-Type': 'application/json',
       'X-API-Key': this.apiKey,
       'User-Agent': 'DantaroWallet-SuperAdmin/1.0'
@@ -108,8 +108,8 @@ class TronNRGService {
 
     try {
       console.log(`🌐 TronNRG API Request: ${options.method || 'GET'} ${url}`);
-      
-      const response = await fetch(url, {
+
+      const _response = await fetch(url, {
         ...options,
         headers: {
           ...defaultHeaders,
@@ -121,19 +121,19 @@ class TronNRGService {
         throw new Error(`TronNRG API Error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const _data = await response.json();
       console.log(`✅ TronNRG API Response:`, data);
-      
+
       return data;
     } catch (error) {
       console.error('❌ TronNRG API Error:', error);
-      
+
       // 프로덕션이 아닌 경우 Mock 데이터 반환
       if (!this.isProduction) {
         console.log('🎭 Returning mock data for development');
         return this.getMockData(endpoint) as T;
       }
-      
+
       throw error;
     }
   }
@@ -142,8 +142,8 @@ class TronNRGService {
    * 개발용 Mock 데이터 생성
    */
   private getMockData(endpoint: string): any {
-    const now = new Date().toISOString();
-    
+    const _now = new Date().toISOString();
+
     switch (true) {
       case endpoint.includes('/market/price'):
         return {
@@ -153,7 +153,7 @@ class TronNRGService {
           change24h: (Math.random() - 0.5) * 10,
           volume24h: Math.floor(Math.random() * 1000000)
         };
-        
+
       case endpoint.includes('/market/data'):
         return {
           currentPrice: 0.0041,
@@ -164,7 +164,7 @@ class TronNRGService {
           availableEnergy: 15000000,
           timestamp: now
         };
-        
+
       case endpoint.includes('/providers'):
         return [
           {
@@ -194,11 +194,11 @@ class TronNRGService {
             lastUpdated: now
           }
         ];
-        
+
       case endpoint.includes('/transactions'):
         return [
           {
-            id: 'tx_' + Date.now(),
+            id: `tx_${  Date.now()}`,
             type: 'purchase',
             amount: 10000,
             price: 0.0041,
@@ -207,10 +207,10 @@ class TronNRGService {
             timestamp: now,
             providerId: 'tronnrg-1',
             providerName: 'TronNRG Pool A',
-            transactionHash: '0x' + Math.random().toString(16).substr(2, 8)
+            transactionHash: `0x${  Math.random().toString(16).substr(2, 8)}`
           }
         ];
-        
+
       default:
         return { message: 'Mock data not available for this endpoint' };
     }
@@ -235,7 +235,7 @@ class TronNRGService {
    */
   async getProviders(): Promise<TronNRGProvider[]> {
     console.log('🔍 TronNRG getProviders called');
-    const result = await this.makeRequest<TronNRGProvider[]>('/providers');
+    const _result = await this.makeRequest<TronNRGProvider[]>('/providers');
     console.log('📋 TronNRG providers result:', result);
     return result;
   }
@@ -277,10 +277,10 @@ class TronNRGService {
   connectPriceStream(onUpdate: (price: TronNRGPrice) => void): WebSocket | null {
     if (!this.isProduction) {
       // 개발환경에서는 Mock 데이터로 시뮬레이션
-      const interval = setInterval(() => {
+      const _interval = setInterval(() => {
         onUpdate(this.getMockData('/market/price') as TronNRGPrice);
       }, 5000);
-      
+
       // cleanup을 위한 fake WebSocket 객체 반환
       return {
         close: () => clearInterval(interval),
@@ -289,16 +289,16 @@ class TronNRGService {
     }
 
     try {
-      const ws = new WebSocket(`wss://api.tronnrg.com/v1/stream/price`);
-      
+      const _ws = new WebSocket(`wss://api.tronnrg.com/v1/stream/price`);
+
       ws.onopen = () => {
         console.log('🔌 TronNRG price stream connected');
         ws.send(JSON.stringify({ type: 'subscribe', channel: 'price' }));
       };
-      
+
       ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
+          const _data = JSON.parse(event.data);
           if (data.type === 'price_update') {
             onUpdate(data.data);
           }
@@ -306,15 +306,15 @@ class TronNRGService {
           console.error('❌ Error parsing price stream data:', error);
         }
       };
-      
+
       ws.onerror = (error) => {
         console.error('❌ TronNRG WebSocket error:', error);
       };
-      
+
       ws.onclose = () => {
         console.log('🔌 TronNRG price stream disconnected');
       };
-      
+
       return ws;
     } catch (error) {
       console.error('❌ Failed to connect to TronNRG price stream:', error);
@@ -326,15 +326,15 @@ class TronNRGService {
    * API 연결 상태 확인
    */
   async checkHealth(): Promise<{ status: 'healthy' | 'unhealthy'; latency: number }> {
-    const startTime = Date.now();
-    
+    const _startTime = Date.now();
+
     try {
       await this.makeRequest('/health');
-      const latency = Date.now() - startTime;
-      
+      const _latency = Date.now() - startTime;
+
       return { status: 'healthy', latency };
     } catch (error) {
-      const latency = Date.now() - startTime;
+      const _latency = Date.now() - startTime;
       return { status: 'unhealthy', latency };
     }
   }

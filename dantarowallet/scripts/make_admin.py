@@ -10,7 +10,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 import logging
+
 from sqlalchemy import select, update
+
 from app.core.database import AsyncSessionLocal
 from app.models.user import User
 
@@ -27,7 +29,7 @@ async def make_admin():
             select(User).filter(User.email == "admin@dantarowallet.com")
         )
         user = result.scalar_one_or_none()
-        
+
         if user:
             # 관리자 권한 부여
             user.is_admin = True

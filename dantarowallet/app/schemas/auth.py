@@ -2,6 +2,7 @@
 인증 관련 스키마 모듈.
 회원가입, 로그인, 토큰, 비밀번호 변경 등의 스키마를 정의합니다.
 """
+
 from datetime import datetime
 from typing import Optional
 

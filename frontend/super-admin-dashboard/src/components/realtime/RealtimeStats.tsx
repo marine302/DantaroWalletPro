@@ -42,25 +42,25 @@ export function RealtimeStats({ className = '' }: RealtimeStatsProps) {
 
   useEffect(() => {
     // Subscribe to realtime system stats
-    const unsubscribeSystem = realtimeManager.subscribe('systemStats', (data: SystemStats) => {
+    const _unsubscribeSystem = realtimeManager.subscribe('systemStats', (data: SystemStats) => {
       setSystemStats(data);
       setIsLoading(false);
     });
 
     // Subscribe to realtime dashboard stats
-    const unsubscribeDashboard = realtimeManager.subscribe('dashboardStats', (data: DashboardStats) => {
+    const _unsubscribeDashboard = realtimeManager.subscribe('dashboardStats', (data: DashboardStats) => {
       setDashboardStats(data);
       setIsLoading(false);
     });
 
     // Get initial data if available
-    const initialSystemData = realtimeManager.getData('systemStats');
+    const _initialSystemData = realtimeManager.getData('systemStats');
     if (initialSystemData) {
       setSystemStats(initialSystemData as SystemStats);
       setIsLoading(false);
     }
 
-    const initialDashboardData = realtimeManager.getData('dashboardStats');
+    const _initialDashboardData = realtimeManager.getData('dashboardStats');
     if (initialDashboardData) {
       setDashboardStats(initialDashboardData as DashboardStats);
       setIsLoading(false);
@@ -72,13 +72,13 @@ export function RealtimeStats({ className = '' }: RealtimeStatsProps) {
     };
   }, []);
 
-  const formatNumber = (num: number) => {
+  const _formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
   };
 
-  const formatCurrency = (num: number) => {
+  const _formatCurrency = (num: number) => {
     return new Intl.NumberFormat('ko-KR', {
       style: 'currency',
       currency: 'KRW',
@@ -87,7 +87,7 @@ export function RealtimeStats({ className = '' }: RealtimeStatsProps) {
     }).format(num);
   };
 
-  const getUsageColor = (percentage: number) => {
+  const _getUsageColor = (percentage: number) => {
     if (percentage >= 90) return 'text-red-400';
     if (percentage >= 70) return 'text-yellow-400';
     return 'text-green-400';

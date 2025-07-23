@@ -5,16 +5,16 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { Notification, NotificationPriority, NotificationType } from '@/types/notification';
 
 export function NotificationCenter() {
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
     deleteNotification,
-    clearAll 
+    clearAll
   } = useNotifications();
 
-  const getTypeIcon = (type: NotificationType) => {
+  const _getTypeIcon = (type: NotificationType) => {
     const iconMap: Record<NotificationType, string> = {
       info: '📢',
       warning: '⚠️',
@@ -24,7 +24,7 @@ export function NotificationCenter() {
     return iconMap[type] || '📢';
   };
 
-  const getPriorityColor = (priority: NotificationPriority) => {
+  const _getPriorityColor = (priority: NotificationPriority) => {
     switch (priority) {
       case NotificationPriority.CRITICAL:
         return 'border-red-500 bg-red-900/20';
@@ -39,7 +39,7 @@ export function NotificationCenter() {
     }
   };
 
-  const formatTimestamp = (timestamp: Date) => {
+  const _formatTimestamp = (timestamp: Date) => {
     return timestamp.toLocaleString('ko-KR');
   };
 
@@ -103,16 +103,16 @@ export function NotificationCenter() {
                           {notification.channel}
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-300 mb-2">
                         {notification.message}
                       </p>
-                      
+
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400">
                           {formatTimestamp(notification.timestamp)}
                         </span>
-                        
+
                         <div className="flex items-center space-x-2">
                           {!notification.read && (
                             <button

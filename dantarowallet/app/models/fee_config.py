@@ -1,14 +1,26 @@
 """수수료 설정 관련 모델"""
-from sqlalchemy import Column, Integer, String, Numeric, Boolean, DateTime, Text, ForeignKey
-from sqlalchemy.sql import func
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from app.models.base import Base
 
 
 class FeeConfig(Base):
     """수수료 설정 테이블"""
+
     __tablename__ = "fee_configs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     transaction_type = Column(String(50), nullable=False, comment="거래 유형")
     base_fee = Column(Numeric(18, 8), nullable=False, comment="기본 수수료")
@@ -19,15 +31,20 @@ class FeeConfig(Base):
     is_active = Column(Boolean, default=True, comment="활성 상태")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # 관계 정의
-    partner_history = relationship("PartnerFeeConfigHistory", back_populates="fee_config", cascade="all, delete-orphan")
+    partner_history = relationship(
+        "PartnerFeeConfigHistory",
+        back_populates="fee_config",
+        cascade="all, delete-orphan",
+    )
 
 
 class FeeHistory(Base):
     """수수료 변경 이력 테이블"""
+
     __tablename__ = "fee_history"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     fee_config_id = Column(Integer, nullable=False, comment="수수료 설정 ID")
     old_values = Column(Text, comment="이전 설정값 (JSON)")
@@ -39,12 +56,17 @@ class FeeHistory(Base):
 
 class DynamicFeeRule(Base):
     """동적 수수료 규칙 테이블"""
+
     __tablename__ = "dynamic_fee_rules"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     rule_name = Column(String(100), nullable=False, comment="규칙 이름")
     transaction_type = Column(String(50), nullable=False, comment="거래 유형")
-    condition_type = Column(String(50), nullable=False, comment="조건 유형 (network_congestion, time_based, volume_based)")
+    condition_type = Column(
+        String(50),
+        nullable=False,
+        comment="조건 유형 (network_congestion, time_based, volume_based)",
+    )
     condition_value = Column(Text, comment="조건 설정 (JSON)")
     fee_multiplier = Column(Numeric(5, 4), nullable=False, comment="수수료 배율")
     priority = Column(Integer, default=1, comment="우선순위")
@@ -55,8 +77,9 @@ class DynamicFeeRule(Base):
 
 class FeeCalculationLog(Base):
     """수수료 계산 로그 테이블"""
+
     __tablename__ = "fee_calculation_logs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     transaction_id = Column(String(255), comment="거래 ID")
     user_id = Column(Integer, comment="사용자 ID")
@@ -71,15 +94,16 @@ class FeeCalculationLog(Base):
     applied_rules = Column(Text, comment="적용된 동적 규칙 (JSON)")
     calculation_details = Column(Text, comment="계산 세부사항 (JSON)")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # 관계
     partner = relationship("Partner", back_populates="fee_calculation_logs")
 
 
 class FeeRevenueStats(Base):
     """수수료 매출 통계 테이블"""
+
     __tablename__ = "fee_revenue_stats"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime(timezone=True), nullable=False, comment="날짜")
     partner_id = Column(Integer, comment="파트너사 ID (NULL이면 전체)")

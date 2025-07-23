@@ -11,10 +11,10 @@ interface ActivityLogViewerProps {
   showFilters?: boolean;
 }
 
-export function ActivityLogViewer({ 
-  userId, 
-  limit = 20, 
-  showFilters = true 
+export function ActivityLogViewer({
+  userId,
+  limit = 20,
+  showFilters = true
 }: ActivityLogViewerProps) {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,33 +29,33 @@ export function ActivityLogViewer({
     loadLogs();
   }, [userId, limit, filters]);
 
-  const loadLogs = () => {
+  const _loadLogs = () => {
     setLoading(true);
     try {
-      const activities = userId 
+      const _activities = userId
         ? getUserActivities(userId, limit)
         : getRecentActivities(limit);
-      
+
       // Apply filters
-      let filteredLogs = activities;
-      
+      const _filteredLogs = activities;
+
       if (filters.action) {
         filteredLogs = filteredLogs.filter(log => log.action === filters.action);
       }
-      
+
       if (filters.resource) {
         filteredLogs = filteredLogs.filter(log => log.resource === filters.resource);
       }
-      
+
       if (filters.dateRange) {
-        const now = new Date();
-        const daysAgo = parseInt(filters.dateRange);
-        const cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
-        filteredLogs = filteredLogs.filter(log => 
+        const _now = new Date();
+        const _daysAgo = parseInt(filters.dateRange);
+        const _cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+        filteredLogs = filteredLogs.filter(log =>
           new Date(log.timestamp) >= cutoffDate
         );
       }
-      
+
       setLogs(filteredLogs);
     } catch (error) {
       console.error('Failed to load activity logs:', error);
@@ -64,15 +64,15 @@ export function ActivityLogViewer({
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const _formatTimestamp = (timestamp: string) => {
+    const _date = new Date(timestamp);
+    const _now = new Date();
+    const _diffMs = now.getTime() - date.getTime();
+    const _diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const _diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffHours < 1) {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const _diffMinutes = Math.floor(diffMs / (1000 * 60));
       return `${diffMinutes}분 전`;
     } else if (diffHours < 24) {
       return `${diffHours}시간 전`;
@@ -83,7 +83,7 @@ export function ActivityLogViewer({
     }
   };
 
-  const getActivityIcon = (action: string) => {
+  const _getActivityIcon = (action: string) => {
     const iconMap: Record<string, string> = {
       login: '🔑',
       logout: '🚪',
@@ -100,7 +100,7 @@ export function ActivityLogViewer({
     return iconMap[action] || '📝';
   };
 
-  const getActivityColor = (action: string) => {
+  const _getActivityColor = (action: string) => {
     const colorMap: Record<string, string> = {
       login: 'bg-green-600',
       logout: 'bg-gray-600',
@@ -117,7 +117,7 @@ export function ActivityLogViewer({
     return colorMap[action] || 'bg-gray-600';
   };
 
-  const formatActivityMessage = (log: ActivityLog) => {
+  const _formatActivityMessage = (log: ActivityLog) => {
     const actionMap: Record<string, string> = {
       login: '로그인',
       logout: '로그아웃',
@@ -142,8 +142,8 @@ export function ActivityLogViewer({
       dashboard: '대시보드'
     };
 
-    const action = actionMap[log.action] || log.action;
-    const resource = resourceMap[log.resource] || log.resource;
+    const _action = actionMap[log.action] || log.action;
+    const _resource = resourceMap[log.resource] || log.resource;
 
     return `${resource} ${action}`;
   };

@@ -1,6 +1,7 @@
 """
 대시보드 관련 Pydantic 스키마
 """
+
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional

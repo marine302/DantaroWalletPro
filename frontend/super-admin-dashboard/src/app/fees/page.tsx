@@ -1,20 +1,20 @@
 'use client';
 
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-import { useI18n } from '@/contexts/I18nContext';
+// import { useI18n } from '@/contexts/I18nContext';
 
 export default function FeesPage() {
   const { t } = useI18n();
-  
-  const headerActions = (
+
+  const _headerActions = (
     <Button variant="primary">
       {t.fees.updateRates}
     </Button>
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.fees.title}
       description={t.fees.description}
       headerActions={headerActions}

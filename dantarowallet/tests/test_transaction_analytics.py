@@ -1,4 +1,5 @@
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+
 """
 트랜잭션 분석 API 테스트
 """
@@ -6,6 +7,10 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
+from httpx import AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.main import app
 from app.models.transaction import (
     Transaction,
@@ -15,9 +20,6 @@ from app.models.transaction import (
 )
 from app.models.transaction_analytics import AlertLevel, AlertType, TransactionAlert
 from app.models.user import User
-from httpx import AsyncClient
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # 테스트용 사용자 정보 - conftest.py와 일관성 유지
 test_user = {"email": "test@example.com", "password": "TestPassword123!"}

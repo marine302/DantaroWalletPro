@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useI18n } from '@/contexts/I18nContext';
+// import { useI18n } from '@/contexts/I18nContext';
 import { Locale } from '@/types/i18n';
 
 interface LanguageSelectorProps {
@@ -21,7 +21,7 @@ export function LanguageSelector({ className = '' }: LanguageSelectorProps) {
       <select
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
-        className="bg-gray-800 border border-gray-600 text-gray-100 text-sm rounded-lg 
+        className="bg-gray-800 border border-gray-600 text-gray-100 text-sm rounded-lg
                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
                    appearance-none cursor-pointer hover:bg-gray-700 transition-colors"
       >
@@ -39,7 +39,7 @@ export function LanguageSelector({ className = '' }: LanguageSelectorProps) {
 export function LanguageToggle() {
   const { locale, setLocale } = useI18n();
 
-  const toggleLanguage = () => {
+  const _toggleLanguage = () => {
     setLocale(locale === 'ko' ? 'en' : 'ko');
   };
 

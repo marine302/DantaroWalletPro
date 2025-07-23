@@ -2,6 +2,7 @@
 요청 검증 미들웨어.
 API 요청의 크기, 형식, 내용을 검증합니다.
 """
+
 import json
 
 from fastapi import Request

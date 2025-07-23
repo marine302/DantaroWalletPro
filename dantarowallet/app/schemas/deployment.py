@@ -1,13 +1,16 @@
 """
 배포 관련 스키마
 """
-from typing import List, Optional, Dict, Any
+
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class DeploymentResult(BaseModel):
     """배포 결과"""
+
     deployment_id: str
     partner_id: str
     status: str  # in_progress, completed, failed
@@ -20,6 +23,7 @@ class DeploymentResult(BaseModel):
 
 class DeploymentStatus(BaseModel):
     """배포 상태"""
+
     partner_id: str
     status: str
     templates: Dict[str, Any]
@@ -30,6 +34,7 @@ class DeploymentStatus(BaseModel):
 
 class PartnerTemplate(BaseModel):
     """파트너 템플릿"""
+
     template_id: str
     name: str
     version: str
@@ -40,6 +45,7 @@ class PartnerTemplate(BaseModel):
 
 class OnboardingStep(BaseModel):
     """온보딩 단계"""
+
     step_id: str
     title: str
     description: str
@@ -51,6 +57,7 @@ class OnboardingStep(BaseModel):
 
 class DeploymentConfig(BaseModel):
     """배포 설정"""
+
     partner_id: str
     template_version: str
     environment: str

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { BasePage } from "@/components/ui/BasePage";
+import BasePage from "@/components/ui/BasePage";
 import { Section, StatCard, Button } from '@/components/ui/DarkThemeComponents';
 import { RefreshCw, TrendingUp, TrendingDown, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import { tronNRGService, TronNRGPrice } from '@/services/tron-nrg-service';
@@ -49,19 +49,19 @@ export default function ExternalEnergyMarketPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterProvider, setFilterProvider] = useState('all'); // 추가: 공급자별 필터
   const [lastUpdate, setLastUpdate] = useState<string>('');
-  
-  const tronWSRef = useRef<WebSocket | null>(null);
-  const energyTronWSRef = useRef<WebSocket | null>(null);
+
+  const _tronWSRef = useRef<WebSocket | null>(null);
+  const _energyTronWSRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     // 초기 데이터 로드
     loadInitialData();
-    
+
     // 실시간 가격 업데이트 연결
     connectPriceStreams();
 
     // 정기적으로 공급자 정보 업데이트 (30초마다)
-    const providerInterval = setInterval(loadAllProviders, 30000);
+    const _providerInterval = setInterval(loadAllProviders, 30000);
 
     // 컴포넌트 언마운트 시 정리
     return () => {
@@ -75,15 +75,15 @@ export default function ExternalEnergyMarketPage() {
     };
   }, []);
 
-  const loadInitialData = async () => {
+  const _loadInitialData = async () => {
     try {
       setIsLoading(true);
       setConnectionStatus('connecting');
-      
+
       console.log('🔄 Loading initial external energy market data...');
-      
+
       // 병렬로 두 공급자의 데이터 로드 (timeout 추가)
-      const dataPromises = [
+      const _dataPromises = [
         Promise.race([
           tronNRGService.getMarketData(),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
@@ -120,27 +120,27 @@ export default function ExternalEnergyMarketPage() {
       ] = await Promise.allSettled(dataPromises);
 
       // 결과 처리 (실패한 요청은 기본값 사용)
-      const tronMarketData = tronNRGMarketData.status === 'fulfilled' ? tronNRGMarketData.value : {
+      const _tronMarketData = tronNRGMarketData.status === 'fulfilled' ? tronNRGMarketData.value : {
         currentPrice: 0.0041,
         dailyVolume: 0,
         dailyChange: 0
       };
-      
-      const tronProviders = tronNRGProviders.status === 'fulfilled' 
-        ? (Array.isArray(tronNRGProviders.value) ? tronNRGProviders.value : []) 
+
+      const _tronProviders = tronNRGProviders.status === 'fulfilled'
+        ? (Array.isArray(tronNRGProviders.value) ? tronNRGProviders.value : [])
         : [];
-      const tronPrice = tronNRGPrice.status === 'fulfilled' ? tronNRGPrice.value : null;
-      
-      const energyMarketData = energyTronMarketData.status === 'fulfilled' ? energyTronMarketData.value : {
+      const _tronPrice = tronNRGPrice.status === 'fulfilled' ? tronNRGPrice.value : null;
+
+      const _energyMarketData = energyTronMarketData.status === 'fulfilled' ? energyTronMarketData.value : {
         currentPrice: 0.0040,
         dailyVolume: 0,
         dailyChange: 0
       };
-      
-      const energyProviders = energyTronProviders.status === 'fulfilled' 
+
+      const _energyProviders = energyTronProviders.status === 'fulfilled'
         ? (Array.isArray(energyTronProviders.value) ? energyTronProviders.value : [])
         : [];
-      const providerComparison = comparison.status === 'fulfilled' ? comparison.value : null;
+      const _providerComparison = comparison.status === 'fulfilled' ? comparison.value : null;
 
       // 공급자 데이터 통합
       const combined: CombinedProvider[] = [
@@ -157,10 +157,10 @@ export default function ExternalEnergyMarketPage() {
       ];
 
       // 마켓 서머리 계산
-      const allPrices = combined.filter(p => p.status === 'online').map(p => p.pricePerEnergy);
-      const bestPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-      const bestProvider = combined.find(p => p.pricePerEnergy === bestPrice)?.name || 'Unknown';
-      
+      const _allPrices = combined.filter(p => p.status === 'online').map(p => p.pricePerEnergy);
+      const _bestPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+      const _bestProvider = combined.find(p => p.pricePerEnergy === bestPrice)?.name || 'Unknown';
+
       const summary: MarketSummary = {
         bestPrice,
         bestProvider,
@@ -179,13 +179,13 @@ export default function ExternalEnergyMarketPage() {
       setProviderComparison(providerComparison as ProviderComparison);
       setLastUpdate(new Date().toLocaleTimeString());
       setConnectionStatus('connected');
-      
+
       console.log('✅ External energy market data loaded successfully');
-      
+
     } catch (error) {
       console.error('❌ Failed to load initial data:', error);
       setConnectionStatus('disconnected');
-      
+
       // 에러 발생 시에도 기본 데이터 설정
       setCombinedProviders([]);
       setMarketSummary({
@@ -203,13 +203,13 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const loadAllProviders = async () => {
+  const _loadAllProviders = async () => {
     try {
       const [tronNRGProviders, energyTronProviders] = await Promise.all([
         tronNRGService.getProviders(),
         energyTronService.getProviders()
       ]);
-      
+
       const combined: CombinedProvider[] = [
         ...tronNRGProviders.map(p => ({
           ...p,
@@ -222,7 +222,7 @@ export default function ExternalEnergyMarketPage() {
           priceChangeStatus: 'stable' as const
         }))
       ];
-      
+
       setCombinedProviders(combined);
       setLastUpdate(new Date().toLocaleTimeString());
     } catch (error) {
@@ -230,20 +230,20 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const connectPriceStreams = () => {
+  const _connectPriceStreams = () => {
     try {
       setConnectionStatus('connecting');
-      
+
       console.log('🔌 Connecting to price streams...');
-      
+
       // TronNRG 가격 스트림 (timeout 설정)
       setTimeout(() => {
         try {
-          const tronWS = tronNRGService.connectPriceStream((price: TronNRGPrice) => {
+          const _tronWS = tronNRGService.connectPriceStream((price: TronNRGPrice) => {
             setTronNRGPrice(price);
             setLastUpdate(new Date().toLocaleTimeString());
           });
-          
+
           if (tronWS) {
             tronWSRef.current = tronWS;
           }
@@ -251,11 +251,11 @@ export default function ExternalEnergyMarketPage() {
           console.warn('⚠️ TronNRG WebSocket connection failed:', error);
         }
       }, 500);
-      
+
       // EnergyTron 가격 스트림 (timeout 설정)
       setTimeout(() => {
         try {
-          const energyTronWS = energyTronService.connectPriceStream((data: Record<string, unknown>) => {
+          const _energyTronWS = energyTronService.connectPriceStream((data: Record<string, unknown>) => {
             if (data.type === 'price_update') {
               setEnergyTronData(prev => prev ? {
                 ...prev,
@@ -265,7 +265,7 @@ export default function ExternalEnergyMarketPage() {
               setLastUpdate(new Date().toLocaleTimeString());
             }
           });
-          
+
           if (energyTronWS) {
             energyTronWSRef.current = energyTronWS;
           }
@@ -273,24 +273,24 @@ export default function ExternalEnergyMarketPage() {
           console.warn('⚠️ EnergyTron WebSocket connection failed:', error);
         }
       }, 1000);
-      
+
       // 연결 상태를 connected로 설정 (WebSocket 실패해도 페이지는 동작)
       setTimeout(() => {
         setConnectionStatus('connected');
         console.log('✅ Price streams connection attempt completed');
       }, 1500);
-      
+
     } catch (error) {
       console.error('❌ Failed to connect price streams:', error);
       setConnectionStatus('disconnected');
     }
   };
 
-  const handleRefresh = async () => {
+  const _handleRefresh = async () => {
     await loadInitialData();
   };
 
-  const handlePurchase = async (provider: CombinedProvider) => {
+  const _handlePurchase = async (provider: CombinedProvider) => {
     try {
       // 구매 페이지로 이동
       window.location.href = `/energy/external-market/purchase?provider=${provider.id}&source=${provider.provider}`;
@@ -300,7 +300,7 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'text-green-400';
       case 'offline': return 'text-red-400';
@@ -309,8 +309,8 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const colors = {
+  const _getStatusBadge = (status: string) => {
+    const _colors = {
       online: 'bg-green-900 text-green-200',
       offline: 'bg-red-900 text-red-200',
       maintenance: 'bg-yellow-900 text-yellow-200'
@@ -318,7 +318,7 @@ export default function ExternalEnergyMarketPage() {
     return colors[status as keyof typeof colors] || 'bg-gray-900 text-gray-200';
   };
 
-  const getPriceChangeIcon = (status?: 'up' | 'down' | 'stable') => {
+  const _getPriceChangeIcon = (status?: 'up' | 'down' | 'stable') => {
     switch (status) {
       case 'up': return <TrendingUp className="w-4 h-4 text-red-400" />;
       case 'down': return <TrendingDown className="w-4 h-4 text-green-400" />;
@@ -326,19 +326,19 @@ export default function ExternalEnergyMarketPage() {
     }
   };
 
-  const getConnectionStatusIcon = () => {
+  const _getConnectionStatusIcon = () => {
     switch (connectionStatus) {
-      case 'connected': 
+      case 'connected':
         return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'connecting': 
+      case 'connecting':
         return <div className="w-4 h-4 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent" />;
-      case 'disconnected': 
+      case 'disconnected':
         return <AlertCircle className="w-4 h-4 text-red-400" />;
     }
   };
 
   // 필터링 및 정렬 로직
-  const filteredAndSortedProviders = combinedProviders
+  const _filteredAndSortedProviders = combinedProviders
     .filter(provider => {
       if (filterStatus !== 'all' && provider.status !== filterStatus) return false;
       if (filterProvider !== 'all' && provider.provider !== filterProvider) return false;
@@ -632,15 +632,15 @@ export default function ExternalEnergyMarketPage() {
                       {provider.status === 'online' ? '온라인' : provider.status === 'maintenance' ? '점검중' : '오프라인'}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs ${
-                      provider.provider === 'TronNRG' 
-                        ? 'bg-blue-900 text-blue-200' 
+                      provider.provider === 'TronNRG'
+                        ? 'bg-blue-900 text-blue-200'
                         : 'bg-purple-900 text-purple-200'
                     }`}>
                       {provider.provider}
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
+                    <Button
                       onClick={() => handlePurchase(provider)}
                       disabled={provider.status !== 'online'}
                     >
@@ -651,7 +651,7 @@ export default function ExternalEnergyMarketPage() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                   <div>
                     <p className="text-sm text-gray-400">단가</p>
@@ -731,7 +731,7 @@ export default function ExternalEnergyMarketPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-blue-400" />

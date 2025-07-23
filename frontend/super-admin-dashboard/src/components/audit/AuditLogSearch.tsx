@@ -110,40 +110,40 @@ export function AuditLogSearch() {
 
   async function handleSearch() {
     setIsSearching(true);
-    
+
     try {
       // TODO: 실제 API 호출로 교체
       await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
-      
+
       // 필터링 로직 (실제 구현에서는 백엔드에서 처리)
-      let filteredLogs = mockLogs.filter(log => {
-        const logDate = log.timestamp.toISOString().split('T')[0];
-        
+      const _filteredLogs = mockLogs.filter(log => {
+        const _logDate = log.timestamp.toISOString().split('T')[0];
+
         // 날짜 필터
         if (logDate < filters.dateFrom || logDate > filters.dateTo) return false;
-        
+
         // 이벤트 타입 필터
         if (filters.eventType !== 'all' && log.event_type !== filters.eventType) return false;
-        
+
         // 심각도 필터
         if (filters.severity !== 'all' && log.severity !== filters.severity) return false;
-        
+
         // 엔티티 타입 필터
         if (filters.entityType !== 'all' && log.entity_type !== filters.entityType) return false;
-        
+
         // 키워드 검색
         if (filters.keyword) {
-          const keyword = filters.keyword.toLowerCase();
-          const searchableText = [
+          const _keyword = filters.keyword.toLowerCase();
+          const _searchableText = [
             log.entity_id,
             log.event_category,
             JSON.stringify(log.event_data),
             log.ip_address || ''
           ].join(' ').toLowerCase();
-          
+
           if (!searchableText.includes(keyword)) return false;
         }
-        
+
         return true;
       });
 
@@ -153,7 +153,7 @@ export function AuditLogSearch() {
         page: 1,
         totalPages: Math.ceil(filteredLogs.length / 50)
       });
-      
+
     } catch (error) {
       console.error('Search failed:', error);
     } finally {
@@ -163,7 +163,7 @@ export function AuditLogSearch() {
 
   async function handleExport() {
     try {
-      const data = searchResults.logs.map(log => ({
+      const _data = searchResults.logs.map(log => ({
         timestamp: log.timestamp.toISOString(),
         event_type: log.event_type,
         severity: log.severity,
@@ -176,13 +176,13 @@ export function AuditLogSearch() {
       }));
 
       if (exportFormat === 'csv') {
-        const csv = convertToCSV(data);
+        const _csv = convertToCSV(data);
         downloadFile(csv, 'audit_logs.csv', 'text/csv');
       } else if (exportFormat === 'json') {
-        const json = JSON.stringify(data, null, 2);
+        const _json = JSON.stringify(data, null, 2);
         downloadFile(json, 'audit_logs.json', 'application/json');
       }
-      
+
       alert(`✅ Exported ${data.length} records as ${exportFormat.toUpperCase()}`);
     } catch (error) {
       console.error('Export failed:', error);
@@ -192,27 +192,27 @@ export function AuditLogSearch() {
 
   function convertToCSV(data: any[]) {
     if (data.length === 0) return '';
-    
-    const headers = Object.keys(data[0]);
-    const csvRows = [
+
+    const _headers = Object.keys(data[0]);
+    const _csvRows = [
       headers.join(','),
-      ...data.map(row => 
+      ...data.map(row =>
         headers.map(header => {
-          const value = row[header];
-          return typeof value === 'string' && value.includes(',') 
-            ? `"${value}"` 
+          const _value = row[header];
+          return typeof value === 'string' && value.includes(',')
+            ? `"${value}"`
             : value;
         }).join(',')
       )
     ];
-    
+
     return csvRows.join('\n');
   }
 
   function downloadFile(content: string, filename: string, mimeType: string) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const _blob = new Blob([content], { type: mimeType });
+    const _url = URL.createObjectURL(blob);
+    const _link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -422,7 +422,7 @@ export function AuditLogSearch() {
               </span>
             )}
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {searchResults.logs.length === 0 ? (
               <div className="p-8 text-center text-gray-400">
@@ -448,20 +448,20 @@ export function AuditLogSearch() {
                         ID: {log.id}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-1">
                       <p className="text-sm text-white">
                         <span className="font-medium">{log.event_type.replace('_', ' ')}</span>
                         {' → '}
                         <span className="font-mono">{log.entity_type}:{log.entity_id}</span>
                       </p>
-                      
+
                       {log.user_id && (
                         <p className="text-xs text-gray-400">
                           User: {log.user_id} | Partner: {log.partner_id || 'N/A'} | IP: {log.ip_address || 'N/A'}
                         </p>
                       )}
-                      
+
                       <details className="text-xs">
                         <summary className="text-gray-400 cursor-pointer hover:text-gray-300">
                           📄 Event Data

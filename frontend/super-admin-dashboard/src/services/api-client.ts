@@ -12,14 +12,14 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    
+    const _url = `${this.baseURL}${endpoint}`;
+
     const defaultHeaders: HeadersInit = {
       'Content-Type': 'application/json',
     };
 
     // JWT 토큰이 있다면 헤더에 추가
-    const token = localStorage.getItem('access_token');
+    const _token = localStorage.getItem('access_token');
     if (token) {
       defaultHeaders.Authorization = `Bearer ${token}`;
     }
@@ -33,13 +33,13 @@ class ApiClient {
     };
 
     try {
-      const response = await fetch(url, config);
-      
+      const _response = await fetch(url, config);
+
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const _data = await response.json();
       return data;
     } catch (error) {
       console.error('API Request failed:', error);
@@ -70,5 +70,5 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient();
+export const _apiClient = new ApiClient();
 export default apiClient;

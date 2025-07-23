@@ -2,17 +2,19 @@
 출금 처리 서비스
 출금 요청 처리, 승인, 거부, 완료 등의 기능을 제공합니다.
 """
+
 import logging
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions import NotFoundError, ValidationError
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.withdrawal import Withdrawal, WithdrawalStatus
 from app.services.withdrawal.base_service import BaseWithdrawalService
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,9 @@ class WithdrawalProcessingService(BaseWithdrawalService):
 
         if action == "approve":
             if withdrawal.status != WithdrawalStatus.PENDING.value:
-                raise ValidationError(f"{withdrawal.status} 상태의 출금은 승인할 수 없습니다")
+                raise ValidationError(
+                    f"{withdrawal.status} 상태의 출금은 승인할 수 없습니다"
+                )
 
             withdrawal.status = WithdrawalStatus.APPROVED.value
             withdrawal.approved_at = datetime.utcnow()
@@ -101,7 +105,9 @@ class WithdrawalProcessingService(BaseWithdrawalService):
             raise NotFoundError("출금 요청을 찾을 수 없습니다")
 
         if not withdrawal.can_process():
-            raise ValidationError(f"{withdrawal.status} 상태의 출금은 처리할 수 없습니다")
+            raise ValidationError(
+                f"{withdrawal.status} 상태의 출금은 처리할 수 없습니다"
+            )
 
         # 처리 가이드 생성
         guide = {
@@ -178,7 +184,9 @@ class WithdrawalProcessingService(BaseWithdrawalService):
             raise NotFoundError("출금 요청을 찾을 수 없습니다")
 
         if withdrawal.status != WithdrawalStatus.PROCESSING.value:
-            raise ValidationError(f"{withdrawal.status} 상태의 출금은 완료처리할 수 없습니다")
+            raise ValidationError(
+                f"{withdrawal.status} 상태의 출금은 완료처리할 수 없습니다"
+            )
 
         # 출금 완료
         withdrawal.status = WithdrawalStatus.COMPLETED.value

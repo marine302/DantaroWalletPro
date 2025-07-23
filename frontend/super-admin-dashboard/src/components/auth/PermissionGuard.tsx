@@ -14,11 +14,11 @@ interface PermissionGuardProps {
 /**
  * Component that conditionally renders children based on user permissions
  */
-export function PermissionGuard({ 
-  permission, 
-  children, 
+export function PermissionGuard({
+  permission,
+  children,
   fallback = null,
-  hideIfNoAccess = false 
+  hideIfNoAccess = false
 }: PermissionGuardProps) {
   const { hasPermission } = useAuth();
 
@@ -42,15 +42,15 @@ interface RoleGuardProps {
 /**
  * Component that conditionally renders children based on user role
  */
-export function RoleGuard({ 
-  roles, 
-  children, 
+export function RoleGuard({
+  roles,
+  children,
   fallback = null,
-  hideIfNoAccess = false 
+  hideIfNoAccess = false
 }: RoleGuardProps) {
   const { user } = useAuth();
 
-  const hasRole = user && roles.includes(user.role);
+  const _hasRole = user && roles.includes(user.role);
 
   if (!hasRole) {
     if (hideIfNoAccess) {

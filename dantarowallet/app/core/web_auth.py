@@ -2,15 +2,17 @@
 웹 인증 유틸리티 함수들.
 JWT 토큰 기반 웹 페이지 인증을 처리합니다.
 """
+
 from typing import Optional
 
-from app.core.database import get_db
-from app.core.security import verify_token
-from app.models.user import User
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
+from app.core.security import verify_token
+from app.models.user import User
 
 
 async def get_current_user_from_request(

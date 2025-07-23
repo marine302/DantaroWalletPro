@@ -2,15 +2,17 @@
 암호화 관련 유틸리티.
 지갑 프라이빗 키 등 민감한 데이터를 안전하게 암호화/복호화하는 기능 제공.
 """
+
 import base64
 import secrets
 from typing import Dict, Optional, Tuple
 
-from app.core.config import settings
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from app.core.config import settings
 
 
 class EncryptionService:

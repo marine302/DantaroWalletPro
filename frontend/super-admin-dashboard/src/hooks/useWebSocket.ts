@@ -30,10 +30,10 @@ export function useWebSocket(
     heartbeatInterval = 30000
   } = options;
 
-  const ws = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const heartbeatIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const messageListeners = useRef<Map<string, Set<(data: unknown) => void>>>(new Map());
+  const _ws = useRef<WebSocket | null>(null);
+  const _reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const _heartbeatIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const _messageListeners = useRef<Map<string, Set<(data: unknown) => void>>>(new Map());
 
   const [state, setState] = useState<WebSocketState>({
     isConnected: false,
@@ -43,7 +43,7 @@ export function useWebSocket(
     reconnectCount: 0
   });
 
-  const connect = useCallback(() => {
+  const _connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.CONNECTING || ws.current?.readyState === WebSocket.OPEN) {
       return;
     }
@@ -77,7 +77,7 @@ export function useWebSocket(
           setState(prev => ({ ...prev, lastMessage: message }));
 
           // Notify specific listeners
-          const listeners = messageListeners.current.get(message.type);
+          const _listeners = messageListeners.current.get(message.type);
           if (listeners) {
             listeners.forEach(callback => callback(message.data));
           }
@@ -132,7 +132,7 @@ export function useWebSocket(
     }
   }, [url, reconnectAttempts, reconnectInterval, heartbeatInterval]);
 
-  const disconnect = useCallback(() => {
+  const _disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
@@ -150,7 +150,7 @@ export function useWebSocket(
     }));
   }, []);
 
-  const sendMessage = useCallback((message: unknown) => {
+  const _sendMessage = useCallback((message: unknown) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
       return true;
@@ -158,7 +158,7 @@ export function useWebSocket(
     return false;
   }, []);
 
-  const subscribe = useCallback((messageType: string, callback: (data: unknown) => void) => {
+  const _subscribe = useCallback((messageType: string, callback: (data: unknown) => void) => {
     if (!messageListeners.current.has(messageType)) {
       messageListeners.current.set(messageType, new Set());
     }
@@ -166,7 +166,7 @@ export function useWebSocket(
 
     // Return unsubscribe function
     return () => {
-      const listeners = messageListeners.current.get(messageType);
+      const _listeners = messageListeners.current.get(messageType);
       if (listeners) {
         listeners.delete(callback);
         if (listeners.size === 0) {

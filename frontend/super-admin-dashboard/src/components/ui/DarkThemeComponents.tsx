@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { createDarkClasses } from '@/styles/dark-theme'; client';
-
-import React from 'react'
-import { createDarkClasses } from '@/styles/dark-theme'
+import { createDarkClasses } from '@/styles/dark-theme';
 
 interface PageHeaderProps {
   title: string
@@ -38,14 +35,14 @@ interface StatCardProps {
   description?: string
 }
 
-export const StatCard: React.FC<StatCardProps> = React.memo(({ 
-  title, 
-  value, 
-  icon, 
-  trend, 
-  description 
+export const StatCard: React.FC<StatCardProps> = React.memo(({
+  title,
+  value,
+  icon,
+  trend,
+  description
 }) => {
-  const getTrendColor = useMemo(() => {
+  const _getTrendColor = useMemo(() => {
     switch (trend) {
       case 'up': return 'text-green-400'
       case 'down': return 'text-red-400'
@@ -53,7 +50,7 @@ export const StatCard: React.FC<StatCardProps> = React.memo(({
     }
   }, [trend]);
 
-  const formattedValue = useMemo(() => {
+  const _formattedValue = useMemo(() => {
     if (typeof value === 'number') {
       return value.toLocaleString();
     }
@@ -87,8 +84,8 @@ interface SectionProps {
 }
 
 export const Section: React.FC<SectionProps> = React.memo(({ title, children, className = '' }) => {
-  const sectionClasses = useMemo(() => 
-    `${createDarkClasses.card()} ${className}`, 
+  const _sectionClasses = useMemo(() =>
+    `${createDarkClasses.card()} ${className}`,
     [className]
   );
 
@@ -155,14 +152,14 @@ interface ButtonProps {
   disabled?: boolean
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  onClick, 
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  onClick,
   variant = 'primary',
   className = '',
   disabled = false
 }) => {
-  const getVariantClasses = () => {
+  const _getVariantClasses = () => {
     switch (variant) {
       case 'primary':
         return createDarkClasses.button.primary()
@@ -176,7 +173,7 @@ export const Button: React.FC<ButtonProps> = ({
         return createDarkClasses.button.primary()
     }
   }
-    
+
   return (
     <button
       onClick={onClick}

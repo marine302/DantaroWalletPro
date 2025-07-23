@@ -37,9 +37,9 @@ export function RealtimeAlerts({
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
   // 데이터 검증 함수들
-  const isAlert = (data: unknown): data is Alert => {
+  const _isAlert = (data: unknown): data is Alert => {
     if (!data || typeof data !== 'object') return false;
-    const obj = data as Record<string, unknown>;
+    const _obj = data as Record<string, unknown>;
     return (
       typeof obj.id === 'string' &&
       typeof obj.message === 'string' &&
@@ -49,9 +49,9 @@ export function RealtimeAlerts({
     );
   };
 
-  const isTransaction = (data: unknown): data is Transaction => {
+  const _isTransaction = (data: unknown): data is Transaction => {
     if (!data || typeof data !== 'object') return false;
-    const obj = data as Record<string, unknown>;
+    const _obj = data as Record<string, unknown>;
     return (
       typeof obj.id === 'string' &&
       typeof obj.type === 'string' &&
@@ -64,10 +64,10 @@ export function RealtimeAlerts({
 
   useEffect(() => {
     // Subscribe to realtime data
-    const unsubscribeAlerts = realtimeManager.subscribe('alerts', (data: unknown) => {
+    const _unsubscribeAlerts = realtimeManager.subscribe('alerts', (data: unknown) => {
       try {
         if (Array.isArray(data)) {
-          const validAlerts = data.filter(isAlert);
+          const _validAlerts = data.filter(isAlert);
           setAlerts(validAlerts.filter(alert => !dismissedAlerts.has(alert.id)).slice(0, maxAlerts));
         }
       } catch (error) {
@@ -75,10 +75,10 @@ export function RealtimeAlerts({
       }
     });
 
-    const unsubscribeTransactions = realtimeManager.subscribe('transactions', (data: unknown) => {
+    const _unsubscribeTransactions = realtimeManager.subscribe('transactions', (data: unknown) => {
       try {
         if (Array.isArray(data)) {
-          const validTransactions = data.filter(isTransaction);
+          const _validTransactions = data.filter(isTransaction);
           setTransactions(validTransactions.slice(0, 10)); // 최대 10개
         }
       } catch (error) {
@@ -92,12 +92,12 @@ export function RealtimeAlerts({
     };
   }, [maxAlerts, dismissedAlerts]);
 
-  const dismissAlert = (alertId: string) => {
+  const _dismissAlert = (alertId: string) => {
     setDismissedAlerts(prev => new Set([...prev, alertId]));
     setAlerts(prev => prev.filter(alert => alert.id !== alertId));
   };
 
-  const getAlertIcon = (type: Alert['type']) => {
+  const _getAlertIcon = (type: Alert['type']) => {
     switch (type) {
       case 'error':
         return <AlertCircle className="w-4 h-4 text-red-400" />;
@@ -110,7 +110,7 @@ export function RealtimeAlerts({
     }
   };
 
-  const getAlertStyles = (type: Alert['type']) => {
+  const _getAlertStyles = (type: Alert['type']) => {
     switch (type) {
       case 'error':
         return 'bg-red-900/50 border-red-700 text-red-100';
@@ -123,7 +123,7 @@ export function RealtimeAlerts({
     }
   };
 
-  const getTransactionStatusColor = (status: Transaction['status']) => {
+  const _getTransactionStatusColor = (status: Transaction['status']) => {
     switch (status) {
       case 'completed':
         return 'text-green-400';
@@ -136,10 +136,10 @@ export function RealtimeAlerts({
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
+  const _formatTimestamp = (timestamp: string) => {
+    const _date = new Date(timestamp);
+    const _now = new Date();
+    const _diff = now.getTime() - date.getTime();
 
     if (diff < 60000) return 'Just now';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
@@ -147,7 +147,7 @@ export function RealtimeAlerts({
     return date.toLocaleString();
   };
 
-  const formatCurrency = (amount: number) => {
+  const _formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', {
       style: 'currency',
       currency: 'KRW',

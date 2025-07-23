@@ -78,7 +78,7 @@ class RealtimeManager {
 
       this.ws.onmessage = (event) => {
         try {
-          const message = JSON.parse(event.data);
+          const _message = JSON.parse(event.data);
           this.updateData(message.type, message.data);
         } catch (error) {
           console.error('RealtimeManager: Failed to parse message:', error);
@@ -121,7 +121,7 @@ class RealtimeManager {
 
     // Return unsubscribe function
     return () => {
-      const listeners = this.listeners.get(dataType);
+      const _listeners = this.listeners.get(dataType);
       if (listeners) {
         listeners.delete(callback);
         if (listeners.size === 0) {
@@ -133,9 +133,9 @@ class RealtimeManager {
 
   updateData(dataType: keyof RealtimeData, data: any) {
     this.data[dataType] = data;
-    
+
     // Notify all listeners for this data type
-    const listeners = this.listeners.get(dataType);
+    const _listeners = this.listeners.get(dataType);
     if (listeners) {
       listeners.forEach(callback => callback(data));
     }

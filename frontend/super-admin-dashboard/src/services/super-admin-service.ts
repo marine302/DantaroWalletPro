@@ -97,7 +97,7 @@ export class SuperAdminService {
   }
 
   async updateSuspiciousActivityStatus(
-    id: string, 
+    id: string,
     status: SuspiciousActivity['status']
   ): Promise<void> {
     return apiClient.put(`/audit/suspicious-activities/${id}`, { status });
@@ -125,7 +125,7 @@ export class SuperAdminService {
     total: number;
   }> {
     // 백엔드 API가 /external-energy/purchase로 되어 있음 (복수형 아님)
-    const purchases = await apiClient.get('/external-energy/purchase');
+    const _purchases = await apiClient.get('/external-energy/purchase');
     return {
       purchases: Array.isArray(purchases) ? purchases : [],
       total: Array.isArray(purchases) ? purchases.length : 0
@@ -133,7 +133,7 @@ export class SuperAdminService {
   }
 
   async updateProviderStatus(
-    providerId: number, 
+    providerId: number,
     isActive: boolean
   ): Promise<void> {
     return apiClient.put(`/external-energy/providers/${providerId}`, { isActive });
@@ -168,5 +168,5 @@ export class SuperAdminService {
   }
 }
 
-export const superAdminService = new SuperAdminService();
+export const _superAdminService = new SuperAdminService();
 export default superAdminService;

@@ -2,19 +2,24 @@
 파트너사 온보딩 자동화 스키마 - Doc #29
 온보딩 프로세스 관련 Pydantic 모델들
 """
-from typing import Optional, List, Dict, Any
+
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.partner_onboarding import (
-    OnboardingStatus, OnboardingStepStatus, ChecklistCategory
+    ChecklistCategory,
+    OnboardingStatus,
+    OnboardingStepStatus,
 )
-
 
 # === 요청 스키마 ===
 
+
 class OnboardingCreateRequest(BaseModel):
     """온보딩 생성 요청"""
+
     partner_id: str = Field(..., description="파트너 ID")
     company_name: str = Field(..., description="회사명")
     contact_email: str = Field(..., description="담당자 이메일")
@@ -25,13 +30,16 @@ class OnboardingCreateRequest(BaseModel):
     main_wallet_address: Optional[str] = Field(None, description="메인 지갑 주소")
     brand_color: Optional[str] = Field("#2563eb", description="브랜드 컬러")
     logo_url: Optional[str] = Field(None, description="로고 URL")
-    additional_config: Optional[Dict[str, Any]] = Field(default_factory=dict, description="추가 설정")
+    additional_config: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="추가 설정"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class StepStatusUpdateRequest(BaseModel):
     """단계 상태 업데이트 요청"""
+
     status: OnboardingStepStatus = Field(..., description="단계 상태")
     result_data: Optional[Dict[str, Any]] = Field(None, description="결과 데이터")
     error_message: Optional[str] = Field(None, description="오류 메시지")
@@ -41,6 +49,7 @@ class StepStatusUpdateRequest(BaseModel):
 
 class ProgressUpdateRequest(BaseModel):
     """진행률 업데이트 요청"""
+
     current_step: int = Field(..., description="현재 단계")
     progress_percentage: int = Field(..., ge=0, le=100, description="진행률 (%)")
     status: Optional[OnboardingStatus] = Field(None, description="온보딩 상태")
@@ -50,6 +59,7 @@ class ProgressUpdateRequest(BaseModel):
 
 class ChecklistUpdateRequest(BaseModel):
     """체크리스트 업데이트 요청"""
+
     item_name: str = Field(..., description="항목명")
     is_completed: bool = Field(..., description="완료 여부")
     completed_by: Optional[str] = Field(None, description="완료자")
@@ -60,6 +70,7 @@ class ChecklistUpdateRequest(BaseModel):
 
 class OnboardingLogRequest(BaseModel):
     """온보딩 로그 추가 요청"""
+
     level: str = Field(..., description="로그 레벨 (info, warning, error)")
     message: str = Field(..., description="메시지")
     details: Optional[Dict[str, Any]] = Field(None, description="상세 정보")
@@ -70,8 +81,10 @@ class OnboardingLogRequest(BaseModel):
 
 # === 응답 스키마 ===
 
+
 class OnboardingStepResponse(BaseModel):
     """온보딩 단계 응답"""
+
     id: int
     step_number: int
     step_name: str
@@ -95,6 +108,7 @@ class OnboardingStepResponse(BaseModel):
 
 class OnboardingChecklistResponse(BaseModel):
     """온보딩 체크리스트 응답"""
+
     id: int
     category: ChecklistCategory
     item_name: str
@@ -115,6 +129,7 @@ class OnboardingChecklistResponse(BaseModel):
 
 class OnboardingLogResponse(BaseModel):
     """온보딩 로그 응답"""
+
     id: int
     level: str
     message: str
@@ -129,6 +144,7 @@ class OnboardingLogResponse(BaseModel):
 
 class OnboardingResponse(BaseModel):
     """온보딩 기본 응답"""
+
     id: int
     partner_id: str
     status: OnboardingStatus
@@ -162,6 +178,7 @@ class OnboardingResponse(BaseModel):
 
 class OnboardingDetailResponse(OnboardingResponse):
     """온보딩 상세 응답 (단계, 체크리스트, 로그 포함)"""
+
     steps: List[OnboardingStepResponse] = Field(default_factory=list)
     checklist: List[OnboardingChecklistResponse] = Field(default_factory=list)
     logs: List[OnboardingLogResponse] = Field(default_factory=list)
@@ -171,6 +188,7 @@ class OnboardingDetailResponse(OnboardingResponse):
 
 class OnboardingProgressResponse(BaseModel):
     """온보딩 진행률 응답"""
+
     partner_id: str
     status: OnboardingStatus
     current_step: int
@@ -185,6 +203,7 @@ class OnboardingProgressResponse(BaseModel):
 
 class OnboardingStatsResponse(BaseModel):
     """온보딩 통계 응답"""
+
     total_onboardings: int
     completed_onboardings: int
     failed_onboardings: int
@@ -198,8 +217,10 @@ class OnboardingStatsResponse(BaseModel):
 
 # === 성공/오류 응답 ===
 
+
 class OnboardingSuccessResponse(BaseModel):
     """온보딩 성공 응답"""
+
     success: bool = True
     message: str
     onboarding_id: Optional[int] = None
@@ -211,6 +232,7 @@ class OnboardingSuccessResponse(BaseModel):
 
 class OnboardingErrorResponse(BaseModel):
     """온보딩 오류 응답"""
+
     success: bool = False
     error: str
     error_code: Optional[str] = None
@@ -221,8 +243,10 @@ class OnboardingErrorResponse(BaseModel):
 
 # === 검색 및 필터링 ===
 
+
 class OnboardingFilterRequest(BaseModel):
     """온보딩 필터링 요청"""
+
     status: Optional[OnboardingStatus] = Field(None, description="상태별 필터")
     partner_id: Optional[str] = Field(None, description="파트너 ID 필터")
     date_from: Optional[datetime] = Field(None, description="시작일 필터")
@@ -235,6 +259,7 @@ class OnboardingFilterRequest(BaseModel):
 
 class OnboardingListResponse(BaseModel):
     """온보딩 목록 응답"""
+
     onboardings: List[OnboardingResponse]
     total_count: int
     has_more: bool

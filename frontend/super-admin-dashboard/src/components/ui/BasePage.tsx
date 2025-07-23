@@ -22,8 +22,8 @@ export const BasePage: React.FC<BasePageProps> = ({
   return (
     <DashboardLayout>
       <div className={`max-w-7xl mx-auto ${className}`}>
-        <PageHeader 
-          title={title} 
+        <PageHeader
+          title={title}
           description={description}
         >
           {headerActions}
@@ -33,3 +33,5 @@ export const BasePage: React.FC<BasePageProps> = ({
     </DashboardLayout>
   )
 }
+
+export default BasePage;

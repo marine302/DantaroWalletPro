@@ -2,7 +2,11 @@
 관리자 패널 API 라우터.
 관리자 전용 엔드포인트들을 제공합니다.
 """
+
 from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_super_admin
 from app.core.database import get_db
@@ -21,15 +25,13 @@ from app.schemas.admin import (
 )
 from app.services.admin_service import AdminService
 from app.services.backup_service import BackupService
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(tags=["admin"])
 
 
 @router.get("/stats", response_model=SystemStatsResponse)
 async def get_system_stats(
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -48,7 +50,7 @@ async def get_users_list(
     search: Optional[str] = Query(None, description="이메일 검색"),
     is_active: Optional[bool] = Query(None, description="활성 상태 필터"),
     is_admin: Optional[bool] = Query(None, description="관리자 필터"),
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -65,7 +67,7 @@ async def get_users_list(
 @router.get("/users/{user_id}", response_model=UserDetailResponse)
 async def get_user_detail(
     user_id: int,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -88,7 +90,7 @@ async def get_user_detail(
 async def update_user(
     user_id: int,
     user_update: UserUpdateRequest,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -116,7 +118,8 @@ async def update_user(
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="사용자를 찾을 수 없거나 수정에 실패했습니다"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없거나 수정에 실패했습니다",
         )
 
     return {"message": "사용자 정보가 수정되었습니다"}
@@ -129,7 +132,7 @@ async def get_transaction_monitor(
     status: Optional[str] = Query(None, description="거래 상태 필터"),
     user_id: Optional[int] = Query(None, description="사용자 ID 필터"),
     hours: int = Query(24, ge=1, le=168, description="조회 시간 범위(시간)"),
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -146,7 +149,7 @@ async def get_transaction_monitor(
 @router.get("/suspicious-activities")
 async def get_suspicious_activities(
     limit: int = Query(20, ge=1, le=100, description="조회 개수"),
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -161,7 +164,7 @@ async def get_suspicious_activities(
 @router.post("/users/{user_id}/disable")
 async def disable_user(
     user_id: int,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -183,7 +186,7 @@ async def disable_user(
 @router.post("/users/{user_id}/enable")
 async def enable_user(
     user_id: int,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -205,7 +208,7 @@ async def enable_user(
 @router.post("/users/{user_id}/verify")
 async def verify_user(
     user_id: int,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -227,7 +230,7 @@ async def verify_user(
 @router.post("/backup", response_model=BackupInfoResponse)
 async def create_backup(
     req: BackupCreateRequest,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """DB 백업 생성"""
@@ -237,7 +240,7 @@ async def create_backup(
 
 @router.get("/backups", response_model=List[BackupInfoResponse])
 async def list_backups(
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """백업 목록 조회"""
@@ -248,7 +251,7 @@ async def list_backups(
 @router.post("/restore")
 async def restore_backup(
     file_path: str,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """지정된 백업 파일로 복구"""
@@ -262,7 +265,7 @@ async def restore_backup(
 @router.get("/users/{user_id}/risk", response_model=UserRiskAnalysisResponse)
 async def get_user_risk_analysis(
     user_id: int,
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """특정 사용자 리스크 분석"""
@@ -272,7 +275,7 @@ async def get_user_risk_analysis(
 
 @router.get("/risk-summary", response_model=SystemRiskSummaryResponse)
 async def get_system_risk_summary(
-    current_admin = Depends(get_current_super_admin),
+    current_admin=Depends(get_current_super_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """시스템 전체 리스크 요약"""
@@ -284,6 +287,10 @@ async def get_system_risk_summary(
 from app.api.v1.endpoints.admin import energy, fees, partners
 
 # 하위 라우터 등록
-router.include_router(energy.router, prefix="/energy")  # Uses admin_energy tag from router
+router.include_router(
+    energy.router, prefix="/energy"
+)  # Uses admin_energy tag from router
 router.include_router(fees.router, prefix="/fees")  # Uses admin_fees tag from router
-router.include_router(partners.router, prefix="/partners")  # Uses admin_partners tag from router
+router.include_router(
+    partners.router, prefix="/partners"
+)  # Uses admin_partners tag from router

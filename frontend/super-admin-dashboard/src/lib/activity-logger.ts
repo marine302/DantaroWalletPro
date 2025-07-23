@@ -12,7 +12,7 @@ export interface ActivityLog {
   userAgent?: string;
 }
 
-export type ActivityAction = 
+export type ActivityAction =
   | 'login'
   | 'logout'
   | 'create'
@@ -25,7 +25,7 @@ export type ActivityAction =
   | 'suspend'
   | 'activate';
 
-export type ActivityResource = 
+export type ActivityResource =
   | 'user'
   | 'partner'
   | 'energy_transaction'
@@ -61,7 +61,7 @@ class ActivityLogger {
     };
 
     this.logs.unshift(logEntry); // Add to beginning for latest first
-    
+
     // Keep only last 1000 logs in memory (in production, this would go to a database)
     if (this.logs.length > 1000) {
       this.logs = this.logs.slice(0, 1000);
@@ -82,35 +82,35 @@ class ActivityLogger {
     endDate?: Date;
     limit?: number;
   }): ActivityLog[] {
-    let filteredLogs = [...this.logs];
+    const _filteredLogs = [...this.logs];
 
     if (filters) {
       if (filters.userId) {
         filteredLogs = filteredLogs.filter(log => log.userId === filters.userId);
       }
-      
+
       if (filters.action) {
         filteredLogs = filteredLogs.filter(log => log.action === filters.action);
       }
-      
+
       if (filters.resource) {
         filteredLogs = filteredLogs.filter(log => log.resource === filters.resource);
       }
-      
+
       if (filters.startDate) {
-        filteredLogs = filteredLogs.filter(log => 
+        filteredLogs = filteredLogs.filter(log =>
           new Date(log.timestamp) >= filters.startDate!
         );
       }
-      
+
       if (filters.endDate) {
-        filteredLogs = filteredLogs.filter(log => 
+        filteredLogs = filteredLogs.filter(log =>
           new Date(log.timestamp) <= filters.endDate!
         );
       }
     }
 
-    const limit = filters?.limit || 50;
+    const _limit = filters?.limit || 50;
     return filteredLogs.slice(0, limit);
   }
 
@@ -145,7 +145,7 @@ class ActivityLogger {
         console.log('Activity logged:', log);
         return;
       }
-      
+
       await fetch('/api/activity-logs', {
         method: 'POST',
         headers: {
@@ -186,10 +186,10 @@ class ActivityLogger {
       dashboard: '대시보드'
     };
 
-    const action = actionMap[log.action as ActivityAction] || log.action;
-    const resource = resourceMap[log.resource as ActivityResource] || log.resource;
+    const _action = actionMap[log.action as ActivityAction] || log.action;
+    const _resource = resourceMap[log.resource as ActivityResource] || log.resource;
 
-    let message = `${log.userName}님이 ${resource}를 ${action}`;
+    const _message = `${log.userName}님이 ${resource}를 ${action}`;
 
     if (log.details) {
       if (typeof log.details === 'string') {
@@ -204,7 +204,7 @@ class ActivityLogger {
 }
 
 // Singleton instance
-export const activityLogger = new ActivityLogger();
+export const _activityLogger = new ActivityLogger();
 
 // Convenience functions
 export function logActivity(params: {

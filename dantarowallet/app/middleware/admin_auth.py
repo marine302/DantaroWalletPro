@@ -1,8 +1,9 @@
-from app.core.config import settings
 from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from app.core.config import settings
 
 
 class AdminAuthMiddleware(BaseHTTPMiddleware):
@@ -16,11 +17,14 @@ class AdminAuthMiddleware(BaseHTTPMiddleware):
         # API 엔드포인트는 모두 인증 제외
         if "/api/" in request.url.path:
             return await call_next(request)
-            
+
         # 정적 파일 제외
-        if any(request.url.path.startswith(path) for path in ["/static/", "/assets/", "/favicon"]):
+        if any(
+            request.url.path.startswith(path)
+            for path in ["/static/", "/assets/", "/favicon"]
+        ):
             return await call_next(request)
-            
+
         # 관리자 경로가 아니면 통과
         if not any(request.url.path.startswith(path) for path in self.admin_paths):
             return await call_next(request)

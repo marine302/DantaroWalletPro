@@ -1,13 +1,17 @@
 """에너지 관련 스키마 - Doc #25 업데이트"""
-from typing import Optional, List, Dict, Any
+
 from datetime import datetime
 from decimal import Decimal
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 # Doc #25: 파트너별 에너지 풀 고급 관리 스키마
 
+
 class EnergyPoolResponse(BaseModel):
     """에너지 풀 상태 응답 (Doc #25)"""
+
     partner_id: int
     wallet_address: str
     status: str
@@ -33,6 +37,7 @@ class EnergyPoolResponse(BaseModel):
 
 class EnergyAlertResponse(BaseModel):
     """에너지 알림 응답 (Doc #25)"""
+
     id: int
     type: str
     severity: str
@@ -51,6 +56,7 @@ class EnergyAlertResponse(BaseModel):
 
 class EnergyUsageLogResponse(BaseModel):
     """에너지 사용 로그 응답 (Doc #25)"""
+
     id: int
     transaction_type: str
     transaction_hash: Optional[str]
@@ -66,6 +72,7 @@ class EnergyUsageLogResponse(BaseModel):
 
 class EnergyMonitoringResponse(BaseModel):
     """에너지 모니터링 응답 (Doc #25)"""
+
     success: bool
     data: Dict[str, Any] = Field(description="모니터링 데이터")
     timestamp: datetime = Field(description="조회 시간")
@@ -76,6 +83,7 @@ class EnergyMonitoringResponse(BaseModel):
 
 class EnergyAnalyticsResponse(BaseModel):
     """에너지 분석 응답 (Doc #25)"""
+
     success: bool
     analytics: Dict[str, Any] = Field(description="분석 데이터")
     generated_at: datetime = Field(description="생성 시간")
@@ -86,6 +94,7 @@ class EnergyAnalyticsResponse(BaseModel):
 
 class EnergyAlertListResponse(BaseModel):
     """에너지 알림 목록 응답 (Doc #25)"""
+
     success: bool
     alerts: List[Dict[str, Any]] = Field(description="알림 목록")
     total_count: int = Field(description="총 알림 수")
@@ -96,6 +105,7 @@ class EnergyAlertListResponse(BaseModel):
 
 class GlobalEnergyAnalyticsResponse(BaseModel):
     """전체 에너지 분석 응답 (Doc #25)"""
+
     success: bool
     global_analytics: Dict[str, Any] = Field(description="전체 분석 데이터")
     generated_at: datetime = Field(description="생성 시간")
@@ -106,6 +116,7 @@ class GlobalEnergyAnalyticsResponse(BaseModel):
 
 class EnergyDashboardResponse(BaseModel):
     """에너지 대시보드 응답 (Doc #25)"""
+
     success: bool
     energy_pool: Dict[str, Any] = Field(description="에너지 풀 정보")
     recent_alerts: List[Dict[str, Any]] = Field(description="최근 알림 목록")
@@ -117,6 +128,7 @@ class EnergyDashboardResponse(BaseModel):
 
 class TrendAnalysis(BaseModel):
     """트렌드 분석 (Doc #25)"""
+
     trend: str = Field(description="트렌드 방향: increasing, decreasing, stable")
     change_percentage: float = Field(description="변화율 (%)")
     first_period_avg: float = Field(description="첫 번째 기간 평균")
@@ -125,6 +137,7 @@ class TrendAnalysis(BaseModel):
 
 class UsagePatterns(BaseModel):
     """사용 패턴 (Doc #25)"""
+
     daily_usage: Dict[str, Any] = Field(description="일별 사용 패턴")
     hourly_usage: Dict[str, Any] = Field(description="시간별 사용 패턴")
     trend_analysis: TrendAnalysis = Field(description="트렌드 분석")
@@ -132,6 +145,7 @@ class UsagePatterns(BaseModel):
 
 class EnergyPatternAnalysisResponse(BaseModel):
     """에너지 패턴 분석 응답 (Doc #25)"""
+
     success: bool
     partner_id: int
     analysis_period: str
@@ -143,6 +157,7 @@ class EnergyPatternAnalysisResponse(BaseModel):
 
 class EnergyThresholdUpdateRequest(BaseModel):
     """에너지 임계값 업데이트 요청 (Doc #25)"""
+
     warning_threshold: int = Field(ge=1, le=99, description="경고 임계값 (1-99%)")
     critical_threshold: int = Field(ge=1, le=99, description="위험 임계값 (1-99%)")
 
@@ -152,6 +167,7 @@ class EnergyThresholdUpdateRequest(BaseModel):
 
 class EnergyOverviewResponse(BaseModel):
     """에너지 전체 현황 응답 (Doc #25)"""
+
     success: bool
     overview: Dict[str, Any] = Field(description="전체 현황")
 
@@ -161,6 +177,7 @@ class EnergyOverviewResponse(BaseModel):
 
 class AlertAcknowledgeResponse(BaseModel):
     """알림 확인 응답 (Doc #25)"""
+
     success: bool
     message: str
 
@@ -188,9 +205,10 @@ class EnergyPoolStatusResponse(BaseModel):
     usage_trend: Dict  # 7일간 사용 추이
     estimated_depletion: Optional[str]  # 예상 소진 시간
     recommendations: List[str]  # 추천 조치사항
-    
+
     class Config:
         from_attributes = True
+
 
 class EnergyUsageStatsResponse(BaseModel):
     period: Dict[str, str]
@@ -199,10 +217,12 @@ class EnergyUsageStatsResponse(BaseModel):
     hourly_pattern: List[Dict]
     summary: Dict
 
+
 class EnergySimulationRequest(BaseModel):
     transaction_count: int
     transaction_types: List[str]
     time_period_hours: int = 24
+
 
 class EnergySimulationResponse(BaseModel):
     total_energy_required: int
@@ -213,10 +233,12 @@ class EnergySimulationResponse(BaseModel):
     shortage_amount: Optional[int]
     recommendations: List[str]
 
+
 class AutoManagementSettings(BaseModel):
     enabled: bool
     refill_amount: Decimal = Field(..., ge=1000)
     trigger_percentage: int = Field(..., ge=5, le=50)
+
 
 class EnergyPriceHistoryResponse(BaseModel):
     id: int
@@ -226,16 +248,19 @@ class EnergyPriceHistoryResponse(BaseModel):
     market_demand: str
     network_congestion: int
     recorded_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class MessageResponse(BaseModel):
     message: str
 
+
 # 기존 에너지 관련 스키마 (하위 호환성)
 class EnergyPoolStatus(BaseModel):
     """에너지 풀 상태 응답 (기존 호환성용)"""
+
     total_energy: int = Field(..., description="총 에너지량")
     available_energy: int = Field(..., description="사용 가능한 에너지")
     reserved_energy: int = Field(..., description="예약된 에너지")
@@ -247,13 +272,17 @@ class EnergyPoolStatus(BaseModel):
     partner_count: int = Field(0, description="활성 파트너 수")
     last_updated: datetime = Field(..., description="마지막 업데이트 시간")
 
+
 class EnergyQueueCreate(BaseModel):
     """에너지 대기열 생성 요청"""
+
     transaction_type: str = Field(..., description="거래 유형")
+
 
 # 에너지 알림 관련 스키마
 class EnergyAlert(BaseModel):
     """에너지 알림"""
+
     alert_type: str
     message: str
     current_energy: int
@@ -261,32 +290,40 @@ class EnergyAlert(BaseModel):
     partner_id: Optional[str] = None
     created_at: datetime
 
+
 class CreateEnergyAlert(BaseModel):
     """에너지 알림 생성 요청"""
+
     alert_type: str = Field(..., description="알림 유형")
     title: str = Field(..., max_length=200, description="알림 제목")
     message: Optional[str] = Field(None, description="알림 내용")
     severity: str = Field("info", description="심각도")
 
+
 # 긴급 출금 관련 스키마
 class EmergencyWithdrawalCreate(BaseModel):
     """긴급 출금 생성 요청"""
+
     to_address: str = Field(..., description="목적지 주소")
     amount: Decimal = Field(..., gt=0, description="출금 금액")
     fee_tier: str = Field("high", description="수수료 등급")
     reason: Optional[str] = Field(None, description="긴급 출금 사유")
 
+
 class EmergencyWithdrawalResponse(BaseModel):
     """긴급 출금 응답"""
+
     transaction_id: str = Field(..., description="거래 ID")
     status: str = Field(..., description="거래 상태")
     estimated_confirmation_time: int = Field(..., description="예상 확인 시간(분)")
     fee_amount: Decimal = Field(..., description="수수료")
     message: str = Field(..., description="상태 메시지")
 
+
 # 슈퍼 어드민용 추가 스키마
 class EnergyUsage(BaseModel):
     """파트너 에너지 사용량"""
+
     partner_id: str
     current_balance: int
     daily_usage: int
@@ -295,8 +332,10 @@ class EnergyUsage(BaseModel):
     usage_efficiency: float
     last_usage: Optional[datetime] = None
 
+
 class EnergyHistory(BaseModel):
     """에너지 사용 이력"""
+
     id: str
     partner_id: str
     partner_name: str
@@ -307,8 +346,10 @@ class EnergyHistory(BaseModel):
     transaction_hash: str
     created_at: datetime
 
+
 class EnergyAllocation(BaseModel):
     """에너지 할당"""
+
     partner_id: str
     partner_name: str
     allocated_amount: int

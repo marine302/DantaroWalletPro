@@ -2,16 +2,18 @@
 지갑 시스템 테스트.
 지갑 생성, 조회, 잔고 확인, 모니터링 등의 기능을 테스트합니다.
 """
+
 import json
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from fastapi import status
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models import Wallet
 from app.services.wallet_service import WalletService
-from fastapi import status
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # 각 테스트 함수에 @pytest.mark.asyncio를 표시하는 방식으로 변경
 # pytestmark = pytest.mark.asyncio
@@ -41,7 +43,9 @@ async def test_create_wallet(client: AsyncClient, user_token_headers, db: AsyncS
         {"user_id": user_id},
     )
     wallet_address = wallet_result.scalar_one_or_none()
-    assert wallet_address == data["address"], "지갑 주소가 DB에 제대로 저장되지 않았습니다"
+    assert (
+        wallet_address == data["address"]
+    ), "지갑 주소가 DB에 제대로 저장되지 않았습니다"
 
 
 @pytest.mark.asyncio

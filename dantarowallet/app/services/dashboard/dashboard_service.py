@@ -1,9 +1,13 @@
 """
 대시보드 관련 비즈니스 로직
 """
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List
+
+from sqlalchemy import desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.balance import Balance
 from app.models.transaction import Transaction
@@ -15,8 +19,6 @@ from app.schemas.dashboard import (
     RecentTransactionResponse,
     WalletStatsResponse,
 )
-from sqlalchemy import desc, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DashboardService:
@@ -63,7 +65,7 @@ class DashboardService:
         )
         last_transaction = last_tx_result.scalar_one_or_none()
         last_transaction_date = safe_datetime(
-            safe_get_attr(last_transaction, 'created_at') if last_transaction else None
+            safe_get_attr(last_transaction, "created_at") if last_transaction else None
         )
 
         # 월간 거래량
@@ -104,10 +106,10 @@ class DashboardService:
         return [
             RecentTransactionResponse(
                 id=safe_int(tx.id),
-                transaction_type=str(safe_get_attr(tx, 'type', '')),
+                transaction_type=str(safe_get_attr(tx, "type", "")),
                 amount=safe_decimal(tx.amount),
                 currency=getattr(tx, "currency", "TRX") or "TRX",
-                status=str(safe_get_attr(tx, 'status', '')),
+                status=str(safe_get_attr(tx, "status", "")),
                 created_at=safe_datetime(tx.created_at, datetime.now()),
                 wallet_address=getattr(tx, "to_address", "")
                 or getattr(tx, "from_address", "")
@@ -225,11 +227,11 @@ def safe_get_attr(obj, attr, default=None):
     """SQLAlchemy 컬럼 속성을 안전하게 가져오는 헬퍼 함수"""
     if obj is None:
         return default
-    
+
     value = getattr(obj, attr, default)
-    
+
     # SQLAlchemy Column 타입인 경우 실제 값 추출
-    if value is not None and hasattr(value, 'value'):
+    if value is not None and hasattr(value, "value"):
         return value.value
     else:
         return value
@@ -239,10 +241,10 @@ def safe_int(value, default: int = 0) -> int:
     """안전한 int 변환"""
     if value is None:
         return default
-    
-    if hasattr(value, 'value'):
+
+    if hasattr(value, "value"):
         value = value.value
-    
+
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -253,10 +255,10 @@ def safe_decimal(value, default=None):
     """안전한 Decimal 변환"""
     if value is None:
         return default or Decimal("0")
-    
-    if hasattr(value, 'value'):
+
+    if hasattr(value, "value"):
         value = value.value
-    
+
     try:
         return Decimal(str(value))
     except (TypeError, ValueError):
@@ -267,13 +269,14 @@ def safe_datetime(value, default=None):
     """안전한 datetime 변환"""
     if value is None:
         return default
-    
-    if hasattr(value, 'value'):
+
+    if hasattr(value, "value"):
         value = value.value
-    
+
     # 이미 datetime이면 그대로 반환
     from datetime import datetime
+
     if isinstance(value, datetime):
         return value
-    
+
     return default

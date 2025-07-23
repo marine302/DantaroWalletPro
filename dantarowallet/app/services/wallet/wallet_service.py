@@ -2,9 +2,13 @@
 지갑 관리 서비스.
 지갑 생성, 조회, 온체인 잔고 확인 등의 비즈니스 로직을 처리합니다.
 """
+
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.encryption import EncryptionService
@@ -12,8 +16,6 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.tron import TronService
 from app.models.user import User
 from app.models.wallet import Wallet
-from sqlalchemy import and_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

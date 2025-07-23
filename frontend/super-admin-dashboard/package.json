@@ -11,10 +11,15 @@
     "logs": "./manage-services.sh logs",
     "build": "next build",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
     "frontend-only": "next dev -p ${NEXT_PUBLIC_FRONTEND_PORT:-3020}",
     "mock-server": "node mock-server.js",
-    "mock-realtime": "node mock-realtime-server.js"
+    "mock-realtime": "node mock-realtime-server.js",
+    "quality-check": "npm run lint:fix && npm run type-check && npm run build",
+    "pre-commit": "npm run quality-check",
+    "fix-all": "./fix-eslint-auto.sh && npm run quality-check",
+    "prepare": "husky install || true"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -27,7 +32,6 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
-    "isomorphic-dompurify": "^2.26.0",
     "lucide-react": "^0.525.0",
     "next": "15.3.5",
     "postcss": "^8.5.6",
@@ -44,6 +48,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "husky": "^8.0.3",
     "typescript": "^5"
   }
 }

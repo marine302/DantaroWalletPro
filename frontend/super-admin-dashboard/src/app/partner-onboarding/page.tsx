@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { Badge } from '@/components/ui/Badge';
-import { useI18n } from '@/contexts/I18nContext';
+// import { useI18n } from '@/contexts/I18nContext';
 import { withRBAC } from '@/components/auth/withRBAC';
 
 // 타입 정의
@@ -31,7 +31,7 @@ interface OnboardingStats {
 
 function PartnerOnboardingPage() {
   const { t } = useI18n();
-  
+
   const [stats] = useState<OnboardingStats>({
     totalPartners: 47,
     pendingApproval: 8,
@@ -77,15 +77,15 @@ function PartnerOnboardingPage() {
     }
   ]);
 
-  const handleAdvanceStage = (partnerId: number) => {
+  const _handleAdvanceStage = (partnerId: number) => {
     console.log('Advancing stage for partner:', partnerId);
     // API 호출 로직
   };
 
-  const getStageColor = (stage: string) => {
+  const _getStageColor = (stage: string) => {
     switch (stage) {
       case 'completed': return 'success';
-      case 'contract_signed': 
+      case 'contract_signed':
       case 'deployment': return 'primary';
       case 'kyc_approved':
       case 'contract_pending': return 'warning';
@@ -93,7 +93,7 @@ function PartnerOnboardingPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'success';
       case 'pending': return 'warning';
@@ -103,19 +103,19 @@ function PartnerOnboardingPage() {
     }
   };
 
-  const handleNewPartnerRegistration = () => {
+  const _handleNewPartnerRegistration = () => {
     // 실제로는 모달을 열거나 새 페이지로 이동
     alert('신규 파트너 등록 양식을 여기에 구현할 예정입니다.\n\n포함 사항:\n- 회사 정보\n- 사업자 등록증\n- 담당자 연락처\n- 사업 유형\n- KYC 문서');
   };
 
-  const headerActions = (
+  const _headerActions = (
     <Button variant="primary" onClick={handleNewPartnerRegistration}>
       새 파트너 등록
     </Button>
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.partnerOnboarding?.title || "파트너 온보딩 관리"}
       description={t.partnerOnboarding?.description || "파트너사의 온보딩 프로세스를 관리하고 모니터링합니다"}
       headerActions={headerActions}
@@ -230,7 +230,7 @@ function PartnerOnboardingPage() {
                     <div className="flex items-center">
                       <span className="text-sm text-gray-100">{partner.riskScore}</span>
                       <div className="ml-2 w-16 bg-gray-700 rounded-full h-2">
-                        <div 
+                        <div
                           className={`h-2 rounded-full ${
                             partner.riskScore <= 30 ? 'bg-green-600' :
                             partner.riskScore <= 60 ? 'bg-yellow-600' : 'bg-red-600'
@@ -244,8 +244,8 @@ function PartnerOnboardingPage() {
                     {new Date(partner.registrationDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button 
-                      variant="secondary" 
+                    <Button
+                      variant="secondary"
                       onClick={() => handleAdvanceStage(partner.id)}
                       className="mr-2"
                     >
@@ -263,6 +263,6 @@ function PartnerOnboardingPage() {
 }
 
 // Export protected component
-export default withRBAC(PartnerOnboardingPage, { 
+export default withRBAC(PartnerOnboardingPage, {
   requiredPermissions: ['partners.view', 'partners.create']
 });

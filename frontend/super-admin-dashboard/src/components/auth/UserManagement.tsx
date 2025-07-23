@@ -25,14 +25,14 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
     auditor: '감사자'
   };
 
-  const handleEditUser = (user: User) => {
+  const _handleEditUser = (user: User) => {
     setSelectedUser(user);
     setIsEditModalOpen(true);
   };
 
-  const handleSaveUser = (updatedUser: User) => {
+  const _handleSaveUser = (updatedUser: User) => {
     onUpdateUser(updatedUser);
-    
+
     // Log the activity
     if (currentUser) {
       logActivity({
@@ -49,16 +49,16 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
         }
       });
     }
-    
+
     setIsEditModalOpen(false);
     setSelectedUser(null);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const _handleDeleteUser = (userId: string) => {
     if (confirm('정말로 이 사용자를 삭제하시겠습니까?')) {
-      const userToDelete = users.find(u => u.id === userId);
+      const _userToDelete = users.find(u => u.id === userId);
       onDeleteUser(userId);
-      
+
       // Log the activity
       if (currentUser && userToDelete) {
         logActivity({
@@ -74,7 +74,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
     }
   };
 
-  const getRoleColor = (role: Role) => {
+  const _getRoleColor = (role: Role) => {
     switch (role) {
       case 'super_admin': return 'bg-red-100 text-red-800';
       case 'admin': return 'bg-blue-100 text-blue-800';
@@ -141,15 +141,15 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user.isActive 
-                      ? 'bg-green-100 text-green-800' 
+                    user.isActive
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {user.isActive ? '활성' : '비활성'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  {user.lastLogin 
+                  {user.lastLogin
                     ? new Date(user.lastLogin).toLocaleString('ko-KR')
                     : '로그인 기록 없음'
                   }
@@ -214,7 +214,7 @@ function UserEditModal({ user, onSave, onCancel }: UserEditModalProps) {
     { value: 'super_admin', label: '슈퍼 관리자' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const _handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(editedUser);
   };
@@ -223,7 +223,7 @@ function UserEditModal({ user, onSave, onCancel }: UserEditModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
         <h3 className="text-lg font-semibold text-white mb-4">사용자 편집</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">

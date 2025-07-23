@@ -1,18 +1,18 @@
 'use client';
 
 import { withRBAC } from '@/components/auth/withRBAC';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { useState, Suspense } from 'react';
 import { Loading } from '@/components/ui/Loading';
-import { 
+import {
   RealtimeTransactionMonitorLazy,
   EmergencyBlockingPanelLazy,
   AuditLogSearchLazy
 } from '@/components/lazy/LazyComponents';
 
 // 임시 i18n mock (I18nContext가 없으므로)
-const mockI18n = {
+const _mockI18n = {
   auditCompliance: {
     title: 'Audit & Compliance',
     description: 'Monitor audit logs and compliance status',
@@ -88,7 +88,7 @@ interface ComplianceMetrics {
 }
 
 function AuditCompliancePage() {
-  const t = mockI18n; // mockI18n 사용
+  const _t = mockI18n; // mockI18n 사용
 
   const [metrics] = useState<ComplianceMetrics>({
     totalAudits: 156,
@@ -150,7 +150,7 @@ function AuditCompliancePage() {
 
   const [filter, setFilter] = useState('all');
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'success': return 'bg-green-900/30 text-green-300';
       case 'failed': return 'bg-red-900/30 text-red-300';
@@ -159,7 +159,7 @@ function AuditCompliancePage() {
     }
   };
 
-  const getRiskColor = (risk: string) => {
+  const _getRiskColor = (risk: string) => {
     switch (risk) {
       case 'low': return 'bg-blue-900/30 text-blue-300';
       case 'medium': return 'bg-yellow-900/30 text-yellow-300';
@@ -169,9 +169,9 @@ function AuditCompliancePage() {
     }
   };
 
-  const filteredLogs = filter === 'all' ? auditLogs : auditLogs.filter(log => log.status === filter);
+  const _filteredLogs = filter === 'all' ? auditLogs : auditLogs.filter(log => log.status === filter);
 
-  const headerActions = (
+  const _headerActions = (
     <div className="flex gap-2">
       <Button variant="secondary">
         {t.auditCompliance.generateReport}

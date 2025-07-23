@@ -1,6 +1,6 @@
 'use client';
 
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { useI18n } from '@/contexts/I18nContext';
 import Link from "next/link";
@@ -8,15 +8,15 @@ import { withRBAC } from '@/components/auth/withRBAC';
 
 function EnergyPage() {
   const { t } = useI18n();
-  
-  const headerActions = (
+
+  const _headerActions = (
     <Button variant="primary">
       {t.energy.configure}
     </Button>
   );
 
   return (
-    <BasePage 
+    <BasePage
       title={t.energy.title}
       description={t.energy.description}
       headerActions={headerActions}
@@ -91,7 +91,7 @@ function EnergyPage() {
                 {t.partners.active}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
               <div>
                 <h4 className="text-white font-medium">Emergency Pool</h4>
@@ -101,7 +101,7 @@ function EnergyPage() {
                 Reserve
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
               <div>
                 <h4 className="text-white font-medium">Partner Pool</h4>
@@ -162,6 +162,6 @@ function EnergyPage() {
 }
 
 // Export protected component
-export default withRBAC(EnergyPage, { 
+export default withRBAC(EnergyPage, {
   requiredPermissions: ['energy.view']
 });

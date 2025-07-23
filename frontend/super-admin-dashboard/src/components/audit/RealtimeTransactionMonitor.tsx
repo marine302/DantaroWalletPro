@@ -43,7 +43,7 @@ export function RealtimeTransactionMonitor() {
 
   // WebSocket 연결 for 실시간 트랜잭션 데이터
   const [isConnected, setIsConnected] = useState(false);
-  
+
   function sendMessage(data: any) {
     console.log('Mock sendMessage:', data);
   }
@@ -54,9 +54,9 @@ export function RealtimeTransactionMonitor() {
         ...data.transaction,
         timestamp: new Date(data.transaction.timestamp)
       };
-      
+
       setTransactions(prev => [newTransaction, ...prev.slice(0, 49)]); // 최근 50개만 유지
-      
+
       // 고위험 거래 알림
       if (newTransaction.risk_level === 'critical' && alertsEnabled) {
         showCriticalAlert(newTransaction);
@@ -74,9 +74,9 @@ export function RealtimeTransactionMonitor() {
         icon: '/favicon.ico'
       });
     }
-    
+
     // 사운드 알림 (옵션)
-    const audio = new Audio('/sounds/alert.mp3');
+    const _audio = new Audio('/sounds/alert.mp3');
     audio.play().catch(() => {
       console.log('Alert sound playback failed');
     });
@@ -141,7 +141,7 @@ export function RealtimeTransactionMonitor() {
               🔍 실시간 트랜잭션 모니터링
             </h3>
             <p className="text-sm text-gray-400 mt-1">
-              WebSocket Status: 
+              WebSocket Status:
               <span className={`ml-2 ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
                 {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
               </span>

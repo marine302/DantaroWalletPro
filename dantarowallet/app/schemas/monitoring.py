@@ -1,14 +1,17 @@
 """
 모니터링 관련 스키마
 """
-from typing import List, Optional, Dict, Any
+
 from datetime import datetime
 from decimal import Decimal
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class SystemMetrics(BaseModel):
     """시스템 메트릭스"""
+
     timestamp: datetime
     total_partners: int
     active_partners: int
@@ -28,6 +31,7 @@ class SystemMetrics(BaseModel):
 
 class SystemHealth(BaseModel):
     """시스템 헬스"""
+
     status: str = Field(..., description="시스템 상태")
     health_score: float = Field(..., description="헬스 점수")
     components: Dict[str, str] = Field(..., description="컴포넌트 상태")
@@ -37,6 +41,7 @@ class SystemHealth(BaseModel):
 
 class PartnerRanking(BaseModel):
     """파트너 순위"""
+
     rank: int
     partner_id: str
     partner_name: str
@@ -48,6 +53,7 @@ class PartnerRanking(BaseModel):
 
 class PerformanceReport(BaseModel):
     """성능 보고서"""
+
     report_id: str
     period_start: datetime
     period_end: datetime
@@ -62,6 +68,7 @@ class PerformanceReport(BaseModel):
 
 class Alert(BaseModel):
     """알림"""
+
     alert_type: str
     severity: str  # info, warning, critical
     title: str

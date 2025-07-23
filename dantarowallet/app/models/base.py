@@ -2,12 +2,14 @@
 기본 모델 클래스 정의.
 모든 데이터베이스 모델의 기본 클래스로 사용됩니다.
 """
+
 from datetime import datetime
 from typing import Any, Dict
 
-from app.core.database import Base
 from sqlalchemy import Column, DateTime, Integer, func
 from sqlalchemy.ext.declarative import declared_attr
+
+from app.core.database import Base
 
 
 class BaseModel(Base):

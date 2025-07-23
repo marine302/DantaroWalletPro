@@ -2,29 +2,31 @@
 Main FastAPI application module for DantaroWallet.
 Production-ready FastAPI application with advanced middleware, logging, and error handling.
 """
+
 import asyncio
 import os
 import time
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 from app.api.v1.api import api_router
+from app.api.v1.endpoints import optimization
 from app.core.config import settings
 from app.core.exceptions import DantaroException
 from app.core.logging import setup_logging
+from app.core.optimization_manager import optimization_manager
 from app.middleware.admin_auth import AdminAuthMiddleware
 from app.middleware.exception import dantaro_exception_handler, global_exception_handler
 from app.middleware.logging import RequestIdAndLoggingMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.validation import RequestValidationMiddleware
 from app.services.deposit_monitoring_service import deposit_monitor
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from app.core.optimization_manager import optimization_manager
-from app.api.v1.endpoints import optimization
 
 # 로깅 설정
 logger = setup_logging()
@@ -73,16 +75,16 @@ tags_metadata = [
         "description": "**🔐 Super Admin Dashboard** - Administrative operations for super administrators",
         "externalDocs": {
             "description": "Frontend: /frontend/super-admin-dashboard/",
-            "url": "http://localhost:3020"
-        }
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "admin_dashboard",
         "description": "**📊 Super Admin Dashboard** - Dashboard statistics and system health monitoring",
         "externalDocs": {
             "description": "Frontend: /frontend/super-admin-dashboard/",
-            "url": "http://localhost:3020"
-        }
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "admin_fees",
@@ -101,16 +103,16 @@ tags_metadata = [
         "description": "**🔍 Super Admin Dashboard** - Transaction auditing and compliance monitoring",
         "externalDocs": {
             "description": "Frontend: /app/audit-compliance/page.tsx",
-            "url": "http://localhost:3020/audit-compliance"
-        }
+            "url": "http://localhost:3020/audit-compliance",
+        },
     },
     {
         "name": "integrated_dashboard",
         "description": "**📈 Super Admin Dashboard** - Comprehensive partner analytics dashboard",
         "externalDocs": {
-            "description": "Frontend: /app/integrated-dashboard/page.tsx", 
-            "url": "http://localhost:3020/integrated-dashboard"
-        }
+            "description": "Frontend: /app/integrated-dashboard/page.tsx",
+            "url": "http://localhost:3020/integrated-dashboard",
+        },
     },
     {
         "name": "withdrawal_management",
@@ -124,15 +126,14 @@ tags_metadata = [
         "name": "partner_onboarding",
         "description": "**🚀 Super Admin Dashboard** - Partner onboarding automation and progress tracking",
     },
-    
     # === Partner Admin Template 전용 ===
     {
         "name": "tronlink",
         "description": "**🔗 Partner Admin Template** - TronLink wallet integration for partner users",
         "externalDocs": {
             "description": "Frontend: /frontend/partner-admin-template/",
-            "url": "http://localhost:3030"
-        }
+            "url": "http://localhost:3030",
+        },
     },
     {
         "name": "energy_management",
@@ -142,7 +143,6 @@ tags_metadata = [
         "name": "fee_policy",
         "description": "**💰 Partner Admin Template** - Partner-specific fee policies and tier management",
     },
-    
     # === 공통 사용 (양쪽 프론트엔드) ===
     {
         "name": "authentication",
@@ -172,7 +172,6 @@ tags_metadata = [
         "name": "external_energy",
         "description": "**🔌 Common** - External energy provider integration",
     },
-    
     # === 시스템/분석 ===
     {
         "name": "analytics",
@@ -194,7 +193,6 @@ tags_metadata = [
         "name": "partners",
         "description": "**🤝 Management** - Basic partner CRUD operations",
     },
-    
     # === 시스템 ===
     {
         "name": "health",
@@ -337,15 +335,18 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 # === 공개 API 엔드포인트들 (인증 불필요) ===
 
+
 @app.get("/public/providers", tags=["public"])
 async def get_public_providers():
     """공급업체 목록 공개 조회 (인증 불필요)"""
     try:
         import sqlite3
+
         conn = sqlite3.connect("dev.db")
         cursor = conn.cursor()
-        
-        cursor.execute("""
+
+        cursor.execute(
+            """
             SELECT 
                 id, 
                 name, 
@@ -358,54 +359,56 @@ async def get_public_providers():
             FROM energy_providers 
             WHERE status = 'ONLINE'
             ORDER BY reliability_score DESC
-        """)
+        """
+        )
         providers = cursor.fetchall()
-        
+
         # 각 공급업체의 최신 가격 정보도 조회
         provider_data = []
         for provider in providers:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT price, available_energy 
                 FROM energy_prices 
                 WHERE provider_id = ? 
                 ORDER BY timestamp DESC 
                 LIMIT 1
-            """, (provider[0],))
+            """,
+                (provider[0],),
+            )
             price_info = cursor.fetchone()
-            
+
             provider_info = {
                 "id": provider[0],
-                "name": provider[1], 
+                "name": provider[1],
                 "status": provider[2],
                 "reliability": float(provider[3]) if provider[3] else 0.0,
                 "min_order": provider[4],
                 "max_order": provider[5],
                 "trading_fee": float(provider[6]) if provider[6] else 0.0,
-                "withdrawal_fee": float(provider[7]) if provider[7] else 0.0
+                "withdrawal_fee": float(provider[7]) if provider[7] else 0.0,
             }
-            
+
             if price_info:
-                provider_info.update({
-                    "current_price": float(price_info[0]) if price_info[0] else 0.0,
-                    "available_energy": price_info[1]
-                })
-            
+                provider_info.update(
+                    {
+                        "current_price": float(price_info[0]) if price_info[0] else 0.0,
+                        "available_energy": price_info[1],
+                    }
+                )
+
             provider_data.append(provider_info)
-        
+
         conn.close()
-        
+
         return {
             "success": True,
             "count": len(provider_data),
             "data": provider_data,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "timestamp": time.time()
-        }
+        return {"success": False, "error": str(e), "timestamp": time.time()}
 
 
 @app.get("/public/providers/summary", tags=["public"])
@@ -413,53 +416,56 @@ async def get_providers_summary():
     """공급업체 요약 정보 (인증 불필요)"""
     try:
         import sqlite3
+
         conn = sqlite3.connect("dev.db")
         cursor = conn.cursor()
-        
+
         # 활성 공급업체 수
         cursor.execute("SELECT COUNT(*) FROM energy_providers WHERE status = 'ONLINE'")
         active_count = cursor.fetchone()[0]
-        
+
         # 평균 신뢰성
-        cursor.execute("SELECT AVG(reliability_score) FROM energy_providers WHERE status = 'ONLINE'")
+        cursor.execute(
+            "SELECT AVG(reliability_score) FROM energy_providers WHERE status = 'ONLINE'"
+        )
         avg_reliability = cursor.fetchone()[0] or 0.0
-        
+
         # 최저 가격
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT MIN(price) FROM energy_prices 
             WHERE provider_id IN (
                 SELECT id FROM energy_providers WHERE status = 'ONLINE'
             )
-        """)
+        """
+        )
         min_price = cursor.fetchone()[0] or 0.0
-        
+
         # 총 가용 에너지
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT SUM(available_energy) FROM energy_prices 
             WHERE provider_id IN (
                 SELECT id FROM energy_providers WHERE status = 'ONLINE'
             )
-        """)
+        """
+        )
         total_available = cursor.fetchone()[0] or 0
-        
+
         conn.close()
-        
+
         return {
             "success": True,
             "summary": {
                 "active_providers": active_count,
                 "average_reliability": round(float(avg_reliability), 2),
                 "best_price": float(min_price),
-                "total_available_energy": total_available
+                "total_available_energy": total_available,
             },
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "timestamp": time.time()
-        }
+        return {"success": False, "error": str(e), "timestamp": time.time()}
 
 
 # 인증 페이지 라우터 등록
@@ -480,6 +486,7 @@ templates = Jinja2Templates(directory="templates")
 async def tronlink_page(request: Request):
     """TronLink 연동 페이지"""
     return templates.TemplateResponse("tronlink.html", {"request": request})
+
 
 # 정적 파일 마운트 (CSS, JS, 이미지 등)
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app", "static")

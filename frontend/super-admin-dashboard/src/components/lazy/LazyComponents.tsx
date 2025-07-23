@@ -2,31 +2,31 @@ import { lazy, Suspense } from 'react';
 import { Loading } from '@/components/ui/Loading';
 
 // Lazy load heavy components
-export const LazyDashboardCharts = lazy(() => 
+export const _LazyDashboardCharts = lazy(() =>
   import('@/components/charts/DashboardCharts').then(module => ({
     default: module.DashboardCharts
   }))
 );
 
-export const LazyRealtimeTransactionMonitor = lazy(() =>
+export const _LazyRealtimeTransactionMonitor = lazy(() =>
   import('@/components/audit/RealtimeTransactionMonitor').then(module => ({
     default: module.RealtimeTransactionMonitor
   }))
 );
 
-export const LazyEmergencyBlockingPanel = lazy(() =>
+export const _LazyEmergencyBlockingPanel = lazy(() =>
   import('@/components/audit/EmergencyBlockingPanel').then(module => ({
     default: module.EmergencyBlockingPanel
   }))
 );
 
-export const LazyAuditLogSearch = lazy(() =>
+export const _LazyAuditLogSearch = lazy(() =>
   import('@/components/audit/AuditLogSearch').then(module => ({
     default: module.AuditLogSearch
   }))
 );
 
-export const LazyRealtimeAlerts = lazy(() =>
+export const _LazyRealtimeAlerts = lazy(() =>
   import('@/components/realtime/RealtimeAlerts').then(module => ({
     default: module.RealtimeAlerts
   }))
@@ -47,8 +47,8 @@ export function withLazyLoading<T extends object>(
 }
 
 // Pre-configured lazy components with loading states
-export const DashboardChartsLazy = withLazyLoading(LazyDashboardCharts);
-export const RealtimeTransactionMonitorLazy = withLazyLoading(LazyRealtimeTransactionMonitor);
-export const EmergencyBlockingPanelLazy = withLazyLoading(LazyEmergencyBlockingPanel);
-export const AuditLogSearchLazy = withLazyLoading(LazyAuditLogSearch);
-export const RealtimeAlertsLazy = withLazyLoading(LazyRealtimeAlerts);
+export const _DashboardChartsLazy = withLazyLoading(LazyDashboardCharts);
+export const _RealtimeTransactionMonitorLazy = withLazyLoading(LazyRealtimeTransactionMonitor);
+export const _EmergencyBlockingPanelLazy = withLazyLoading(LazyEmergencyBlockingPanel);
+export const _AuditLogSearchLazy = withLazyLoading(LazyAuditLogSearch);
+export const _RealtimeAlertsLazy = withLazyLoading(LazyRealtimeAlerts);

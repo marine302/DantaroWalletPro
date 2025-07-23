@@ -2,14 +2,16 @@
 잔고 관리 서비스의 기본 클래스
 공통 로직, 초기화 등을 정의합니다.
 """
+
 import logging
 from decimal import Decimal
 from typing import Optional
 
-from app.core.exceptions import InsufficientBalanceError, NotFoundError, ValidationError
-from app.models.balance import Balance
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.exceptions import InsufficientBalanceError, NotFoundError, ValidationError
+from app.models.balance import Balance
 
 logger = logging.getLogger(__name__)
 

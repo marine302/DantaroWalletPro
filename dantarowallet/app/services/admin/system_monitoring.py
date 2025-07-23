@@ -2,22 +2,24 @@
 시스템 모니터링 서비스.
 시스템 전체 통계 및 위험도 분석을 담당합니다.
 """
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Dict, List
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.balance import Balance
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.user import User
 from app.models.wallet import Wallet
-from app.schemas.admin import SystemStatsResponse, SystemRiskSummaryResponse
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.admin import SystemRiskSummaryResponse, SystemStatsResponse
 
 
 class SystemMonitoringService:
     """시스템 모니터링 서비스 클래스"""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -81,11 +83,11 @@ class SystemMonitoringService:
         # 간단한 구현 예시
         total_users_result = await self.db.execute(select(func.count(User.id)))
         total_users = total_users_result.scalar() or 0
-        
+
         return SystemRiskSummaryResponse(
             high_risk_users=0,
             medium_risk_users=0,
             low_risk_users=total_users,
             total_users=total_users,
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
         )

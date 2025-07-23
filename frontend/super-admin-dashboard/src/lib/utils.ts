@@ -5,11 +5,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency = 'USDT'): string {
-  return new Intl.NumberFormat('en-US', {
+  return `${new Intl.NumberFormat('en-US', {
     style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 6,
-  }).format(amount) + ` ${currency}`;
+  }).format(amount)  } ${currency}`;
 }
 
 export function formatNumber(num: number): string {
@@ -35,18 +35,18 @@ export function formatDate(date: string | Date): string {
 }
 
 export function formatRelativeTime(date: string | Date): string {
-  const now = new Date();
-  const targetDate = new Date(date);
-  const diffInMs = now.getTime() - targetDate.getTime();
-  const diffInHours = diffInMs / (1000 * 60 * 60);
+  const _now = new Date();
+  const _targetDate = new Date(date);
+  const _diffInMs = now.getTime() - targetDate.getTime();
+  const _diffInHours = diffInMs / (1000 * 60 * 60);
 
   if (diffInHours < 1) {
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const _diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     return `${diffInMinutes} minutes ago`;
   } else if (diffInHours < 24) {
     return `${Math.floor(diffInHours)} hours ago`;
   } else {
-    const diffInDays = Math.floor(diffInHours / 24);
+    const _diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} days ago`;
   }
 }
@@ -91,7 +91,7 @@ export function copyToClipboard(text: string): Promise<void> {
     return navigator.clipboard.writeText(text);
   } else {
     // Fallback for older browsers
-    const textArea = document.createElement('textarea');
+    const _textArea = document.createElement('textarea');
     textArea.value = text;
     textArea.style.position = 'absolute';
     textArea.style.left = '-999999px';
@@ -118,24 +118,24 @@ export function generateSlug(text: string): string {
 }
 
 export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const _emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
 export function validateDomain(domain: string): boolean {
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+  const _domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
   return domainRegex.test(domain);
 }
 
 export function downloadCSV(data: Record<string, unknown>[], filename: string): void {
   if (!data.length) return;
 
-  const headers = Object.keys(data[0]);
-  const csvContent = [
+  const _headers = Object.keys(data[0]);
+  const _csvContent = [
     headers.join(','),
-    ...data.map(row => 
+    ...data.map(row =>
       headers.map(header => {
-        const value = row[header];
+        const _value = row[header];
         // Escape quotes and wrap in quotes if necessary
         if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
           return `"${value.replace(/"/g, '""')}"`;
@@ -145,9 +145,9 @@ export function downloadCSV(data: Record<string, unknown>[], filename: string): 
     )
   ].join('\n');
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
+  const _blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const _link = document.createElement('a');
+  const _url = URL.createObjectURL(blob);
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.csv`);
   link.style.visibility = 'hidden';
@@ -162,7 +162,7 @@ export function safeNumber(value: unknown, defaultValue = 0): number {
     return value;
   }
   if (typeof value === 'string') {
-    const parsed = parseFloat(value);
+    const _parsed = parseFloat(value);
     if (!isNaN(parsed) && isFinite(parsed)) {
       return parsed;
     }
@@ -171,17 +171,17 @@ export function safeNumber(value: unknown, defaultValue = 0): number {
 }
 
 export function safeCurrency(value: unknown, currency = 'USDT'): string {
-  const num = safeNumber(value);
+  const _num = safeNumber(value);
   return formatCurrency(num, currency);
 }
 
 export function safeFormatNumber(value: unknown): string {
-  const num = safeNumber(value);
+  const _num = safeNumber(value);
   return formatNumber(num);
 }
 
 export function safePercentage(value: unknown): string {
-  const num = safeNumber(value);
+  const _num = safeNumber(value);
   return formatPercentage(num);
 }
 

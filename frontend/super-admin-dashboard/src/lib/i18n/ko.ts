@@ -44,7 +44,7 @@ export const ko: TranslationMessages = {
     warning: '경고',
     info: '정보',
   },
-  
+
   nav: {
     dashboard: '시스템 대시보드',
     dashboardDesc: '전체 시스템 현황 및 실시간 모니터링',
@@ -86,7 +86,7 @@ export const ko: TranslationMessages = {
     debugDesc: '디버그 정보 및 로그',
     logout: '로그아웃',
   },
-  
+
   partners: {
     title: '파트너 관리',
     description: '모든 파트너 계정과 활동을 관리하고 모니터링합니다.',
@@ -108,7 +108,7 @@ export const ko: TranslationMessages = {
     pendingApproval: '승인 대기',
     monthlyRevenue: '월간 수익',
   },
-  
+
   dashboard: {
     title: '대시보드',
     description: '슈퍼 어드민 대시보드 메인 페이지',
@@ -139,7 +139,7 @@ export const ko: TranslationMessages = {
     healthy: '정상',
     critical: '위험',
   },
-  
+
   energy: {
     title: '에너지 관리',
     description: '에너지 풀 현황 및 관리',
@@ -160,7 +160,7 @@ export const ko: TranslationMessages = {
     externalEnergyMarket: '외부 에너지 마켓',
     purchaseEnergyExternal: '외부에서 에너지 구매',
   },
-  
+
   fees: {
     title: '수수료 관리',
     description: '수수료 설정 및 수익 관리',
@@ -178,7 +178,7 @@ export const ko: TranslationMessages = {
     revenueOverview: '수익 개요',
     recentTransactions: '최근 거래',
   },
-  
+
   analytics: {
     title: '분석',
     description: '시스템 분석 및 통계',
@@ -195,7 +195,7 @@ export const ko: TranslationMessages = {
     performanceMetrics: '성과 지표',
     recentActivity: '최근 활동',
   },
-  
+
   admins: {
     title: '시스템 관리자',
     description: '시스템 관리자 계정, 역할 및 권한을 관리합니다.',
@@ -217,7 +217,7 @@ export const ko: TranslationMessages = {
     disable: '비활성화',
     recentAdminActivity: '최근 관리자 활동',
   },
-  
+
   integratedDashboard: {
     title: '파트너사 종합 대시보드',
     description: '파트너의 실시간 통계 및 분석 데이터',
@@ -268,7 +268,7 @@ export const ko: TranslationMessages = {
       growthRate: '성장률',
     },
   },
-  
+
   auditCompliance: {
     title: '감사 및 컴플라이언스',
     description: '시스템 감사, 컴플라이언스 모니터링 및 규정 준수를 관리합니다',
@@ -284,7 +284,7 @@ export const ko: TranslationMessages = {
     realtimeTransactionMonitor: '실시간 트랜잭션 모니터링',
     emergencyBlockingPanel: '긴급 차단 패널',
     auditLogSearch: '감사 로그 검색',
-    
+
     // 메트릭 관련
     totalAudits: '전체 감사',
     passedAudits: '통과',
@@ -294,7 +294,7 @@ export const ko: TranslationMessages = {
     criticalAlerts: '중요 알림',
     monthlyReports: '월간 보고서',
     lastAuditTime: '마지막 감사',
-    
+
     // 버튼/액션
     generateReport: '보고서 생성',
     runAudit: '감사 실행',
@@ -308,7 +308,7 @@ export const ko: TranslationMessages = {
     emergencyTab: '긴급대응',
     searchTab: '검색',
     reportsTab: '보고서',
-    
+
     // 상태
     statusActive: '활성',
     statusInactive: '비활성',
@@ -316,7 +316,7 @@ export const ko: TranslationMessages = {
     statusSuspicious: '의심스러운',
     statusCompliant: '규정 준수',
     statusViolation: '위반',
-    
+
     // 검색 및 필터
     searchPlaceholder: '감사 로그 검색...',
     filterByDate: '날짜별 필터',
@@ -324,7 +324,7 @@ export const ko: TranslationMessages = {
     filterByType: '유형별 필터',
     filterByUser: '사용자별 필터',
     filterByPartner: '파트너별 필터',
-    
+
     // 테이블 헤더
     timestamp: '타임스탬프',
     eventType: '이벤트 유형',
@@ -335,31 +335,31 @@ export const ko: TranslationMessages = {
     partnerId: '파트너 ID',
     ipAddress: 'IP 주소',
     details: '세부 정보',
-    
+
     // 심각도 레벨
     severityInfo: '정보',
     severityWarning: '경고',
     severityCritical: '위험',
-    
+
     // 이벤트 유형
     eventTransaction: '트랜잭션',
     eventCompliance: '컴플라이언스',
     eventSecurity: '보안',
     eventSystem: '시스템',
-    
+
     // 상태
     riskLevel: '위험도',
     low: '낮음',
     medium: '보통',
     high: '높음',
     critical: '위험',
-    
+
     // 필터
     allLogs: '전체 로그',
     successLogs: '성공',
     failedLogs: '실패',
     warningLogs: '경고',
-    
+
     // 컴플라이언스 도구
     complianceTools: '컴플라이언스 도구',
     amlReport: 'AML 보고서',
@@ -367,7 +367,7 @@ export const ko: TranslationMessages = {
     complianceCheckTool: '컴플라이언스 체크',
     suspiciousTransactionReport: '의심거래 보고',
   },
-  
+
   partnerOnboarding: {
     title: '파트너 온보딩',
     description: '새로운 파트너사 온보딩 프로세스를 관리합니다.',
@@ -381,7 +381,7 @@ export const ko: TranslationMessages = {
     partnerApplication: '파트너 신청',
     reviewStatus: '검토 상태',
   },
-  
+
   energyMarket: {
     title: '에너지 마켓',
     description: '에너지 거래 및 마켓플레이스를 관리합니다.',
@@ -396,7 +396,7 @@ export const ko: TranslationMessages = {
     tradingInterface: '거래 인터페이스',
     marketData: '마켓 데이터',
   },
-  
+
   settings: {
     title: '설정',
     description: '시스템 설정과 환경설정을 관리합니다.',

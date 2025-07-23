@@ -2,6 +2,7 @@
 TRON 에너지 및 리소스 관리 서비스.
 에너지, 대역폭, 계정 리소스 관리를 담당합니다.
 """
+
 import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -14,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 class TronEnergyService(TronNetworkService):
     """TRON 에너지 및 리소스 관리 서비스"""
-    
+
     async def get_account_resources(self, address: str) -> Dict[str, Any]:
         """계정의 에너지 및 대역폭 정보 조회"""
         try:
             self.ensure_connection()
-            
+
             # 계정 정보 조회
             account_info = self.client.get_account(address)
 
@@ -81,7 +82,7 @@ class TronEnergyService(TronNetworkService):
         """현재 에너지 가격 정보 조회"""
         try:
             self.ensure_connection()
-            
+
             # ChainParameters에서 에너지 관련 정보 조회
             chain_params = self.client.get_chain_parameters()
 
@@ -182,15 +183,19 @@ class TronEnergyService(TronNetworkService):
         try:
             if not address:
                 # 기본 주소 또는 시스템 주소 사용
-                address = getattr(settings, 'SYSTEM_TRON_ADDRESS', 'TLsV52sRDL79HXGGm9yzwKibb6BeruhUzy')
-            
+                address = getattr(
+                    settings,
+                    "SYSTEM_TRON_ADDRESS",
+                    "TLsV52sRDL79HXGGm9yzwKibb6BeruhUzy",
+                )
+
             self.ensure_connection()
-            
+
             account_info = self.client.get_account(address)
-            
+
             # 계정 리소스 정보 조회
             account_resources = self.client.get_account_resource(address)
-            
+
             energy_info = {
                 "address": address,
                 "energy_limit": account_resources.get("EnergyLimit", 0),
@@ -201,16 +206,20 @@ class TronEnergyService(TronNetworkService):
                 "net_used": account_resources.get("NetUsed", 0),
                 "free_net_limit": account_resources.get("freeNetLimit", 0),
                 "free_net_used": account_resources.get("freeNetUsed", 0),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
-            
+
             # 사용 가능한 에너지 계산
-            energy_info["available_energy"] = max(0, energy_info["energy_limit"] - energy_info["energy_used"])
-            energy_info["available_bandwidth"] = max(0, energy_info["net_limit"] - energy_info["net_used"])
-            
+            energy_info["available_energy"] = max(
+                0, energy_info["energy_limit"] - energy_info["energy_used"]
+            )
+            energy_info["available_bandwidth"] = max(
+                0, energy_info["net_limit"] - energy_info["net_used"]
+            )
+
             logger.info(f"Energy info retrieved for address: {address}")
             return energy_info
-            
+
         except Exception as e:
             logger.error(f"Failed to get energy info for {address}: {str(e)}")
             return {
@@ -220,36 +229,38 @@ class TronEnergyService(TronNetworkService):
                 "available_energy": 0,
                 "available_bandwidth": 0,
                 "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
 
     async def get_energy_price(self) -> Dict[str, Any]:
         """현재 에너지 가격 정보 조회"""
         try:
             self.ensure_connection()
-            
+
             # 체인 파라미터에서 에너지 관련 정보 조회
             chain_parameters = self.client.get_chain_parameters()
-            
+
             # 에너지 가격 관련 파라미터 추출
             energy_fee = 0
             for param in chain_parameters:
                 if param.get("key") == "getEnergyFee":
                     energy_fee = param.get("value", 0)
                     break
-            
+
             # 추가 에너지 관련 정보
             price_info = {
                 "energy_fee": energy_fee,  # sun 단위
-                "energy_fee_trx": energy_fee / 1_000_000 if energy_fee > 0 else 0,  # TRX 단위
+                "energy_fee_trx": (
+                    energy_fee / 1_000_000 if energy_fee > 0 else 0
+                ),  # TRX 단위
                 "bandwidth_price": 1000,  # 고정값 (1000 sun)
                 "timestamp": datetime.utcnow().isoformat(),
-                "source": "tron_network"
+                "source": "tron_network",
             }
-            
+
             logger.info(f"Energy price retrieved: {energy_fee} sun")
             return price_info
-            
+
         except Exception as e:
             logger.error(f"Failed to get energy price: {str(e)}")
             return {
@@ -258,48 +269,59 @@ class TronEnergyService(TronNetworkService):
                 "bandwidth_price": 1000,
                 "timestamp": datetime.utcnow().isoformat(),
                 "source": "fallback",
-                "error": str(e)
+                "error": str(e),
             }
 
-    async def estimate_transaction_energy(self, contract_address: str, function_selector: str, 
-                                       parameter: str = "", caller_address: Optional[str] = None) -> Dict[str, Any]:
+    async def estimate_transaction_energy(
+        self,
+        contract_address: str,
+        function_selector: str,
+        parameter: str = "",
+        caller_address: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """트랜잭션에 필요한 에너지 추정"""
         try:
             # caller_address 확인 및 기본값 설정
             if caller_address is None:
-                caller_address = getattr(settings, 'SYSTEM_TRON_ADDRESS', 'TLsV52sRDL79HXGGm9yzwKibb6BeruhUzy')
-            
+                caller_address = getattr(
+                    settings,
+                    "SYSTEM_TRON_ADDRESS",
+                    "TLsV52sRDL79HXGGm9yzwKibb6BeruhUzy",
+                )
+
             # 타입 확인 - 이 지점에서 caller_address는 항상 str
             assert isinstance(caller_address, str), "caller_address must be string"
-            
+
             self.ensure_connection()
-            
+
             # 트랜잭션 에너지 추정 (실제 TRON API 호출)
             result = self.client.trigger_constant_contract(
                 owner_address=caller_address,
                 contract_address=contract_address,
                 function_selector=function_selector,
-                parameter=parameter
+                parameter=parameter,
             )
-            
+
             energy_estimate = {
                 "estimated_energy": result.get("energy_used", 0),
                 "estimated_bandwidth": result.get("net_used", 0),
                 "success": result.get("result", {}).get("result", False),
                 "contract_address": contract_address,
                 "function_selector": function_selector,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
-            
+
             logger.info(f"Energy estimation completed for contract {contract_address}")
             return energy_estimate
-            
+
         except Exception as e:
-            logger.error(f"Failed to estimate energy for contract {contract_address}: {str(e)}")
+            logger.error(
+                f"Failed to estimate energy for contract {contract_address}: {str(e)}"
+            )
             return {
                 "estimated_energy": 15000,  # 기본 추정값
                 "estimated_bandwidth": 345,  # 기본 추정값
                 "success": False,
                 "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }

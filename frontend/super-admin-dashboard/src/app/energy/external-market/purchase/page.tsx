@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BasePage } from "@/components/ui/BasePage";
+import BasePage from "@/components/ui/BasePage";
 import { Section, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { ArrowLeft, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
 import { tronNRGService, TronNRGProvider, TronNRGOrderRequest, TronNRGOrderResponse } from '@/services/tron-nrg-service';
@@ -49,19 +49,19 @@ export default function ManualPurchasePage() {
     loadProviders();
   }, []);
 
-  const loadProviders = async () => {
+  const _loadProviders = async () => {
     try {
       setIsLoading(true);
-      const tronProviders = await tronNRGService.getProviders();
-      
+      const _tronProviders = await tronNRGService.getProviders();
+
       // TronNRG 공급자와 Mock 공급자 병합
-      const allProviders = [
+      const _allProviders = [
         ...tronProviders,
         ...mockProviders.map(p => ({ ...p, lastUpdated: new Date().toISOString() }))
       ];
-      
+
       setProviders(allProviders);
-      
+
       // 첫 번째 공급자를 기본 선택
       if (allProviders.length > 0) {
         setSelectedProvider(allProviders[0].id);
@@ -78,7 +78,7 @@ export default function ManualPurchasePage() {
     }
   };
 
-  const getMarginRate = (urgency: string) => {
+  const _getMarginRate = (urgency: string) => {
     switch (urgency) {
       case 'emergency': return 0.20;
       case 'high': return 0.15;
@@ -86,16 +86,16 @@ export default function ManualPurchasePage() {
     }
   };
 
-  const calculatePurchase = () => {
-    const provider = providers.find(p => p.id === selectedProvider);
+  const _calculatePurchase = () => {
+    const _provider = providers.find(p => p.id === selectedProvider);
     if (!provider) return;
 
-    const marginRate = getMarginRate(urgencyLevel);
-    const basePrice = orderType === 'limit' ? limitPrice : provider.pricePerEnergy;
-    const totalCost = purchaseAmount * basePrice;
-    const finalPrice = basePrice * (1 + marginRate);
-    const tradingFee = totalCost * provider.fees.tradingFee;
-    const finalTotalCost = totalCost + tradingFee;
+    const _marginRate = getMarginRate(urgencyLevel);
+    const _basePrice = orderType === 'limit' ? limitPrice : provider.pricePerEnergy;
+    const _totalCost = purchaseAmount * basePrice;
+    const _finalPrice = basePrice * (1 + marginRate);
+    const _tradingFee = totalCost * provider.fees.tradingFee;
+    const _finalTotalCost = totalCost + tradingFee;
 
     setPurchaseRequest({
       providerId: provider.id,
@@ -115,12 +115,12 @@ export default function ManualPurchasePage() {
     setStep(2);
   };
 
-  const submitPurchase = async () => {
+  const _submitPurchase = async () => {
     if (!purchaseRequest) return;
-    
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       // TronNRG API 주문 생성
       const orderRequest: TronNRGOrderRequest = {
@@ -130,10 +130,10 @@ export default function ManualPurchasePage() {
         duration: purchaseRequest.duration
       };
 
-      const response = await tronNRGService.createOrder(orderRequest);
+      const _response = await tronNRGService.createOrder(orderRequest);
       setOrderResponse(response);
       setStep(3);
-      
+
     } catch (error) {
       console.error('❌ Purchase failed:', error);
       setError('구매 주문 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
@@ -142,30 +142,30 @@ export default function ManualPurchasePage() {
     }
   };
 
-  const validatePurchase = () => {
-    const provider = providers.find(p => p.id === selectedProvider);
+  const _validatePurchase = () => {
+    const _provider = providers.find(p => p.id === selectedProvider);
     if (!provider) return false;
-    
+
     if (purchaseAmount < provider.minOrderSize) {
       setError(`최소 주문량은 ${provider.minOrderSize.toLocaleString()}입니다.`);
       return false;
     }
-    
+
     if (purchaseAmount > provider.maxOrderSize) {
       setError(`최대 주문량은 ${provider.maxOrderSize.toLocaleString()}입니다.`);
       return false;
     }
-    
+
     if (purchaseAmount > provider.availableEnergy) {
       setError(`현재 가용량은 ${provider.availableEnergy.toLocaleString()}입니다.`);
       return false;
     }
-    
+
     setError(null);
     return true;
   };
 
-  const getUrgencyColor = (urgency: string) => {
+  const _getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'emergency': return 'text-red-400';
       case 'high': return 'text-orange-400';
@@ -173,8 +173,8 @@ export default function ManualPurchasePage() {
     }
   };
 
-  const getUrgencyBadge = (urgency: string) => {
-    const colors = {
+  const _getUrgencyBadge = (urgency: string) => {
+    const _colors = {
       normal: 'bg-green-900 text-green-200',
       high: 'bg-orange-900 text-orange-200',
       emergency: 'bg-red-900 text-red-200'
@@ -203,7 +203,7 @@ export default function ManualPurchasePage() {
               <p className="text-gray-400 mb-6">
                 {purchaseRequest?.amount.toLocaleString()} 에너지 구매 주문이 생성되었습니다.
               </p>
-              
+
               <div className="bg-gray-800 rounded-lg p-6 text-left mb-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -252,7 +252,7 @@ export default function ManualPurchasePage() {
                   </p>
                 </div>
               )}
-              
+
               <div className="flex gap-4 mt-6">
                 <Button onClick={() => window.history.back()}>
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -283,7 +283,7 @@ export default function ManualPurchasePage() {
                 <p className="text-sm text-red-200 mt-1">{error}</p>
               </div>
             )}
-            
+
             <div className="space-y-6">
               <div className="bg-gray-800 rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -327,7 +327,7 @@ export default function ManualPurchasePage() {
                     <p className="font-medium">{purchaseRequest.duration}일</p>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 pt-4 border-t border-gray-700">
                   <div className="flex items-center justify-between">
                     <div>
@@ -383,7 +383,7 @@ export default function ManualPurchasePage() {
               <p className="text-sm text-red-200 mt-1">{error}</p>
             </div>
           )}
-          
+
           <div className="space-y-6">
             <FormField
               label="구매량"
@@ -403,8 +403,8 @@ export default function ManualPurchasePage() {
                 <button
                   onClick={() => setOrderType('market')}
                   className={`p-3 rounded-lg border ${
-                    orderType === 'market' 
-                      ? 'border-blue-500 bg-blue-900/20' 
+                    orderType === 'market'
+                      ? 'border-blue-500 bg-blue-900/20'
                       : 'border-gray-600 bg-gray-700'
                   }`}
                 >
@@ -416,8 +416,8 @@ export default function ManualPurchasePage() {
                 <button
                   onClick={() => setOrderType('limit')}
                   className={`p-3 rounded-lg border ${
-                    orderType === 'limit' 
-                      ? 'border-blue-500 bg-blue-900/20' 
+                    orderType === 'limit'
+                      ? 'border-blue-500 bg-blue-900/20'
                       : 'border-gray-600 bg-gray-700'
                   }`}
                 >
@@ -460,8 +460,8 @@ export default function ManualPurchasePage() {
                     key={level}
                     onClick={() => setUrgencyLevel(level)}
                     className={`p-3 rounded-lg border ${
-                      urgencyLevel === level 
-                        ? 'border-blue-500 bg-blue-900/20' 
+                      urgencyLevel === level
+                        ? 'border-blue-500 bg-blue-900/20'
                         : 'border-gray-600 bg-gray-700'
                     }`}
                   >
@@ -528,7 +528,7 @@ export default function ManualPurchasePage() {
               </div>
             </div>
 
-            <Button 
+            <Button
               onClick={() => {
                 if (validatePurchase()) {
                   calculatePurchase();

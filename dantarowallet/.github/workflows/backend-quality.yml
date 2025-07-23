@@ -1,0 +1,82 @@
+name: Backend Code Quality & Build Test
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'app/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
+      - '.pre-commit-config.yaml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.6.1
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root
+    
+    - name: Install project
+      run: poetry install --no-interaction
+    
+    - name: Code formatting check (Black)
+      run: poetry run black --check app tests scripts
+    
+    - name: Import sorting check (isort)
+      run: poetry run isort --check-only app tests scripts
+    
+    - name: Code style check (Flake8)
+      run: poetry run flake8 app tests scripts
+    
+    - name: Static type check (MyPy)
+      run: poetry run mypy app --ignore-missing-imports
+    
+    - name: Security check (Bandit)
+      run: poetry run bandit -r app/
+    
+    - name: Build test
+      run: |
+        poetry check
+        poetry run python -c "import app.main; print('✅ App loads successfully')"
+    
+    - name: Run tests
+      run: |
+        poetry run pytest tests/ -v --cov=app --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: backend
+        name: backend-coverage

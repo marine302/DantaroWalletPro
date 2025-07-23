@@ -2,16 +2,18 @@
 입금 관련 API 엔드포인트.
 입금 모니터링, 상태 조회 등의 기능을 제공합니다.
 """
+
 import logging
 from typing import Any, Dict
+
+from fastapi import APIRouter, BackgroundTasks, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.auth import UserResponse
 from app.services.deposit_monitoring_service import deposit_monitor
-from fastapi import APIRouter, BackgroundTasks, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -49,7 +51,10 @@ async def start_monitoring(
         logger.info(f"관리자 {current_user.email}가 입금 모니터링을 시작했습니다")
         return {"message": "입금 모니터링이 시작되었습니다", "status": "started"}
     else:
-        return {"message": "입금 모니터링이 이미 실행 중입니다", "status": "already_running"}
+        return {
+            "message": "입금 모니터링이 이미 실행 중입니다",
+            "status": "already_running",
+        }
 
 
 @router.post("/monitor/stop")
@@ -65,7 +70,10 @@ async def stop_monitoring(current_user: User = Depends(deps.get_current_admin_us
         logger.info(f"관리자 {current_user.email}가 입금 모니터링을 중지했습니다")
         return {"message": "입금 모니터링이 중지되었습니다", "status": "stopped"}
     else:
-        return {"message": "입금 모니터링이 실행되지 않고 있습니다", "status": "not_running"}
+        return {
+            "message": "입금 모니터링이 실행되지 않고 있습니다",
+            "status": "not_running",
+        }
 
 
 @router.get("/monitor/info")

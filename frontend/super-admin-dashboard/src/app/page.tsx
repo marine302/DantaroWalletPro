@@ -4,16 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { Users, DollarSign, Zap, Activity, TrendingUp, Monitor } from 'lucide-react';
-import { 
-  StatCard, 
+import {
+  StatCard,
   Section,
-  Button 
+  Button
 } from '@/components/ui/DarkThemeComponents';
 import { gridLayouts } from '@/styles/dark-theme';
 import { apiClient } from '@/lib/api';
 import { getStatusColor, safeFormatNumber, safeCurrency } from '@/lib/utils';
-import { useI18n } from '@/contexts/I18nContext';
-import { BasePage } from '@/components/ui/BasePage';
+// import { useI18n } from '@/contexts/I18nContext';
+import BasePage from '@/components/ui/BasePage';
 import { RealtimeStatus } from '@/components/realtime/RealtimeStatus';
 import { RealtimeStats } from '@/components/realtime/RealtimeStats';
 import { RealtimeAlertsLazy } from '@/components/lazy/LazyComponents';
@@ -22,7 +22,7 @@ import { withRBAC } from '@/components/auth/withRBAC';
 import { Loading } from '@/components/ui/Loading';
 
 function Home() {
-  const router = useRouter();
+  const _router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { t } = useI18n();
 
@@ -32,9 +32,9 @@ function Home() {
       setIsAuthenticated(true);
       return;
     }
-    
+
     // Check if user is authenticated
-    const token = localStorage.getItem('authToken');
+    const _token = localStorage.getItem('authToken');
     if (!token) {
       router.push('/login');
       return;
@@ -109,7 +109,7 @@ function Home() {
   }
 
   // Fallback data for UI consistency
-  const displayStats = stats || {
+  const _displayStats = stats || {
     total_partners: 5,
     active_partners: 4,
     total_users: 150,
@@ -122,7 +122,7 @@ function Home() {
     active_wallets: 45,
   };
 
-  const displayPartners = partnersResponse?.items || [];
+  const _displayPartners = partnersResponse?.items || [];
 
   return (
     <BasePage
@@ -140,7 +140,7 @@ function Home() {
           <div className="space-y-6">
             {/* Realtime Stats */}
             <RealtimeStats />
-            
+
             {/* Realtime Alerts and Transactions */}
             <RealtimeAlertsLazy maxAlerts={8} showTransactions={true} />
           </div>
@@ -151,8 +151,8 @@ function Home() {
           <Section title="시스템 상태" className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className={`p-4 rounded-lg border ${
-                systemHealth.status === 'healthy' 
-                  ? 'bg-green-900/30 border-green-600' 
+                systemHealth.status === 'healthy'
+                  ? 'bg-green-900/30 border-green-600'
                   : systemHealth.status === 'warning'
                   ? 'bg-yellow-900/30 border-yellow-600'
                   : 'bg-red-900/30 border-red-600'
@@ -165,7 +165,7 @@ function Home() {
                   {systemHealth.status === 'healthy' ? '정상' : systemHealth.status === 'warning' ? '주의' : '위험'}
                 </p>
               </div>
-              
+
               <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
                 <div className="flex items-center">
                   <Monitor className="h-5 w-5 mr-2 text-blue-400" />
@@ -173,7 +173,7 @@ function Home() {
                 </div>
                 <p className="text-2xl font-bold mt-2 text-green-400">운영 중</p>
               </div>
-              
+
               <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
                 <div className="flex items-center">
                   <TrendingUp className="h-5 w-5 mr-2 text-purple-400" />
@@ -256,7 +256,7 @@ function Home() {
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(partner.status)}`}>
                       {partner.status}
                     </span>
-                    <Button 
+                    <Button
                       variant="secondary"
                       onClick={() => router.push(`/partners/${partner.id}`)}
                     >
@@ -274,7 +274,7 @@ function Home() {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-400">{t.dashboard.noPartnersFound}</p>
-              <Button 
+              <Button
                 onClick={() => router.push('/partners')}
                 className="mt-4"
               >
@@ -294,6 +294,6 @@ function Home() {
 }
 
 // Export protected component
-export default withRBAC(Home, { 
+export default withRBAC(Home, {
   requiredPermissions: ['analytics.view']
 });

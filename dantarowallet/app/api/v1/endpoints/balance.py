@@ -2,9 +2,14 @@
 잔고 관련 API 엔드포인트.
 잔고 조회, 내부 이체, 트랜잭션 내역 조회, 잔고 조정 등의 기능을 제공합니다.
 """
+
 import logging
 from datetime import datetime
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.database import get_db
@@ -20,9 +25,6 @@ from app.schemas.balance import (
     TransferResponse,
 )
 from app.services.balance_service import BalanceService
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -35,14 +37,14 @@ async def get_balance(
     db: AsyncSession = Depends(get_db),
 ):
     """Get User's Internal Balance
-    
+
     Retrieves the user's internal system balance (database-stored balance).
     This is different from on-chain wallet balance - it represents the balance
     managed within the DantaroWallet system for faster transactions.
     """
     service = BalanceService(db)
     # 사용자 ID 가져오기 (타입 체크 우회)
-    user_id = getattr(current_user, 'id', None)
+    user_id = getattr(current_user, "id", None)
     if user_id is None:
         raise HTTPException(status_code=400, detail="Invalid user")
     balance = await service.get_or_create_balance(user_id, asset)
@@ -55,12 +57,12 @@ async def get_balance_summary(
     db: AsyncSession = Depends(get_db),
 ):
     """Get Balance Summary
-    
+
     Retrieves comprehensive balance summary including all assets,
     pending transactions, and account statistics.
     """
     service = BalanceService(db)
-    user_id = getattr(current_user, 'id', None)
+    user_id = getattr(current_user, "id", None)
     if user_id is None:
         raise HTTPException(status_code=400, detail="Invalid user")
     summary = await service.get_balance_summary(user_id)
@@ -74,7 +76,7 @@ async def internal_transfer(
     db: AsyncSession = Depends(get_db),
 ):
     """Internal Balance Transfer
-    
+
     Transfers balance between users within the DantaroWallet system.
     This is an internal transfer using system-managed balances,
     not blockchain transactions.
@@ -89,10 +91,10 @@ async def internal_transfer(
         raise NotFoundError("Receiver not found")
 
     # 타입 안전 비교
-    receiver_id = getattr(receiver, 'id', None)
-    current_user_id = getattr(current_user, 'id', None)
-    receiver_is_active = getattr(receiver, 'is_active', False)
-    receiver_email = getattr(receiver, 'email', '')
+    receiver_id = getattr(receiver, "id", None)
+    current_user_id = getattr(current_user, "id", None)
+    receiver_is_active = getattr(receiver, "is_active", False)
+    receiver_email = getattr(receiver, "email", "")
 
     if receiver_id == current_user_id:
         raise ValidationError("Cannot transfer to yourself")
@@ -110,7 +112,7 @@ async def internal_transfer(
         sender_id=current_user_id,
         receiver_email=receiver_email,
         amount=transfer_data.amount,
-        asset="USDT"  # 기본 자산
+        asset="USDT",  # 기본 자산
     )
 
     await db.commit()
@@ -135,12 +137,12 @@ async def get_transactions(
     db: AsyncSession = Depends(get_db),
 ):
     """Get Transaction History
-    
+
     Retrieves paginated transaction history for the current user
     with optional filtering by transaction type and status.
     """
     service = BalanceService(db)
-    user_id = getattr(current_user, 'id', None)
+    user_id = getattr(current_user, "id", None)
     if user_id is None:
         raise HTTPException(status_code=400, detail="Invalid user")
     transactions = await service.get_transaction_history(
@@ -160,7 +162,7 @@ async def get_transaction_detail(
     db: AsyncSession = Depends(get_db),
 ):
     """Get Transaction Details
-    
+
     Retrieves detailed information for a specific transaction
     belonging to the current user.
     """
@@ -189,7 +191,7 @@ async def adjust_balance(
     db: AsyncSession = Depends(get_db),
 ):
     """Admin Balance Adjustment
-    
+
     Allows administrators to adjust user balances for various purposes
     such as deposit simulation, corrections, or manual adjustments.
     Requires admin privileges and logs all adjustments.
@@ -204,7 +206,7 @@ async def adjust_balance(
 
     await db.commit()
 
-    admin_id = getattr(admin_user, 'id', 'unknown')
+    admin_id = getattr(admin_user, "id", "unknown")
     logger.info(
         f"Admin balance adjustment: admin={getattr(admin_user, 'email', 'unknown')}, "
         f"user={adjustment.user_id}, amount={adjustment.amount}"

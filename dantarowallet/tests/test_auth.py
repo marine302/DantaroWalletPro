@@ -2,22 +2,25 @@
 인증 시스템 테스트 모듈.
 회원가입, 로그인, 토큰 갱신 등 인증 관련 기능을 테스트합니다.
 """
+
 import json
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+
 from app.core.database import AsyncSessionLocal
 from app.core.security import verify_token
 from app.main import app
 from app.models.user import User
-from httpx import AsyncClient
-from sqlalchemy import text
 
 
 @pytest.mark.asyncio
 async def test_user_registration():
     """사용자 회원가입 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post(
             "/api/v1/auth/register",
             json={
@@ -45,7 +48,9 @@ async def test_user_registration():
 @pytest.mark.asyncio
 async def test_duplicate_registration():
     """중복 회원가입 방지 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         # 첫 번째 가입
         await client.post(
             "/api/v1/auth/register",
@@ -80,7 +85,9 @@ async def test_duplicate_registration():
 @pytest.mark.asyncio
 async def test_weak_password():
     """약한 비밀번호 거부 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post(
             "/api/v1/auth/register",
             json={
@@ -96,7 +103,9 @@ async def test_weak_password():
 @pytest.mark.asyncio
 async def test_user_login():
     """로그인 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         # 사용자 생성
         await client.post(
             "/api/v1/auth/register",
@@ -135,7 +144,9 @@ async def test_user_login():
 @pytest.mark.asyncio
 async def test_invalid_login():
     """잘못된 로그인 정보 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post(
             "/api/v1/auth/login",
             json={"email": "nonexistent@example.com", "password": "WrongPass123!"},
@@ -148,7 +159,9 @@ async def test_invalid_login():
 @pytest.mark.asyncio
 async def test_get_current_user():
     """현재 사용자 정보 조회 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         # 회원가입
         await client.post(
             "/api/v1/auth/register",
@@ -187,7 +200,9 @@ async def test_get_current_user():
 @pytest.mark.asyncio
 async def test_token_refresh():
     """토큰 갱신 테스트"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         # 회원가입
         await client.post(
             "/api/v1/auth/register",

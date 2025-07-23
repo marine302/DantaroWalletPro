@@ -2,12 +2,14 @@
 지갑 모델 정의.
 사용자별 TRON 지갑 주소 및 암호화된 프라이빗 키를 관리합니다.
 """
+
 import json
 from typing import TYPE_CHECKING, Dict, Optional
 
-from app.models.base import BaseModel
 from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import relationship
+
+from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.deposit import Deposit

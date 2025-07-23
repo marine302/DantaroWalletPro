@@ -10,12 +10,13 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 import logging
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.user import User
 from app.core.security import get_password_hash
+from app.models.user import User
 
 # 로그 설정
 logging.basicConfig(level=logging.INFO)
@@ -34,31 +35,31 @@ async def create_superadmin():
                 select(User).filter(User.email == "superadmin@dantaro.com")
             )
             existing_admin = result.scalar_one_or_none()
-            
+
             if existing_admin:
                 logger.info("Superadmin already exists")
                 return
-            
+
             # 슈퍼어드민 계정 생성
             hashed_password = get_password_hash("SuperAdmin123!")
-            
+
             superadmin = User(
                 email="superadmin@dantaro.com",
                 password_hash=hashed_password,
                 is_active=True,
                 is_admin=True,
-                is_verified=True
+                is_verified=True,
             )
-            
+
             db.add(superadmin)
             await db.commit()
             await db.refresh(superadmin)
-            
+
             logger.info(f"Superadmin created successfully: {superadmin.email}")
             logger.info("Login credentials:")
             logger.info("  Email: superadmin@dantaro.com")
             logger.info("  Password: SuperAdmin123!")
-            
+
         except Exception as e:
             logger.error(f"Failed to create superadmin: {e}")
             await db.rollback()

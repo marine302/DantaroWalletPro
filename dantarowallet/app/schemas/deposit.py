@@ -2,12 +2,14 @@
 입금 관련 Pydantic 스키마.
 API 요청 및 응답에 사용되는 데이터 모델을 정의합니다.
 """
+
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from app.models.deposit import DepositStatus
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.models.deposit import DepositStatus
 
 
 class DepositRequest(BaseModel):

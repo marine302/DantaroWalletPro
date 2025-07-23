@@ -1,21 +1,22 @@
 """
 잔고 관련 기능에 대한 통합 테스트
 """
+
 import asyncio
 from decimal import Decimal
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select, text, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import AsyncSessionLocal, get_db
 from app.core.security import get_password_hash
 from app.main import app
 from app.models.balance import Balance
 from app.models.transaction import Transaction
 from app.models.user import User
-from fastapi import FastAPI
-from httpx import AsyncClient
-from sqlalchemy import select, text, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # 테스트용 사용자 정보 - conftest.py와 일관성 유지
 test_user = {"email": "test@example.com", "password": "TestPassword123!"}

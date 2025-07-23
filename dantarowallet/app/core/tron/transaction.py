@@ -2,6 +2,7 @@
 TRON 트랜잭션 조회 및 관리 서비스.
 트랜잭션 조회, 블록 스캔 등의 기능을 담당합니다.
 """
+
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class TronTransactionService(TronNetworkService):
     """TRON 트랜잭션 서비스"""
-    
+
     async def get_transaction(self, tx_hash: str) -> Optional[Dict[str, Any]]:
         """트랜잭션 정보 조회"""
         try:
@@ -24,7 +25,7 @@ class TronTransactionService(TronNetworkService):
         except Exception as e:
             logger.error(f"Error getting transaction {tx_hash}: {e}")
             return None
-    
+
     def get_block_number(self) -> int:
         """현재 블록 번호 조회"""
         try:
@@ -34,7 +35,7 @@ class TronTransactionService(TronNetworkService):
         except Exception as e:
             logger.error(f"Error getting block number: {e}")
             return 0
-    
+
     def get_trx_transactions(
         self, address: str, start_block: int, end_block: int
     ) -> List[Dict[str, Any]]:

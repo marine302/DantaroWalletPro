@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Button, Section } from '@/components/ui/DarkThemeComponents';
 import BackendStatusMonitor, { BackendAPIToggle } from '@/components/ui/BackendStatusMonitor';
 import { apiClient } from '@/lib/api';
@@ -13,9 +13,9 @@ export default function DebugPage() {
 
   useEffect(() => {
     // 기존 console.error 래핑
-    const originalError = console.error;
-    const originalLog = console.log;
-    const originalWarn = console.warn;
+    const _originalError = console.error;
+    const _originalLog = console.log;
+    const _originalWarn = console.warn;
 
     console.error = (...args) => {
       setErrors(prev => [...prev, args.map(arg => String(arg)).join(' ')]);
@@ -33,11 +33,11 @@ export default function DebugPage() {
     };
 
     // 글로벌 에러 핸들러
-    const handleError = (event: ErrorEvent) => {
+    const _handleError = (event: ErrorEvent) => {
       setErrors(prev => [...prev, `Global Error: ${event.message} at ${event.filename}:${event.lineno}`]);
     };
 
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    const _handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       setErrors(prev => [...prev, `Unhandled Promise Rejection: ${event.reason}`]);
     };
 
@@ -52,19 +52,19 @@ export default function DebugPage() {
 
     // WebSocket 테스트
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
+      const _wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
       console.log('Testing WebSocket connection to:', wsUrl);
-      const ws = new WebSocket(wsUrl);
-      
+      const _ws = new WebSocket(wsUrl);
+
       ws.onopen = () => {
         console.log('✅ WebSocket connected successfully');
         ws.close();
       };
-      
+
       ws.onerror = (error) => {
         console.error('❌ WebSocket connection failed:', error);
       };
-      
+
       ws.onclose = (event) => {
         console.log('🔌 WebSocket closed:', event.code, event.reason);
       };
@@ -82,15 +82,15 @@ export default function DebugPage() {
   }, []);
 
   // 백엔드 API 테스트 함수들
-  const testBackendAPIs = async () => {
-    const testResults = [];
-    
+  const _testBackendAPIs = async () => {
+    const _testResults = [];
+
     try {
       console.log('🧪 Testing Backend APIs...');
-      
+
       // 1. 백엔드 헬스 체크
       try {
-        const healthResult = await apiClient.checkBackendHealth();
+        const _healthResult = await apiClient.checkBackendHealth();
         testResults.push({
           api: 'Backend Health Check',
           status: healthResult ? 'Success' : 'Failed',
@@ -106,7 +106,7 @@ export default function DebugPage() {
 
       // 2. 대시보드 통계 API 테스트
       try {
-        const dashboardStats = await apiClient.getDashboardStats();
+        const _dashboardStats = await apiClient.getDashboardStats();
         testResults.push({
           api: 'Dashboard Stats',
           status: 'Success',
@@ -122,7 +122,7 @@ export default function DebugPage() {
 
       // 3. 시스템 헬스 API 테스트
       try {
-        const systemHealth = await apiClient.getSystemHealth();
+        const _systemHealth = await apiClient.getSystemHealth();
         testResults.push({
           api: 'System Health',
           status: 'Success',
@@ -138,7 +138,7 @@ export default function DebugPage() {
 
       // 4. 파트너 목록 API 테스트
       try {
-        const partners = await apiClient.getPartners(1, 5);
+        const _partners = await apiClient.getPartners(1, 5);
         testResults.push({
           api: 'Partners List',
           status: 'Success',
@@ -154,7 +154,7 @@ export default function DebugPage() {
 
       setApiTestResults(testResults);
       console.log('✅ API Test Results:', testResults);
-      
+
     } catch (error) {
       console.error('❌ API Test Failed:', error);
       setApiTestResults([{
@@ -165,7 +165,7 @@ export default function DebugPage() {
     }
   };
 
-  const clearApiTestResults = () => {
+  const _clearApiTestResults = () => {
     setApiTestResults([]);
   };
 
@@ -249,7 +249,7 @@ export default function DebugPage() {
               <h4 className="text-sm font-medium text-gray-300 mb-2">API Status</h4>
               <BackendStatusMonitor />
             </div>
-            
+
             {/* 백엔드 API 토글 */}
             <div>
               <h4 className="text-sm font-medium text-gray-300 mb-2">API Configuration</h4>
@@ -274,20 +274,20 @@ export default function DebugPage() {
           <Section title={`🧪 API Test Results (${apiTestResults.length})`}>
             <div className="space-y-3">
               {apiTestResults.map((result, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`p-3 rounded border ${
-                    result.status === 'Success' 
-                      ? 'bg-green-900/20 border-green-500' 
+                    result.status === 'Success'
+                      ? 'bg-green-900/20 border-green-500'
                       : 'bg-red-900/20 border-red-500'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-gray-200">{result.api}</h4>
-                    <span 
+                    <span
                       className={`px-2 py-1 text-xs rounded ${
-                        result.status === 'Success' 
-                          ? 'bg-green-600 text-white' 
+                        result.status === 'Success'
+                          ? 'bg-green-600 text-white'
                           : 'bg-red-600 text-white'
                       }`}
                     >
@@ -329,7 +329,7 @@ export default function DebugPage() {
             >
               Clear Logs & Results
             </Button>
-            
+
             <Button
               onClick={() => {
                 window.location.reload();

@@ -20,21 +20,21 @@ export default function BackendStatusMonitor({ className = '' }: BackendStatusPr
   useEffect(() => {
     // 환경변수에서 백엔드 API 사용 여부 확인
     setUseBackendAPI(process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true');
-    
+
     // 백엔드 API 사용이 활성화된 경우에만 상태 체크
     if (process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true') {
       checkBackendStatus();
-      
+
       // 30초마다 백엔드 상태 체크
-      const interval = setInterval(checkBackendStatus, 30000);
+      const _interval = setInterval(checkBackendStatus, 30000);
       return () => clearInterval(interval);
     }
   }, []);
 
-  const checkBackendStatus = async () => {
+  const _checkBackendStatus = async () => {
     setBackendStatus('checking');
     try {
-      const isHealthy = await apiClient.checkBackendHealth();
+      const _isHealthy = await apiClient.checkBackendHealth();
       setBackendStatus(isHealthy ? 'healthy' : 'unhealthy');
       setLastCheck(new Date());
     } catch (error) {
@@ -48,7 +48,7 @@ export default function BackendStatusMonitor({ className = '' }: BackendStatusPr
     return null;
   }
 
-  const getStatusColor = () => {
+  const _getStatusColor = () => {
     switch (backendStatus) {
       case 'healthy':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -61,7 +61,7 @@ export default function BackendStatusMonitor({ className = '' }: BackendStatusPr
     }
   };
 
-  const getStatusIcon = () => {
+  const _getStatusIcon = () => {
     switch (backendStatus) {
       case 'healthy':
         return '🟢';
@@ -74,7 +74,7 @@ export default function BackendStatusMonitor({ className = '' }: BackendStatusPr
     }
   };
 
-  const getStatusText = () => {
+  const _getStatusText = () => {
     switch (backendStatus) {
       case 'healthy':
         return '백엔드 API 연결됨';
@@ -117,15 +117,15 @@ export function BackendAPIToggle({ className = '' }: { className?: string }) {
     setUseBackendAPI(process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true');
   }, []);
 
-  const toggleBackendAPI = () => {
-    const newValue = !useBackendAPI;
+  const _toggleBackendAPI = () => {
+    const _newValue = !useBackendAPI;
     setUseBackendAPI(newValue);
-    
+
     // 환경변수 업데이트 (개발 환경에서만)
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       // 브라우저에서는 환경변수를 직접 변경할 수 없으므로 localStorage 사용
       localStorage.setItem('useBackendAPI', newValue.toString());
-      
+
       // 페이지 새로고침하여 설정 적용
       window.location.reload();
     }

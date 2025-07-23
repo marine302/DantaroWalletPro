@@ -2,11 +2,13 @@
 사용자 모델 정의.
 시스템의 사용자 및 인증 정보를 저장합니다.
 """
+
 from typing import TYPE_CHECKING, Optional
 
-from app.models.base import BaseModel
 from sqlalchemy import Boolean, Column, Index, String
 from sqlalchemy.orm import relationship
+
+from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.deposit import Deposit

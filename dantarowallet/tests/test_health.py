@@ -1,4 +1,5 @@
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+
 """
 Health check endpoint tests.
 Tests the basic application health and status endpoints.

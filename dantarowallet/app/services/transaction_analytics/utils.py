@@ -1,9 +1,12 @@
 """
 공통 타입 정의 및 유틸리티
 """
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.transaction import (
     Transaction,
@@ -23,7 +26,6 @@ from app.schemas.transaction_analytics import (
     TransactionMonitoringConfig,
     TransactionStats,
 )
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class BaseAnalyticsService:

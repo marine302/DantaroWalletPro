@@ -14,7 +14,7 @@ export function hasPermission(user: User | null, permission: Permission): boolea
   }
 
   // Otherwise, check role-based permissions
-  const rolePermissions = ROLE_PERMISSIONS[user.role];
+  const _rolePermissions = ROLE_PERMISSIONS[user.role];
   return rolePermissions ? rolePermissions.includes(permission) : false;
 }
 
@@ -72,7 +72,7 @@ export function canAccessRoute(user: User | null, route: string): boolean {
     '/integrated-dashboard': ['analytics.view', 'partners.view']
   };
 
-  const requiredPermissions = routePermissions[route];
+  const _requiredPermissions = routePermissions[route];
   if (!requiredPermissions) {
     // If route is not defined, assume it's accessible (like dashboard)
     return true;
@@ -103,8 +103,8 @@ export function filterMenuItems(user: User | null, menuItems: MenuItem[]): MenuI
     }
 
     // Check if user has any of the required permissions
-    const hasAccess = hasAnyPermission(user, item.requiredPermissions);
-    
+    const _hasAccess = hasAnyPermission(user, item.requiredPermissions);
+
     // If item has children, filter them recursively
     if (item.children) {
       item.children = filterMenuItems(user, item.children);
@@ -120,7 +120,7 @@ export function filterMenuItems(user: User | null, menuItems: MenuItem[]): MenuI
  * Check if a user can perform a specific action on a resource
  */
 export function canPerformAction(
-  user: User | null, 
+  user: User | null,
   action: 'create' | 'read' | 'update' | 'delete',
   resource: 'users' | 'partners' | 'energy' | 'finance' | 'system' | 'audit' | 'analytics'
 ): boolean {
@@ -173,7 +173,7 @@ export function canPerformAction(
     }
   };
 
-  const permission = permissionMap[resource]?.[action];
+  const _permission = permissionMap[resource]?.[action];
   return permission ? hasPermission(user, permission) : false;
 }
 
@@ -187,7 +187,7 @@ export function getRoleName(role: string): string {
     viewer: 'Viewer',
     auditor: 'Auditor'
   };
-  
+
   return roleNames[role] || role;
 }
 
@@ -201,6 +201,6 @@ export function getRoleColor(role: string): string {
     viewer: 'text-green-400 bg-green-900/30',
     auditor: 'text-purple-400 bg-purple-900/30'
   };
-  
+
   return roleColors[role] || 'text-gray-400 bg-gray-900/30';
 }

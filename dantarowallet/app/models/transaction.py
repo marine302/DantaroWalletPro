@@ -2,14 +2,16 @@
 트랜잭션 모델 정의.
 내부 트랜잭션, 입출금 등 모든 금액 이동을 기록합니다.
 """
+
 from decimal import Decimal
 from enum import Enum
 
-from app.models.base import BaseModel
 from sqlalchemy import Column
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import relationship
+
+from app.models.base import BaseModel
 
 
 class TransactionType(str, Enum):

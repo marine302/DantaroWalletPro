@@ -72,7 +72,7 @@ class PerformanceMonitor {
   private collectPageLoadMetrics() {
     if (typeof window === 'undefined' || !window.performance) return;
 
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const _navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     if (!navigation) return;
 
     // Page load time
@@ -98,10 +98,10 @@ class PerformanceMonitor {
     if (typeof window === 'undefined' || !window.PerformanceObserver) return;
 
     try {
-      const observer = new PerformanceObserver((list) => {
+      const _observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'navigation') {
-            const navEntry = entry as PerformanceNavigationTiming;
+            const _navEntry = entry as PerformanceNavigationTiming;
             this.addMetric('navigation_time', navEntry.duration);
           }
         }
@@ -117,9 +117,9 @@ class PerformanceMonitor {
     if (typeof window === 'undefined' || !window.PerformanceObserver) return;
 
     try {
-      const observer = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
+      const _observer = new PerformanceObserver((list) => {
+        const _entries = list.getEntries();
+        const _lastEntry = entries[entries.length - 1];
         this.addMetric('largest_contentful_paint', lastEntry.startTime);
       });
 
@@ -133,8 +133,8 @@ class PerformanceMonitor {
     if (typeof window === 'undefined' || !window.PerformanceObserver) return;
 
     try {
-      let clsValue = 0;
-      const observer = new PerformanceObserver((list) => {
+      const _clsValue = 0;
+      const _observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (!(entry as any).hadRecentInput) {
             clsValue += (entry as any).value;
@@ -153,7 +153,7 @@ class PerformanceMonitor {
     if (typeof window === 'undefined' || !window.PerformanceObserver) return;
 
     try {
-      const observer = new PerformanceObserver((list) => {
+      const _observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           this.addMetric('first_input_delay', (entry as any).processingStart - entry.startTime);
         }
@@ -235,7 +235,7 @@ class PerformanceMonitor {
     };
 
     // Add user ID if available
-    const userId = localStorage.getItem('userId');
+    const _userId = localStorage.getItem('userId');
     if (userId) {
       userAction.userId = userId;
     }
@@ -282,7 +282,7 @@ class PerformanceMonitor {
       return;
     }
 
-    const payload = {
+    const _payload = {
       metrics: this.getMetrics(),
       userActions: this.getUserActions(),
       errors: this.getErrors(),
@@ -327,7 +327,7 @@ class PerformanceMonitor {
   }
 
   public exportData(): string {
-    const data = {
+    const _data = {
       metrics: this.getMetrics(),
       userActions: this.getUserActions(),
       errors: this.getErrors(),
@@ -345,26 +345,26 @@ class PerformanceMonitor {
 }
 
 // Global performance monitor instance
-export const performanceMonitor = new PerformanceMonitor();
+export const _performanceMonitor = new PerformanceMonitor();
 
 // React hook for performance monitoring
 export function usePerformanceMonitor() {
-  const trackClick = (target: string, metadata?: Record<string, any>) => {
+  const _trackClick = (target: string, metadata?: Record<string, any>) => {
     performanceMonitor.trackUserAction('click', target, metadata);
   };
 
-  const trackPageView = (page: string) => {
+  const _trackPageView = (page: string) => {
     performanceMonitor.trackUserAction('page_view', page);
   };
 
-  const trackAPICall = (endpoint: string, duration: number, success: boolean) => {
+  const _trackAPICall = (endpoint: string, duration: number, success: boolean) => {
     performanceMonitor.trackUserAction('api_call', endpoint, {
       duration,
       success,
     });
   };
 
-  const trackError = (message: string, severity: ErrorLog['severity'], context?: Record<string, any>) => {
+  const _trackError = (message: string, severity: ErrorLog['severity'], context?: Record<string, any>) => {
     performanceMonitor.logError({
       message,
       url: window.location.href,

@@ -114,7 +114,7 @@ class ExternalEnergyService {
 
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000/api/v1';
-    
+
     console.log('🔌 External Energy Service initialized:', {
       baseURL: this.baseURL
     });
@@ -125,7 +125,7 @@ class ExternalEnergyService {
    */
   async getPublicProviders(): Promise<ExternalEnergyProvider[]> {
     try {
-      const response = await fetch(`${this.baseURL}/public/providers`);
+      const _response = await fetch(`${this.baseURL}/public/providers`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -142,7 +142,7 @@ class ExternalEnergyService {
    */
   async getProvidersSummary(): Promise<ExternalMarketSummary> {
     try {
-      const response = await fetch(`${this.baseURL}/public/providers/summary`);
+      const _response = await fetch(`${this.baseURL}/public/providers/summary`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -160,7 +160,7 @@ class ExternalEnergyService {
   async getProviders(): Promise<ExternalEnergyProvider[]> {
     try {
       console.log('🔌 Fetching providers from backend...');
-      const response = await apiClient.makeResilientRequest<ProvidersListResponse>(
+      const _response = await apiClient.makeResilientRequest<ProvidersListResponse>(
         '/external-energy/providers'
       );
       console.log('✅ Providers fetched successfully:', response);
@@ -177,7 +177,7 @@ class ExternalEnergyService {
   async getProvidersHealth(): Promise<any[]> {
     try {
       console.log('🔌 Checking providers health...');
-      const response = await apiClient.makeResilientRequest<{ success: boolean; data: any[] }>(
+      const _response = await apiClient.makeResilientRequest<{ success: boolean; data: any[] }>(
         '/external-energy/providers/health'
       );
       console.log('✅ Providers health checked successfully:', response);
@@ -194,7 +194,7 @@ class ExternalEnergyService {
   async getProviderPrices(providerName: string): Promise<any> {
     try {
       console.log(`🔌 Fetching prices for ${providerName}...`);
-      const response = await apiClient.makeResilientRequest<{ success: boolean; data: any }>(
+      const _response = await apiClient.makeResilientRequest<{ success: boolean; data: any }>(
         `/external-energy/providers/${providerName}/prices`
       );
       console.log('✅ Provider prices fetched successfully:', response);
@@ -211,7 +211,7 @@ class ExternalEnergyService {
   async getProviderBalance(providerName: string, address: string): Promise<UserEnergyBalance | null> {
     try {
       console.log(`🔌 Fetching balance for ${providerName} at ${address}...`);
-      const response = await apiClient.makeResilientRequest<{ success: boolean; data: any }>(
+      const _response = await apiClient.makeResilientRequest<{ success: boolean; data: any }>(
         `/external-energy/providers/${providerName}/balance?address=${address}`
       );
       console.log('✅ Provider balance fetched successfully:', response);
@@ -366,4 +366,4 @@ class ExternalEnergyService {
   }
 }
 
-export const externalEnergyService = new ExternalEnergyService();
+export const _externalEnergyService = new ExternalEnergyService();

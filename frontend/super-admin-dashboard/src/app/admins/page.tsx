@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { StatCard } from '@/components/ui/DarkThemeComponents';
-import { useI18n } from '@/contexts/I18nContext';
 import { withRBAC } from '@/components/auth/withRBAC';
 import { UserManagement } from '@/components/auth/UserManagement';
 import { User } from '@/types/auth';
@@ -47,19 +46,19 @@ function AdminsPage() {
     }
   ]);
 
-  const handleUpdateUser = (updatedUser: User) => {
-    setUsers(users.map(user => 
+  const _handleUpdateUser = (updatedUser: User) => {
+    setUsers(users.map(user =>
       user.id === updatedUser.id ? updatedUser : user
     ));
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const _handleDeleteUser = (userId: string) => {
     setUsers(users.filter(user => user.id !== userId));
   };
 
-  const activeUsersCount = users.filter(user => user.isActive).length;
+  const _activeUsersCount = users.filter(user => user.isActive).length;
   const totalUsersCount = users.length;
-  const adminUsersCount = users.filter(user => user.role === 'admin' || user.role === 'super_admin').length;
+  const _adminUsersCount = users.filter(user => user.role === 'admin' || user.role === 'super_admin').length;
 
   return (
     <BasePage title="관리자 관리" description="시스템 관리자 계정을 관리합니다">
@@ -95,7 +94,7 @@ function AdminsPage() {
   );
 }
 
-// Export protected component  
-export default withRBAC(AdminsPage, { 
+// Export protected component
+export default withRBAC(AdminsPage, {
   requiredPermissions: ['users.view']
 });

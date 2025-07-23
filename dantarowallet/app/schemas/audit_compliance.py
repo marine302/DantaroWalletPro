@@ -1,10 +1,13 @@
 """
 감사 및 컴플라이언스 스키마
 """
-from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, Any, List
+
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict
+
 
 class AuditEventTypeSchema(str, Enum):
     TRANSACTION_CREATED = "transaction_created"
@@ -19,10 +22,12 @@ class AuditEventTypeSchema(str, Enum):
     USER_ACTION = "user_action"
     SYSTEM_ACTION = "system_action"
 
+
 class AuditLogResponse(BaseModel):
     """감사 로그 응답 스키마"""
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     timestamp: datetime
     event_type: str
@@ -39,15 +44,19 @@ class AuditLogResponse(BaseModel):
     risk_score: Optional[int] = None
     requires_review: bool
 
+
 class ComplianceCheckRequest(BaseModel):
     """컴플라이언스 체크 요청 스키마"""
+
     user_id: int
     check_data: Dict[str, Any]
 
+
 class ComplianceCheckResponse(BaseModel):
     """컴플라이언스 체크 응답 스키마"""
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     check_type: str
     entity_type: str
@@ -63,10 +72,12 @@ class ComplianceCheckResponse(BaseModel):
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[int] = None
 
+
 class SuspiciousActivityResponse(BaseModel):
     """의심스러운 활동 응답 스키마"""
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     detection_type: str
     severity: str
@@ -83,14 +94,18 @@ class SuspiciousActivityResponse(BaseModel):
     resolved_at: Optional[datetime] = None
     resolution_notes: Optional[str] = None
 
+
 class AnomalyDetectionRequest(BaseModel):
     """이상 탐지 요청 스키마"""
+
     user_id: int
     transaction_data: Optional[Dict[str, Any]] = None
     time_window_days: Optional[int] = 30
 
+
 class AuditStatsResponse(BaseModel):
     """감사 통계 응답 스키마"""
+
     period_days: int
     total_audit_logs: int
     critical_logs: int

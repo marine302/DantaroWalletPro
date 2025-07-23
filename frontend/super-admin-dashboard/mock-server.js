@@ -1098,4 +1098,277 @@ process.on('SIGINT', () => {
   });
 });
 
-module.exports = app;
+// Partner Energy Management APIs
+function generatePartnerEnergyAllocation() {
+  const tiers = ['STARTUP', 'BUSINESS', 'ENTERPRISE'];
+  const statuses = ['ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
+  const billingCycles = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY'];
+  
+  const allocatedAmount = Math.floor(Math.random() * 20000000) + 1000000; // 100만 ~ 2100만
+  const usedAmount = Math.floor(allocatedAmount * Math.random());
+  const purchasePrice = 0.00001; // 0.00001 TRX/Energy
+  const markupPercentage = Math.random() * 40 + 10; // 10% ~ 50%
+  const rentalPrice = purchasePrice * (1 + markupPercentage / 100);
+  
+  return {
+    id: Math.floor(Math.random() * 1000) + 1,
+    partner_id: `partner_${Math.floor(Math.random() * 100) + 1}`,
+    partner_name: `파트너 회사 ${Math.floor(Math.random() * 100) + 1}`,
+    partner_tier: tiers[Math.floor(Math.random() * tiers.length)],
+    allocated_amount: allocatedAmount,
+    remaining_amount: allocatedAmount - usedAmount,
+    used_amount: usedAmount,
+    purchase_price: purchasePrice,
+    markup_percentage: markupPercentage,
+    rental_price: rentalPrice,
+    billing_cycle: billingCycles[Math.floor(Math.random() * billingCycles.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    allocation_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+    expiry_date: Math.random() > 0.5 ? new Date(Date.now() + Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString() : null,
+    last_usage_date: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : null,
+    utilization_rate: allocatedAmount > 0 ? (usedAmount / allocatedAmount) * 100 : 0,
+    total_revenue: (rentalPrice - purchasePrice) * usedAmount,
+    notes: Math.random() > 0.7 ? '특별 할인 적용' : null,
+    created_at: new Date(Date.now() - Math.random() * 100 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString()
+  };
+}
+
+function generatePartnerEnergyUsage() {
+  return {
+    id: Math.floor(Math.random() * 10000) + 1,
+    allocation_id: Math.floor(Math.random() * 100) + 1,
+    partner_id: `partner_${Math.floor(Math.random() * 100) + 1}`,
+    used_amount: Math.floor(Math.random() * 100000) + 1000,
+    unit_price: 0.0000135, // 렌탈 가격
+    total_cost: 0, // 계산됨
+    usage_date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+    transaction_hash: Math.random() > 0.3 ? `0x${Math.random().toString(16).substring(2, 66)}` : null,
+    billing_status: ['PENDING', 'BILLED', 'PAID'][Math.floor(Math.random() * 3)],
+    description: Math.random() > 0.5 ? `에너지 사용 - ${new Date().toLocaleDateString()}` : null
+  };
+}
+
+function generateEnergyMarginConfig() {
+  const configs = [
+    {
+      id: 1,
+      partner_tier: 'STARTUP',
+      default_margin_percentage: 35.0,
+      min_margin_percentage: 25.0,
+      max_margin_percentage: 50.0,
+      volume_threshold_1: 500000,
+      volume_margin_1: 5.0,
+      volume_threshold_2: 2000000,
+      volume_margin_2: 10.0,
+      effective_date: new Date().toISOString(),
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      partner_tier: 'BUSINESS',
+      default_margin_percentage: 25.0,
+      min_margin_percentage: 15.0,
+      max_margin_percentage: 35.0,
+      volume_threshold_1: 1000000,
+      volume_margin_1: 3.0,
+      volume_threshold_2: 5000000,
+      volume_margin_2: 7.0,
+      effective_date: new Date().toISOString(),
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      partner_tier: 'ENTERPRISE',
+      default_margin_percentage: 15.0,
+      min_margin_percentage: 8.0,
+      max_margin_percentage: 25.0,
+      volume_threshold_1: 10000000,
+      volume_margin_1: 2.0,
+      volume_threshold_2: 50000000,
+      volume_margin_2: 5.0,
+      effective_date: new Date().toISOString(),
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ];
+  
+  return configs;
+}
+
+// 파트너 에너지 할당
+app.post('/partners/:partnerId/energy/allocate', (req, res) => {
+  const { partnerId } = req.params;
+  const allocation = generatePartnerEnergyAllocation();
+  allocation.partner_id = partnerId;
+  allocation.partner_name = req.body.partner_name || allocation.partner_name;
+  allocation.partner_tier = req.body.partner_tier || allocation.partner_tier;
+  allocation.allocated_amount = req.body.allocated_amount || allocation.allocated_amount;
+  allocation.purchase_price = req.body.purchase_price || allocation.purchase_price;
+  allocation.markup_percentage = req.body.markup_percentage || allocation.markup_percentage;
+  allocation.rental_price = allocation.purchase_price * (1 + allocation.markup_percentage / 100);
+  
+  res.status(201).json(allocation);
+});
+
+// 파트너 에너지 할당 목록
+app.get('/partners/:partnerId/energy/allocations', (req, res) => {
+  const { partnerId } = req.params;
+  const { status, skip = 0, limit = 100 } = req.query;
+  
+  let allocations = Array.from({ length: 10 }, () => generatePartnerEnergyAllocation());
+  allocations.forEach(allocation => {
+    allocation.partner_id = partnerId;
+  });
+  
+  if (status) {
+    allocations = allocations.filter(a => a.status === status);
+  }
+  
+  const startIndex = parseInt(skip);
+  const endIndex = startIndex + parseInt(limit);
+  const paginatedData = allocations.slice(startIndex, endIndex);
+  
+  res.json(paginatedData);
+});
+
+// 에너지 할당 수정
+app.put('/partners/:partnerId/energy/allocations/:allocationId', (req, res) => {
+  const { partnerId, allocationId } = req.params;
+  const allocation = generatePartnerEnergyAllocation();
+  allocation.id = parseInt(allocationId);
+  allocation.partner_id = partnerId;
+  
+  // 업데이트 필드 적용
+  Object.keys(req.body).forEach(key => {
+    allocation[key] = req.body[key];
+  });
+  
+  // 마진율 변경 시 렌탈 가격 재계산
+  if (req.body.markup_percentage) {
+    allocation.rental_price = allocation.purchase_price * (1 + allocation.markup_percentage / 100);
+  }
+  
+  allocation.updated_at = new Date().toISOString();
+  
+  res.json(allocation);
+});
+
+// 에너지 사용량 기록
+app.post('/partners/:partnerId/energy/usage', (req, res) => {
+  const { partnerId } = req.params;
+  const usage = generatePartnerEnergyUsage();
+  usage.partner_id = partnerId;
+  usage.allocation_id = req.body.allocation_id || usage.allocation_id;
+  usage.used_amount = req.body.used_amount || usage.used_amount;
+  usage.total_cost = usage.used_amount * usage.unit_price;
+  usage.transaction_hash = req.body.transaction_hash || usage.transaction_hash;
+  usage.description = req.body.description || usage.description;
+  
+  res.status(201).json(usage);
+});
+
+// 파트너 에너지 사용량 조회
+app.get('/partners/:partnerId/energy/usage', (req, res) => {
+  const { partnerId } = req.params;
+  const { allocation_id, start_date, end_date, skip = 0, limit = 100 } = req.query;
+  
+  let usageRecords = Array.from({ length: 20 }, () => generatePartnerEnergyUsage());
+  usageRecords.forEach(usage => {
+    usage.partner_id = partnerId;
+    usage.total_cost = usage.used_amount * usage.unit_price;
+  });
+  
+  if (allocation_id) {
+    usageRecords = usageRecords.filter(u => u.allocation_id === parseInt(allocation_id));
+  }
+  
+  if (start_date) {
+    usageRecords = usageRecords.filter(u => new Date(u.usage_date) >= new Date(start_date));
+  }
+  
+  if (end_date) {
+    usageRecords = usageRecords.filter(u => new Date(u.usage_date) <= new Date(end_date));
+  }
+  
+  const startIndex = parseInt(skip);
+  const endIndex = startIndex + parseInt(limit);
+  const paginatedData = usageRecords.slice(startIndex, endIndex);
+  
+  res.json(paginatedData);
+});
+
+// 에너지 수익 분석
+app.get('/admin/energy/revenue-analytics', (req, res) => {
+  const allocations = Array.from({ length: 50 }, () => generatePartnerEnergyAllocation());
+  
+  const totalRevenue = allocations.reduce((sum, a) => sum + a.total_revenue, 0);
+  const totalUsage = allocations.reduce((sum, a) => sum + a.used_amount, 0);
+  const partnerCount = new Set(allocations.map(a => a.partner_id)).size;
+  const avgMarginRate = allocations.reduce((sum, a) => sum + a.markup_percentage, 0) / allocations.length;
+  
+  // 파트너별 수익
+  const partnerRevenue = {};
+  allocations.forEach(allocation => {
+    if (!partnerRevenue[allocation.partner_id]) {
+      partnerRevenue[allocation.partner_id] = {
+        partner_name: allocation.partner_name,
+        revenue: 0,
+        usage: 0
+      };
+    }
+    partnerRevenue[allocation.partner_id].revenue += allocation.total_revenue;
+    partnerRevenue[allocation.partner_id].usage += allocation.used_amount;
+  });
+  
+  const topPartners = Object.entries(partnerRevenue)
+    .map(([partner_id, data]) => ({ partner_id, ...data }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 10);
+  
+  // 등급별 수익
+  const revenueByTier = {};
+  ['STARTUP', 'BUSINESS', 'ENTERPRISE'].forEach(tier => {
+    revenueByTier[tier] = allocations
+      .filter(a => a.partner_tier === tier)
+      .reduce((sum, a) => sum + a.total_revenue, 0);
+  });
+  
+  res.json({
+    total_revenue: totalRevenue,
+    total_margin: totalRevenue, // 실제로는 총 마진만 계산
+    total_usage: totalUsage,
+    partner_count: partnerCount,
+    avg_margin_rate: avgMarginRate,
+    top_partners: topPartners,
+    revenue_by_tier: revenueByTier,
+    monthly_trend: [] // TODO: 구현 필요
+  });
+});
+
+// 마진 설정 조회
+app.get('/admin/energy/margin-config', (req, res) => {
+  const configs = generateEnergyMarginConfig();
+  res.json(configs);
+});
+
+// 마진 설정 생성/수정
+app.post('/admin/energy/margin-config', (req, res) => {
+  const newConfig = {
+    id: Date.now(),
+    ...req.body,
+    effective_date: new Date().toISOString(),
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  res.status(201).json(newConfig);
+});
+
+// ...existing code...

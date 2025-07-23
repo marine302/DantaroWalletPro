@@ -1,16 +1,36 @@
 """파트너 이력 및 통계 관련 모델"""
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, JSON, Date, BigInteger, ForeignKey
-from sqlalchemy.sql import func
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from app.models.base import Base
 
 
 class PartnerApiUsage(Base):
     """파트너 API 사용 이력 테이블"""
+
     __tablename__ = "partner_api_usage"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
     endpoint = Column(String(255), nullable=False, comment="API 엔드포인트")
     method = Column(String(10), nullable=False, comment="HTTP 메소드")
     status_code = Column(Integer, nullable=False, comment="응답 상태 코드")
@@ -20,18 +40,26 @@ class PartnerApiUsage(Base):
     ip_address = Column(String(45), comment="클라이언트 IP 주소")
     user_agent = Column(Text, comment="User Agent")
     error_message = Column(Text, comment="오류 메시지")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
-    
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
+
     # 관계
     partner = relationship("Partner", back_populates="api_usage_logs")
 
 
 class PartnerDailyStatistics(Base):
     """파트너 일별 통계 테이블"""
+
     __tablename__ = "partner_daily_statistics"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
     stat_date = Column(Date, nullable=False, comment="통계 날짜")
     total_transactions = Column(Integer, default=0, comment="총 거래 수")
     total_volume = Column(Numeric(18, 8), default=0, comment="총 거래량")
@@ -40,21 +68,36 @@ class PartnerDailyStatistics(Base):
     energy_consumed = Column(Numeric(18, 8), default=0, comment="소모된 에너지")
     active_users = Column(Integer, default=0, comment="활성 사용자 수")
     new_users = Column(Integer, default=0, comment="신규 사용자 수")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
-    
+
     # 관계
     partner = relationship("Partner", back_populates="daily_statistics")
 
 
 class PartnerEnergyAllocation(Base):
     """파트너별 에너지 할당 테이블"""
+
     __tablename__ = "partner_energy_allocations"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
-    energy_pool_id = Column(Integer, ForeignKey("energy_pools.id", ondelete="CASCADE"), nullable=False, comment="에너지 풀 ID")
-    allocated_amount = Column(Numeric(18, 8), nullable=False, comment="할당된 에너지 양")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
+    energy_pool_id = Column(
+        Integer,
+        ForeignKey("energy_pools.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="에너지 풀 ID",
+    )
+    allocated_amount = Column(
+        Numeric(18, 8), nullable=False, comment="할당된 에너지 양"
+    )
     used_amount = Column(Numeric(18, 8), default=0, comment="사용된 에너지 양")
     reserved_amount = Column(Numeric(18, 8), default=0, comment="예약된 에너지 양")
     priority = Column(Integer, default=1, comment="할당 우선순위")
@@ -63,21 +106,38 @@ class PartnerEnergyAllocation(Base):
     expiry_date = Column(Date, comment="만료 날짜")
     is_active = Column(Boolean, default=True, comment="활성 상태")
     notes = Column(Text, comment="할당 메모")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
-    
+
     # 관계
     partner = relationship("Partner", back_populates="energy_allocations")
-    usage_history = relationship("PartnerEnergyUsageHistory", back_populates="allocation", cascade="all, delete-orphan")
+    usage_history = relationship(
+        "PartnerEnergyUsageHistory",
+        back_populates="allocation",
+        cascade="all, delete-orphan",
+    )
 
 
 class PartnerEnergyUsageHistory(Base):
     """파트너별 에너지 사용 이력 테이블"""
+
     __tablename__ = "partner_energy_usage_history"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
-    allocation_id = Column(Integer, ForeignKey("partner_energy_allocations.id", ondelete="CASCADE"), nullable=False, comment="에너지 할당 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
+    allocation_id = Column(
+        Integer,
+        ForeignKey("partner_energy_allocations.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="에너지 할당 ID",
+    )
     transaction_hash = Column(String(64), comment="관련 거래 해시")
     energy_amount = Column(Numeric(18, 8), nullable=False, comment="사용된 에너지 양")
     energy_cost = Column(Numeric(18, 8), comment="에너지 비용")
@@ -88,8 +148,10 @@ class PartnerEnergyUsageHistory(Base):
     success = Column(Boolean, default=True, comment="사용 성공 여부")
     error_message = Column(Text, comment="오류 메시지")
     extra_data = Column(JSON, default={}, comment="추가 메타데이터")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
-    
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
+
     # 관계
     partner = relationship("Partner", back_populates="partner_energy_usage_history")
     allocation = relationship("PartnerEnergyAllocation", back_populates="usage_history")
@@ -97,10 +159,16 @@ class PartnerEnergyUsageHistory(Base):
 
 class PartnerFeeRevenue(Base):
     """파트너별 수수료 매출 테이블"""
+
     __tablename__ = "partner_fee_revenues"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
     revenue_date = Column(Date, nullable=False, comment="매출 날짜")
     transaction_type = Column(String(50), nullable=False, comment="거래 유형")
     transaction_count = Column(Integer, default=0, comment="거래 건수")
@@ -114,28 +182,43 @@ class PartnerFeeRevenue(Base):
     settlement_status = Column(String(20), default="pending", comment="정산 상태")
     settlement_date = Column(Date, comment="정산 날짜")
     notes = Column(Text, comment="매출 메모")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
-    
+
     # 관계
     partner = relationship("Partner", back_populates="fee_revenues")
 
 
 class PartnerFeeConfigHistory(Base):
     """파트너별 수수료 설정 이력 테이블"""
+
     __tablename__ = "partner_fee_config_history"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
-    fee_config_id = Column(Integer, ForeignKey("fee_configs.id", ondelete="CASCADE"), nullable=False, comment="수수료 설정 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
+    fee_config_id = Column(
+        Integer,
+        ForeignKey("fee_configs.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="수수료 설정 ID",
+    )
     change_type = Column(String(20), nullable=False, comment="변경 유형")
     old_values = Column(JSON, comment="이전 설정값")
     new_values = Column(JSON, comment="새 설정값")
     changed_by = Column(String(255), comment="변경자")
     change_reason = Column(Text, comment="변경 사유")
     effective_date = Column(DateTime(timezone=True), comment="적용 날짜")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
-    
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
+
     # 관계
     partner = relationship("Partner", back_populates="partner_fee_config_history")
     fee_config = relationship("FeeConfig", back_populates="partner_history")
@@ -143,10 +226,16 @@ class PartnerFeeConfigHistory(Base):
 
 class PartnerOnboardingStep(Base):
     """파트너 온보딩 단계 테이블"""
+
     __tablename__ = "partner_onboarding_steps"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
     step_name = Column(String(100), nullable=False, comment="단계 이름")
     step_order = Column(Integer, nullable=False, comment="단계 순서")
     status = Column(String(20), default="pending", comment="단계 상태")
@@ -155,19 +244,27 @@ class PartnerOnboardingStep(Base):
     error_message = Column(Text, comment="오류 메시지")
     started_at = Column(DateTime(timezone=True), comment="시작 시간")
     completed_at = Column(DateTime(timezone=True), comment="완료 시간")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), comment="수정일")
-    
+
     # 관계
     partner = relationship("Partner", back_populates="onboarding_steps")
 
 
 class PartnerDeployment(Base):
     """파트너 배포 이력 테이블"""
+
     __tablename__ = "partner_deployments"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    partner_id = Column(String(36), ForeignKey("partners.id", ondelete="CASCADE"), nullable=False, comment="파트너 ID")
+    partner_id = Column(
+        String(36),
+        ForeignKey("partners.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="파트너 ID",
+    )
     deployment_type = Column(String(50), nullable=False, comment="배포 유형")
     template_version = Column(String(20), comment="템플릿 버전")
     instance_id = Column(String(100), comment="인스턴스 ID")
@@ -178,7 +275,9 @@ class PartnerDeployment(Base):
     logs = Column(Text, comment="배포 로그")
     started_at = Column(DateTime(timezone=True), comment="배포 시작 시간")
     completed_at = Column(DateTime(timezone=True), comment="배포 완료 시간")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="생성일")
-    
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), comment="생성일"
+    )
+
     # 관계
     partner = relationship("Partner", back_populates="deployments")

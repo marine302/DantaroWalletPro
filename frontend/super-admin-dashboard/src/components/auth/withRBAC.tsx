@@ -38,40 +38,40 @@ export function withRBAC<P extends object>(
 
   const ComponentWithRBAC = (props: P) => {
     const { user, isLoading, hasPermission } = useAuth();
-    const router = useRouter();
-    const pathname = usePathname();
+    const _router = useRouter();
+    const _pathname = usePathname();
 
     useEffect(() => {
       if (!isLoading && !user) {
-        router.push('/login');
+        _router.push('/login');
         return;
       }
 
       // Check route-based permissions
-      const routePermissions = ROUTE_PERMISSIONS[pathname];
-      if (routePermissions && user) {
-        const hasRouteAccess = routePermissions.some((permission: Permission) => 
+      const _routePermissions = ROUTE_PERMISSIONS[_pathname];
+      if (_routePermissions && user) {
+        const _hasRouteAccess = _routePermissions.some((permission: Permission) =>
           hasPermission(permission)
         );
-        
-        if (!hasRouteAccess) {
+
+        if (!_hasRouteAccess) {
           // Redirect to dashboard with error message
-          router.push('/?error=access_denied');
+          _router.push('/?error=access_denied');
           return;
         }
       }
 
       // Check component-specific permissions
       if (requiredPermissions && user) {
-        const hasComponentAccess = requiredPermissions.some(permission => 
+        const _hasComponentAccess = requiredPermissions.some(permission =>
           hasPermission(permission)
         );
-        
-        if (!hasComponentAccess && Fallback) {
+
+        if (!_hasComponentAccess && Fallback) {
           return;
         }
       }
-    }, [user, isLoading, pathname, router]);
+    }, [user, isLoading, _pathname, _router]);
 
     if (isLoading) {
       return (
@@ -87,15 +87,15 @@ export function withRBAC<P extends object>(
 
     // Check component-specific permissions
     if (requiredPermissions) {
-      const hasAccess = requiredPermissions.some(permission => 
+      const _hasAccess = requiredPermissions.some(permission =>
         hasPermission(permission)
       );
-      
-      if (!hasAccess) {
+
+      if (!_hasAccess) {
         if (Fallback) {
           return <Fallback />;
         }
-        
+
         return (
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
@@ -115,7 +115,7 @@ export function withRBAC<P extends object>(
   };
 
   ComponentWithRBAC.displayName = `withRBAC(${WrappedComponent.displayName || WrappedComponent.name})`;
-  
+
   return ComponentWithRBAC;
 }
 

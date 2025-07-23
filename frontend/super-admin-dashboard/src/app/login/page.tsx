@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('admin123');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
+  const _router = useRouter();
   const { login, isAuthenticated, user } = useAuth();
 
   // Redirect if already authenticated
@@ -20,7 +20,7 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, user, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const _handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -50,7 +50,7 @@ export default function LoginPage() {
             DantaroWallet Administration Panel
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">

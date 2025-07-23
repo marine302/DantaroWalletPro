@@ -48,13 +48,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Check for existing auth state
-    const initializeAuth = async () => {
+    const _initializeAuth = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        const userStr = localStorage.getItem('authUser');
-        
+        const _token = localStorage.getItem('authToken');
+        const _userStr = localStorage.getItem('authUser');
+
         if (token && userStr) {
-          const user = JSON.parse(userStr);
+          const _user = JSON.parse(userStr);
           setState({
             user,
             token,
@@ -64,10 +64,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else {
           // For development, auto-login with mock user
           if (process.env.NODE_ENV === 'development') {
-            const mockToken = 'mock-jwt-token';
+            const _mockToken = 'mock-jwt-token';
             localStorage.setItem('authToken', mockToken);
             localStorage.setItem('authUser', JSON.stringify(mockUser));
-            
+
             setState({
               user: mockUser,
               token: mockToken,
@@ -87,30 +87,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
   }, []);
 
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const _login = async (credentials: LoginRequest): Promise<void> => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       // 실제 API 클라이언트를 사용한 슈퍼 어드민 로그인
       const { apiClient } = await import('@/lib/api');
-      const response = await apiClient.superAdminLogin(credentials);
-      
+      const _response = await apiClient.superAdminLogin(credentials);
+
       // Mock user 데이터 (실제로는 백엔드에서 사용자 정보를 받아와야 함)
-      const user = {
+      const _user = {
         ...mockUser,
         email: credentials.email
       };
-      
+
       localStorage.setItem('authToken', response.access_token);
       localStorage.setItem('authUser', JSON.stringify(user));
-      
+
       setState({
         user,
         token: response.access_token,
         isAuthenticated: true,
         isLoading: false
       });
-      
+
       // Log login activity
       logActivity({
         user,
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const _logout = () => {
     // Log logout activity before clearing state
     if (state.user) {
       logActivity({
@@ -133,10 +133,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         resource: 'dashboard'
       });
     }
-    
+
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
-    
+
     setState({
       user: null,
       token: null,
@@ -145,9 +145,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   };
 
-  const refreshToken = async (): Promise<void> => {
+  const _refreshToken = async (): Promise<void> => {
     try {
-      const currentToken = localStorage.getItem('authToken');
+      const _currentToken = localStorage.getItem('authToken');
       if (!currentToken) {
         throw new Error('No token available');
       }
@@ -158,7 +158,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Real API refresh would go here
-      const response = await fetch('/api/auth/refresh', {
+      const _response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${currentToken}`
@@ -170,10 +170,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data: LoginResponse = await response.json();
-      
+
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('authUser', JSON.stringify(data.user));
-      
+
       setState(prev => ({
         ...prev,
         user: data.user,

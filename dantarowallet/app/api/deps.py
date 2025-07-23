@@ -2,17 +2,19 @@
 API 엔드포인트 의존성 모듈.
 FastAPI 의존성 주입을 통해 인증 및 권한 체크를 제공합니다.
 """
+
 from typing import Optional
 
-from app.core.database import get_db
-from app.core.exceptions import AuthenticationError, AuthorizationError
-from app.core.security import verify_token
-from app.models.user import User
-from app.models.partner import Partner
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
+from app.core.exceptions import AuthenticationError, AuthorizationError
+from app.core.security import verify_token
+from app.models.partner import Partner
+from app.models.user import User
 
 # Bearer 토큰 스키마 - auto_error=False로 설정하여 토큰이 없어도 예외를 발생시키지 않음
 security = HTTPBearer(auto_error=False)
@@ -167,6 +169,7 @@ async def get_current_partner(
 
 # === 개선된 사용자 유형별 인증 함수들 ===
 
+
 async def get_current_super_admin(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
@@ -176,10 +179,10 @@ async def get_current_super_admin(
     """
     if not bool(current_user.is_admin):
         raise AuthorizationError("슈퍼어드민 권한이 없습니다")
-    
+
     # TODO: 추가 슈퍼어드민 검증 로직
     # user_type이 'super_admin'인지 확인
-    
+
     return current_user
 
 
@@ -190,7 +193,7 @@ async def get_current_partner_admin(
     """
     파트너어드민만 허용
     특정 파트너사의 관리 권한이 있는 사용자
-    
+
     Returns:
         tuple[User, Partner]: (사용자, 소속 파트너) 튜플
     """
@@ -204,10 +207,10 @@ async def get_current_partner_admin(
 
     user_id = payload.get("sub")
     partner_id = payload.get("partner_id")  # JWT에서 파트너 ID 추출
-    
+
     if not user_id:
         raise AuthenticationError("토큰에 사용자 식별자가 없습니다")
-    
+
     if not partner_id:
         raise AuthorizationError("파트너 권한이 없습니다")
 
@@ -235,10 +238,10 @@ async def get_current_end_user(
     """
     # TODO: 사용자 유형이 'end_user'인지 확인
     # 현재는 어드민이 아닌 모든 사용자를 일반 사용자로 간주
-    
+
     if bool(current_user.is_admin):
         raise AuthorizationError("일반 사용자 전용 기능입니다")
-    
+
     return current_user
 
 
@@ -249,14 +252,14 @@ async def get_current_user_with_partner(
     """
     사용자와 소속 파트너 정보 함께 반환
     파트너 소속 여부와 관계없이 모든 인증된 사용자 허용
-    
+
     Returns:
         tuple[User, Optional[Partner]]: (사용자, 파트너 또는 None)
     """
     # TODO: 사용자 테이블에 partner_id 필드 추가 후 조회
     # 현재는 임시로 None 반환
     partner = None
-    
+
     return current_user, partner
 
 
@@ -267,7 +270,7 @@ async def require_super_admin_or_partner_admin(
     """
     슈퍼어드민 또는 파트너어드민만 허용
     관리자 권한이 필요한 기능에 사용
-    
+
     Returns:
         tuple[User, Optional[Partner]]: (사용자, 파트너 또는 None)
     """
@@ -276,11 +279,11 @@ async def require_super_admin_or_partner_admin(
 
     # 먼저 일반 사용자 인증
     user = await get_current_user(credentials, db)
-    
+
     # 슈퍼어드민인 경우
     if bool(user.is_admin):
         return user, None
-    
+
     # 파트너어드민인지 확인
     try:
         user, partner = await get_current_partner_admin(credentials, db)

@@ -46,7 +46,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     const isItemActive = isActive(item.href);
     const isExpanded = expandedItems.has(item.id);
     const hasChildren = item.children && item.children.length > 0;
-    
+
     // labelKey를 사용해서 다국어 텍스트 가져오기
     const getNestedValue = (obj: any, path: string) => {
       return path.split('.').reduce((current, key) => current?.[key], obj);
@@ -68,7 +68,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               )}
               onClick={() => setSidebarOpen(false)}
             >
-              <IconComponent
+              <item.icon
                 className="mr-3 h-5 w-5 flex-shrink-0"
                 aria-hidden="true"
               />
@@ -83,7 +83,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
               )}
             >
-              <IconComponent
+              <item.icon
                 className="mr-3 h-5 w-5 flex-shrink-0"
                 aria-hidden="true"
               />
@@ -156,7 +156,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                     </button>
                   </div>
                 </Transition.Child>
-                
+
                 {/* Mobile sidebar content */}
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2">
                   <div className="flex h-16 shrink-0 items-center">

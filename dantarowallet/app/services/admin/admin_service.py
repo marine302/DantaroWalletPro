@@ -2,7 +2,10 @@
 관리자 패널 통합 서비스.
 기존 AdminService와의 호환성을 유지하면서 모듈화된 구조를 제공합니다.
 """
+
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.admin import (
     PaginatedTransactionsResponse,
@@ -17,12 +20,11 @@ from app.schemas.admin import (
 from app.services.admin.system_monitoring import SystemMonitoringService
 from app.services.admin.transaction_monitoring import TransactionMonitoringService
 from app.services.admin.user_management import UserManagementService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AdminService:
     """관리자 패널 통합 서비스 클래스"""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
         self._system_monitoring = SystemMonitoringService(db)

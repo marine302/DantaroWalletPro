@@ -2,6 +2,7 @@
 요청 제한(Rate Limiting) 미들웨어.
 과도한 API 호출을 방지하기 위한 요청 속도 제한을 구현합니다.
 """
+
 import time
 from collections import defaultdict
 from typing import DefaultDict, Dict, Tuple
@@ -48,9 +49,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # 테스트 환경에서는 Rate Limiting 완화
         user_agent = request.headers.get("user-agent", "")
-        if ("pytest" in user_agent.lower() or 
-            "test" in user_agent.lower() or 
-            request.headers.get("X-Test-Mode") == "true"):
+        if (
+            "pytest" in user_agent.lower()
+            or "test" in user_agent.lower()
+            or request.headers.get("X-Test-Mode") == "true"
+        ):
             return await call_next(request)
 
         # 클라이언트 식별자 (일반적으로 IP 주소)

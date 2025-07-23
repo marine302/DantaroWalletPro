@@ -96,19 +96,19 @@ global.WebSocket = class WebSocket {
     this.url = url;
     setTimeout(() => this.onopen?.(new Event('open')), 0);
   }
-  
+
   url: string;
   readyState = WebSocket.OPEN;
   onopen: ((event: Event) => void) | null = null;
   onclose: ((event: CloseEvent) => void) | null = null;
   onmessage: ((event: MessageEvent) => void) | null = null;
   onerror: ((event: Event) => void) | null = null;
-  
+
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSING = 2;
   static readonly CLOSED = 3;
-  
+
   send = jest.fn();
   close = jest.fn();
   addEventListener = jest.fn();
@@ -117,7 +117,7 @@ global.WebSocket = class WebSocket {
 };
 
 // Mock localStorage
-const localStorageMock = {
+const _localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
@@ -126,7 +126,7 @@ const localStorageMock = {
 global.localStorage = localStorageMock;
 
 // Mock sessionStorage
-const sessionStorageMock = {
+const _sessionStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),

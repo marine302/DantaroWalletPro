@@ -1,10 +1,14 @@
 """
 통계 계산 서비스
 """
+
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.transaction_analytics import (
     AssetStats,
@@ -12,8 +16,6 @@ from app.schemas.transaction_analytics import (
     TransactionAnalyticsFilter,
     TransactionStats,
 )
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from .utils import BaseAnalyticsService
 

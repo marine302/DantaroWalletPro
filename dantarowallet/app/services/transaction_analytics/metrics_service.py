@@ -1,13 +1,15 @@
 """
 실시간 메트릭 서비스
 """
+
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app.schemas.transaction_analytics import RealTimeTransactionMetrics
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.schemas.transaction_analytics import RealTimeTransactionMetrics
 
 from .utils import BaseAnalyticsService
 

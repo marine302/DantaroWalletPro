@@ -120,8 +120,8 @@ class EnergyTronService {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}/external-energy/energytron/providers`);
-      const data = await response.json();
+      const _response = await fetch(`${this.baseURL}/external-energy/energytron/providers`);
+      const _data = await response.json();
       return data.data;
     } catch (error) {
       console.warn('❌ EnergyTron providers API failed, using mock data:', error);
@@ -138,8 +138,8 @@ class EnergyTronService {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}/external-energy/energytron/market/data`);
-      const data = await response.json();
+      const _response = await fetch(`${this.baseURL}/external-energy/energytron/market/data`);
+      const _data = await response.json();
       return data.data;
     } catch (error) {
       console.warn('❌ EnergyTron market data API failed, using mock data:', error);
@@ -156,14 +156,14 @@ class EnergyTronService {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}/external-energy/energytron/orders`, {
+      const _response = await fetch(`${this.baseURL}/external-energy/energytron/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(order),
       });
-      const data = await response.json();
+      const _data = await response.json();
       return data.data;
     } catch (error) {
       console.warn('❌ EnergyTron create order API failed, using mock data:', error);
@@ -180,8 +180,8 @@ class EnergyTronService {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}/external-energy/providers/compare`);
-      const data = await response.json();
+      const _response = await fetch(`${this.baseURL}/external-energy/providers/compare`);
+      const _data = await response.json();
       return data.data;
     } catch (error) {
       console.warn('❌ Provider comparison API failed, using mock data:', error);
@@ -198,9 +198,9 @@ class EnergyTronService {
     }
 
     try {
-      const ws = new WebSocket(`ws://localhost:8000/ws/external-energy/energytron/prices`);
+      const _ws = new WebSocket(`ws://localhost:8000/ws/external-energy/energytron/prices`);
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        const _data = JSON.parse(event.data);
         onMessage(data);
       };
       return ws;
@@ -271,9 +271,9 @@ class EnergyTronService {
   }
 
   private getMockMarketData(): EnergyTronMarketData {
-    const currentPrice = 0.0039;
-    const change = (Math.random() - 0.5) * 0.0005;
-    
+    const _currentPrice = 0.0039;
+    const _change = (Math.random() - 0.5) * 0.0005;
+
     return {
       currentPrice: currentPrice + change,
       bestBuyPrice: currentPrice - 0.0001,
@@ -287,25 +287,25 @@ class EnergyTronService {
   }
 
   private generateMockPriceHistory(basePrice: number) {
-    const history = [];
-    const now = new Date();
-    
-    for (let i = 23; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-      const variation = (Math.random() - 0.5) * 0.0008;
+    const _history = [];
+    const _now = new Date();
+
+    for (let _i = 23; i >= 0; i--) {
+      const _time = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const _variation = (Math.random() - 0.5) * 0.0008;
       history.push({
         time: time.toISOString(),
         price: basePrice + variation,
       });
     }
-    
+
     return history;
   }
 
   private createMockOrder(order: EnergyTronOrderRequest): EnergyTronOrderResponse {
-    const orderId = `ET-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-    const price = order.priceLimit || 0.0039;
-    const totalCost = order.amount * price;
+    const _orderId = `ET-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    const _price = order.priceLimit || 0.0039;
+    const _totalCost = order.amount * price;
 
     return {
       orderId,
@@ -357,8 +357,8 @@ class EnergyTronService {
 
   private createMockWebSocket(onMessage: (data: any) => void): WebSocket | null {
     // Mock WebSocket으로 실시간 가격 업데이트 시뮬레이션
-    const interval = setInterval(() => {
-      const mockData = {
+    const _interval = setInterval(() => {
+      const _mockData = {
         type: 'price_update',
         provider: 'energytron',
         data: {

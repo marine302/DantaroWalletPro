@@ -2,11 +2,15 @@
 잔고 트랜잭션 서비스
 트랜잭션 내역 조회 및 잔고 증가 등의 기능을 제공합니다.
 """
+
 import json
 import logging
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
 from app.models.balance import Balance
@@ -17,8 +21,6 @@ from app.models.transaction import (
     TransactionType,
 )
 from app.services.balance.base_service import BaseBalanceService
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -97,9 +99,11 @@ class BalanceTransactionService(BaseBalanceService):
             # 트랜잭션 기록 생성
             transaction = Transaction(
                 user_id=user_id,
-                type=TransactionType.DEPOSIT
-                if transaction_type == "deposit"
-                else TransactionType.BONUS,
+                type=(
+                    TransactionType.DEPOSIT
+                    if transaction_type == "deposit"
+                    else TransactionType.BONUS
+                ),
                 direction=TransactionDirection.IN,
                 asset=asset,
                 amount=amount,

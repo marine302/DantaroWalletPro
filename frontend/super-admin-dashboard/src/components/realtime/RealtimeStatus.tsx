@@ -16,7 +16,7 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
 
   useEffect(() => {
     // Subscribe to all realtime data types
-    const unsubscribers = [
+    const _unsubscribers = [
       realtimeManager.subscribe('systemStats', () => {
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
@@ -43,9 +43,9 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
       }),
       realtimeManager.subscribe('transactions', (data) => {
         // Handle single transaction - add to existing transactions array
-        const currentTransactions = realtimeManager.getData('transactions');
-        const transactionsArray = Array.isArray(currentTransactions) ? currentTransactions : [];
-        const newTransactions = [data, ...transactionsArray.slice(0, 19)]; // Keep last 20 transactions
+        const _currentTransactions = realtimeManager.getData('transactions');
+        const _transactionsArray = Array.isArray(currentTransactions) ? currentTransactions : [];
+        const _newTransactions = [data, ...transactionsArray.slice(0, 19)]; // Keep last 20 transactions
         realtimeManager.updateData('transactions', newTransactions);
         setLastUpdate(new Date());
         setDataCount(prev => prev + 1);
@@ -59,28 +59,28 @@ export function RealtimeStatus({ className = '' }: RealtimeStatusProps) {
     };
   }, []); // dependency 제거
 
-  const getStatusColor = () => {
+  const _getStatusColor = () => {
     if (isConnected) return 'text-green-400';
     if (error) return 'text-red-400';
     return 'text-gray-400';
   };
 
-  const getStatusText = () => {
+  const _getStatusText = () => {
     if (isConnected) return 'Connected';
     if (error) return 'Disconnected';
     return 'Offline';
   };
 
-  const getStatusIcon = () => {
+  const _getStatusIcon = () => {
     if (isConnected) return <Wifi className="w-4 h-4" />;
     if (error) return <WifiOff className="w-4 h-4" />;
     return <AlertCircle className="w-4 h-4" />;
   };
 
-  const formatLastUpdate = () => {
+  const _formatLastUpdate = () => {
     if (!lastUpdate) return 'No data';
-    const now = new Date();
-    const diff = now.getTime() - lastUpdate.getTime();
+    const _now = new Date();
+    const _diff = now.getTime() - lastUpdate.getTime();
     if (diff < 1000) return 'Just now';
     if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;

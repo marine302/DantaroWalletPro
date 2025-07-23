@@ -9,18 +9,18 @@ import { Notification, NotificationPriority } from '@/types/notification';
 import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
   } = useNotifications();
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const recentNotifications = notifications.slice(0, 5);
 
-  const getPriorityColor = (priority: NotificationPriority) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const _recentNotifications = notifications.slice(0, 5);
+
+  const _getPriorityColor = (priority: NotificationPriority) => {
     switch (priority) {
       case 'critical': return 'bg-red-500';
       case 'high': return 'bg-orange-500';
@@ -30,7 +30,7 @@ export function NotificationBell() {
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const _getTypeIcon = (type: string) => {
     const iconMap: Record<string, string> = {
       system: '⚙️',
       security: '🔒',
@@ -44,12 +44,12 @@ export function NotificationBell() {
     return iconMap[type] || '📢';
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const _formatTimestamp = (timestamp: string) => {
+    const _date = new Date(timestamp);
+    const _now = new Date();
+    const _diffMs = now.getTime() - date.getTime();
+    const _diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const _diffMinutes = Math.floor(diffMs / (1000 * 60));
 
     if (diffMinutes < 1) return '방금 전';
     if (diffMinutes < 60) return `${diffMinutes}분 전`;
@@ -57,12 +57,12 @@ export function NotificationBell() {
     return date.toLocaleDateString('ko-KR');
   };
 
-  const handleMarkAsRead = (e: React.MouseEvent, notificationId: string) => {
+  const _handleMarkAsRead = (e: React.MouseEvent, notificationId: string) => {
     e.stopPropagation();
     markAsRead(notificationId);
   };
 
-  const handleDelete = (e: React.MouseEvent, notificationId: string) => {
+  const _handleDelete = (e: React.MouseEvent, notificationId: string) => {
     e.stopPropagation();
     deleteNotification(notificationId);
   };
@@ -120,8 +120,8 @@ export function NotificationBell() {
                     key={notification.id}
                     className={cn(
                       'relative p-3 rounded-lg border border-gray-700 cursor-pointer transition-colors',
-                      notification.read 
-                        ? 'bg-gray-900 opacity-75' 
+                      notification.read
+                        ? 'bg-gray-900 opacity-75'
                         : 'bg-gray-800 hover:bg-gray-750'
                     )}
                     onClick={() => !notification.read && markAsRead(notification.id)}

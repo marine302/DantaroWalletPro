@@ -2,18 +2,22 @@
 출금 관련 스키마.
 출금 요청, 응답, 검토 등의 스키마를 정의합니다.
 """
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from app.models.withdrawal import WithdrawalPriority, WithdrawalStatus
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.models.withdrawal import WithdrawalPriority, WithdrawalStatus
 
 
 class WithdrawalRequest(BaseModel):
     """출금 요청 스키마"""
 
-    to_address: str = Field(..., min_length=34, max_length=34, description="TRON 수신 주소")
+    to_address: str = Field(
+        ..., min_length=34, max_length=34, description="TRON 수신 주소"
+    )
     amount: Decimal = Field(..., gt=0, description="출금 금액")
     asset: str = Field(default="USDT", description="자산 종류")
     notes: Optional[str] = Field(None, max_length=500, description="사용자 메모")
@@ -78,7 +82,9 @@ class WithdrawalReviewRequest(BaseModel):
 
     action: str = Field(..., pattern="^(approve|reject)$", description="승인 또는 거부")
     admin_notes: Optional[str] = Field(None, max_length=500, description="관리자 메모")
-    rejection_reason: Optional[str] = Field(None, max_length=500, description="거부 사유")
+    rejection_reason: Optional[str] = Field(
+        None, max_length=500, description="거부 사유"
+    )
 
     @field_validator("rejection_reason")
     @classmethod

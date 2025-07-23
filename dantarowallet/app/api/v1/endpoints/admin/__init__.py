@@ -1,6 +1,7 @@
 """
 관리자 API 엔드포인트 초기화
 """
+
 from fastapi import APIRouter
 
 from . import energy, fees, partners

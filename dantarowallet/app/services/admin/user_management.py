@@ -2,9 +2,14 @@
 사용자 관리 서비스.
 사용자 정보 조회, 수정 및 위험도 분석을 담당합니다.
 """
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.balance import Balance
 from app.models.transaction import Transaction, TransactionDirection, TransactionStatus
@@ -16,14 +21,11 @@ from app.schemas.admin import (
     UserListResponse,
     UserRiskAnalysisResponse,
 )
-from sqlalchemy import and_, desc, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 
 class UserManagementService:
     """사용자 관리 서비스 클래스"""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -112,10 +114,10 @@ class UserManagementService:
         query = select(User).filter(User.id == user_id)
         result = await self.db.execute(query)
         user = result.scalar_one_or_none()
-        
+
         if not user:
             return None
-            
+
         # 간단한 응답 반환 (실제 구현에서는 더 많은 정보 포함)
         return UserDetailResponse(
             id=int(user.id),  # type: ignore
@@ -125,11 +127,11 @@ class UserManagementService:
             is_admin=bool(user.is_admin),  # type: ignore
             created_at=user.created_at,  # type: ignore
             updated_at=user.updated_at,  # type: ignore
-            last_login=getattr(user, 'last_login', None),
+            last_login=getattr(user, "last_login", None),
             total_transactions=0,
             total_volume=Decimal("0"),
             risk_score=0,
-            risk_level="LOW"
+            risk_level="LOW",
         )
 
     async def update_user(self, user_id: int, updates: Dict[str, Any]) -> bool:
@@ -137,14 +139,14 @@ class UserManagementService:
         query = select(User).filter(User.id == user_id)
         result = await self.db.execute(query)
         user = result.scalar_one_or_none()
-        
+
         if not user:
             return False
-            
+
         for key, value in updates.items():
             if hasattr(user, key):
                 setattr(user, key, value)
-                
+
         await self.db.commit()
         return True
 
@@ -153,7 +155,7 @@ class UserManagementService:
         # 사용자 정보 조회
         user = await self.db.get(User, user_id)
         email = str(user.email) if user else f"user_{user_id}@example.com"  # type: ignore
-        
+
         # 간단한 구현 예시
         return UserRiskAnalysisResponse(
             user_id=user_id,
@@ -163,5 +165,5 @@ class UserManagementService:
             main_reason="No suspicious activity detected",
             recent_large_transactions=0,
             high_frequency_periods=0,
-            last_activity=datetime.now()
+            last_activity=datetime.now(),
         )

@@ -1,20 +1,20 @@
 export type Role = 'super_admin' | 'admin' | 'viewer' | 'auditor';
 
-export type Permission = 
+export type Permission =
   // User Management
   | 'users.view'
   | 'users.create'
   | 'users.edit'
   | 'users.delete'
   | 'users.manage_roles'
-  
+
   // Admin Management
   | 'admin.view'
   | 'admin.create'
   | 'admin.edit'
   | 'admin.delete'
   | 'admin.manage'
-  
+
   // Partner Management
   | 'partners.view'
   | 'partners.create'
@@ -22,32 +22,32 @@ export type Permission =
   | 'partners.delete'
   | 'partners.approve'
   | 'partners.suspend'
-  
+
   // Energy Market
   | 'energy.view'
   | 'energy.trade'
   | 'energy.manage_providers'
   | 'energy.set_prices'
-  
+
   // Financial
   | 'finance.view'
   | 'finance.manage_fees'
   | 'finance.view_revenue'
   | 'finance.export_data'
-  
+
   // System
   | 'system.view_logs'
   | 'system.manage_settings'
   | 'system.backup'
   | 'system.maintenance'
-  
+
   // Audit & Compliance
   | 'audit.view'
   | 'audit.export'
   | 'audit.manage_compliance'
   | 'compliance.view'
   | 'compliance.manage'
-  
+
   // Analytics
   | 'analytics.view'
   | 'analytics.advanced'
@@ -100,7 +100,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'audit.view', 'audit.export', 'audit.manage_compliance',
     'analytics.view', 'analytics.advanced', 'analytics.export'
   ],
-  
+
   admin: [
     // Most permissions except critical system operations
     'users.view', 'users.create', 'users.edit',
@@ -111,7 +111,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'audit.view', 'audit.export',
     'analytics.view', 'analytics.advanced', 'analytics.export'
   ],
-  
+
   viewer: [
     // Read-only permissions
     'users.view',
@@ -122,7 +122,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'audit.view',
     'analytics.view'
   ],
-  
+
   auditor: [
     // Audit and compliance focused permissions
     'users.view',

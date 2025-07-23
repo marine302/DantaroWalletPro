@@ -4,13 +4,13 @@
 """
 
 from app.services.admin.admin_service import AdminService
-from app.services.admin.user_management import UserManagementService
 from app.services.admin.system_monitoring import SystemMonitoringService
 from app.services.admin.transaction_monitoring import TransactionMonitoringService
+from app.services.admin.user_management import UserManagementService
 
 __all__ = [
     "AdminService",
-    "UserManagementService", 
+    "UserManagementService",
     "SystemMonitoringService",
     "TransactionMonitoringService",
 ]

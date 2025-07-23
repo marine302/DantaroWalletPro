@@ -2,13 +2,15 @@
 데이터베이스 모델 테스트.
 User 및 Balance 모델의 기능과 제약 조건을 테스트합니다.
 """
+
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
+
 from app.core.database import AsyncSessionLocal, check_database_connection
 from app.models.balance import Balance
 from app.models.user import User
-from sqlalchemy import select
 
 
 @pytest.mark.asyncio

@@ -1,10 +1,12 @@
 """
 외부 지갑 연동 스키마
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List
+
 from datetime import datetime
 from decimal import Decimal
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class ConnectExternalWalletRequest(BaseModel):

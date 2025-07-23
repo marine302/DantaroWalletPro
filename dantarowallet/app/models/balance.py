@@ -2,10 +2,10 @@
 잔고 모델 정의.
 사용자의 디지털 자산 잔고를 관리합니다.
 """
+
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from app.models.base import BaseModel
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -17,6 +17,8 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.user import User

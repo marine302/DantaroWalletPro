@@ -1,6 +1,7 @@
 """
 에너지 모니터링 서비스 - 타입 안전성 유틸리티
 """
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Optional
@@ -37,7 +38,7 @@ def safe_decimal_to_float(value: Any, default: float = 0.0) -> float:
 def safe_enum_value(enum_obj: Any, default: str = "unknown") -> str:
     """Enum 값을 안전하게 문자열로 변환"""
     try:
-        if hasattr(enum_obj, 'value'):
+        if hasattr(enum_obj, "value"):
             return enum_obj.value
         return str(enum_obj) if enum_obj else default
     except:
@@ -47,7 +48,7 @@ def safe_enum_value(enum_obj: Any, default: str = "unknown") -> str:
 def safe_datetime_isoformat(dt: Any) -> Optional[str]:
     """DateTime을 안전하게 ISO 형식으로 변환"""
     try:
-        if dt and hasattr(dt, 'isoformat'):
+        if dt and hasattr(dt, "isoformat"):
             return dt.isoformat()
         return None
     except:
@@ -59,7 +60,7 @@ def safe_int_conversion(value: Any, default: int = 0) -> int:
     try:
         if isinstance(value, int):
             return value
-        if hasattr(value, '__int__'):
+        if hasattr(value, "__int__"):
             return int(value)
         return int(str(value))
     except:

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BasePage } from '@/components/ui/BasePage';
+import BasePage from '@/components/ui/BasePage';
 import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { TrendingUp, TrendingDown, Zap, DollarSign } from 'lucide-react';
 
@@ -34,10 +34,10 @@ export default function EnergyMarketPage() {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const _loadData = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data
       const mockProviders: EnergyProvider[] = [
         {
@@ -86,7 +86,7 @@ export default function EnergyMarketPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-400';
       case 'inactive': return 'text-red-400';
@@ -95,8 +95,8 @@ export default function EnergyMarketPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const colors = {
+  const _getStatusBadge = (status: string) => {
+    const _colors = {
       active: 'bg-green-900 text-green-200',
       inactive: 'bg-red-900 text-red-200',
       maintenance: 'bg-yellow-900 text-yellow-200'
@@ -104,7 +104,7 @@ export default function EnergyMarketPage() {
     return colors[status as keyof typeof colors] || 'bg-gray-900 text-gray-200';
   };
 
-  const handlePurchase = () => {
+  const _handlePurchase = () => {
     if (!selectedProvider || !purchaseAmount) {
       alert('제공업체와 구매량을 선택해주세요.');
       return;
@@ -208,7 +208,7 @@ export default function EnergyMarketPage() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-gray-400">단가</p>
@@ -233,10 +233,10 @@ export default function EnergyMarketPage() {
                     <div className="flex items-center gap-4 text-sm">
                       <span className={`flex items-center gap-1 ${getStatusColor(provider.status)}`}>
                         <div className={`w-2 h-2 rounded-full ${
-                          provider.status === 'active' ? 'bg-green-400' : 
+                          provider.status === 'active' ? 'bg-green-400' :
                           provider.status === 'maintenance' ? 'bg-yellow-400' : 'bg-red-400'
                         }`}></div>
-                        {provider.status === 'active' ? '서비스 중' : 
+                        {provider.status === 'active' ? '서비스 중' :
                          provider.status === 'maintenance' ? '점검 중' : '서비스 중단'}
                       </span>
                       <span className="text-gray-400">

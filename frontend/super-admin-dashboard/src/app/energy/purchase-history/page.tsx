@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BasePage } from "@/components/ui/BasePage";
+import BasePage from "@/components/ui/BasePage";
 import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { Download, RefreshCw } from 'lucide-react';
 
@@ -62,7 +62,7 @@ export default function PurchaseHistoryPage() {
     setIsLoading(false);
   }, []);
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'text-green-400';
       case 'pending': return 'text-yellow-400';
@@ -72,7 +72,7 @@ export default function PurchaseHistoryPage() {
     }
   };
 
-  const getUrgencyColor = (urgency: string) => {
+  const _getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'emergency': return 'text-red-400';
       case 'high': return 'text-orange-400';

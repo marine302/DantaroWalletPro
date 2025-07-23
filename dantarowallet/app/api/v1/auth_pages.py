@@ -2,11 +2,13 @@
 인증 관련 웹 페이지 라우터.
 로그인, 회원가입 등의 웹 페이지를 제공합니다.
 """
-from app.core.database import get_db
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")

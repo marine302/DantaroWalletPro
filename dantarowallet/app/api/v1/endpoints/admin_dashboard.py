@@ -4,20 +4,22 @@
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
 
 from app.core.database import get_sync_db
-from app.models.user import User
+from app.models.energy_pool import EnergyPoolModel
 from app.models.partner import Partner
 from app.models.transaction import Transaction
+from app.models.user import User
 from app.models.wallet import Wallet
-from app.models.energy_pool import EnergyPoolModel
 from app.models.withdrawal import Withdrawal
 
 router = APIRouter()
+
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(db: Session = Depends(get_sync_db)) -> Dict[str, Any]:
@@ -30,33 +32,41 @@ async def get_dashboard_stats(db: Session = Depends(get_sync_db)) -> Dict[str, A
         active_partners = db.query(Partner).filter(Partner.status == "active").count()
         total_users = db.query(User).count()
         active_users = db.query(User).filter(User.is_active == True).count()
-        
+
         # 오늘 거래 수
         today = datetime.utcnow().date()
-        transactions_today = db.query(Transaction).filter(
-            func.date(Transaction.created_at) == today
-        ).count()
-        
+        transactions_today = (
+            db.query(Transaction)
+            .filter(func.date(Transaction.created_at) == today)
+            .count()
+        )
+
         # 오늘 거래량
-        daily_volume_result = db.query(func.sum(Transaction.amount)).filter(
-            func.date(Transaction.created_at) == today
-        ).scalar()
+        daily_volume_result = (
+            db.query(func.sum(Transaction.amount))
+            .filter(func.date(Transaction.created_at) == today)
+            .scalar()
+        )
         daily_volume = float(daily_volume_result) if daily_volume_result else 0.0
-        
+
         # 총 수익 (출금 수수료 등)
         total_revenue_result = db.query(func.sum(Withdrawal.fee)).scalar()
         total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
-        
+
         # 에너지 풀 통계
         total_energy_result = db.query(func.sum(EnergyPoolModel.total_energy)).scalar()
         total_energy = int(total_energy_result) if total_energy_result else 0
-        
-        available_energy_result = db.query(func.sum(EnergyPoolModel.available_energy)).scalar()
-        available_energy = int(available_energy_result) if available_energy_result else 0
-        
+
+        available_energy_result = db.query(
+            func.sum(EnergyPoolModel.available_energy)
+        ).scalar()
+        available_energy = (
+            int(available_energy_result) if available_energy_result else 0
+        )
+
         # 활성 지갑 수
         active_wallets = db.query(Wallet).filter(Wallet.is_active == True).count()
-        
+
         return {
             "total_partners": total_partners,
             "active_partners": active_partners,
@@ -74,9 +84,9 @@ async def get_dashboard_stats(db: Session = Depends(get_sync_db)) -> Dict[str, A
                 "overall_score": 95,  # 이건 별도 로직으로 계산
                 "database_health": 98,
                 "api_response_time": 120,
-                "uptime": 99.9
+                "uptime": 99.9,
             },
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.utcnow().isoformat(),
         }
     except Exception as e:
         # 오류 발생 시 기본값 반환
@@ -97,11 +107,12 @@ async def get_dashboard_stats(db: Session = Depends(get_sync_db)) -> Dict[str, A
                 "overall_score": 0,
                 "database_health": 0,
                 "api_response_time": 999,
-                "uptime": 0.0
+                "uptime": 0.0,
             },
             "last_updated": datetime.utcnow().isoformat(),
-            "error": str(e)
+            "error": str(e),
         }
+
 
 @router.get("/system-health")
 async def get_system_health() -> Dict[str, Any]:
@@ -113,26 +124,10 @@ async def get_system_health() -> Dict[str, Any]:
         "database": {
             "status": "connected",
             "response_time": 25,
-            "connection_pool": {
-                "active": 3,
-                "idle": 7,
-                "total": 10
-            }
+            "connection_pool": {"active": 3, "idle": 7, "total": 10},
         },
-        "api": {
-            "status": "operational",
-            "average_response_time": 120,
-            "uptime": 99.9
-        },
-        "memory": {
-            "used": 245.7,
-            "total": 512.0,
-            "percentage": 48.0
-        },
-        "disk": {
-            "used": 12.3,
-            "total": 50.0,
-            "percentage": 24.6
-        },
-        "last_check": datetime.utcnow().isoformat()
+        "api": {"status": "operational", "average_response_time": 120, "uptime": 99.9},
+        "memory": {"used": 245.7, "total": 512.0, "percentage": 48.0},
+        "disk": {"used": 12.3, "total": 50.0, "percentage": 24.6},
+        "last_check": datetime.utcnow().isoformat(),
     }

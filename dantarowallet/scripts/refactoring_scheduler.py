@@ -2,6 +2,7 @@
 정기적인 리팩토링 작업 스케줄러
 코드 품질 모니터링과 자동화된 리팩토링 제안을 관리합니다.
 """
+
 import asyncio
 import json
 import logging
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import schedule
+
 from app.core.database import get_async_session
 from scripts.pre_commit_check import generate_quality_report
 from scripts.refactoring_monitor import CodeMetricsAnalyzer, RefactoringPlanner
@@ -285,11 +287,11 @@ class RefactoringScheduler:
         progress = {
             "urgent_files_change": last_urgent - first_urgent,
             "total_files_analyzed": len(last_day),
-            "improvement_trend": "improving"
-            if last_urgent < first_urgent
-            else "stable"
-            if last_urgent == first_urgent
-            else "degrading",
+            "improvement_trend": (
+                "improving"
+                if last_urgent < first_urgent
+                else "stable" if last_urgent == first_urgent else "degrading"
+            ),
         }
 
         return progress

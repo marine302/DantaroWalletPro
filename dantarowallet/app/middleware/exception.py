@@ -1,7 +1,8 @@
-from app.core.exceptions import DantaroException
-from app.core.logging import setup_logging
 from fastapi import Request
 from fastapi.responses import JSONResponse
+
+from app.core.exceptions import DantaroException
+from app.core.logging import setup_logging
 
 logger = setup_logging()
 

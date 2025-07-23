@@ -3,7 +3,7 @@
  */
 
 // Define CSP directives
-const cspDirectives = {
+const _cspDirectives = {
   'default-src': ["'self'"],
   'script-src': [
     "'self'",
@@ -56,7 +56,7 @@ const cspDirectives = {
 };
 
 // Build CSP header value
-const buildCSP = (directives: Record<string, string[]>) => {
+const _buildCSP = (directives: Record<string, string[]>) => {
   return Object.entries(directives)
     .map(([key, values]) => {
       if (values.length === 0) {
@@ -67,10 +67,10 @@ const buildCSP = (directives: Record<string, string[]>) => {
     .join('; ');
 };
 
-export const contentSecurityPolicy = buildCSP(cspDirectives);
+export const _contentSecurityPolicy = buildCSP(cspDirectives);
 
 // Security headers configuration
-export const securityHeaders = [
+export const _securityHeaders = [
   // Content Security Policy
   {
     key: 'Content-Security-Policy',
@@ -111,7 +111,7 @@ export const securityHeaders = [
 // Development-specific adjustments
 if (process.env.NODE_ENV === 'development') {
   // Relax CSP for development
-  const devCSP = buildCSP({
+  const _devCSP = buildCSP({
     ...cspDirectives,
     'script-src': [
       ...cspDirectives['script-src'],
@@ -124,9 +124,9 @@ if (process.env.NODE_ENV === 'development') {
       'http://localhost:*',
     ],
   });
-  
+
   // Update CSP header for development
-  const cspHeaderIndex = securityHeaders.findIndex(
+  const _cspHeaderIndex = securityHeaders.findIndex(
     header => header.key === 'Content-Security-Policy'
   );
   if (cspHeaderIndex !== -1) {

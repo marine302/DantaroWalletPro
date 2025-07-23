@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { BasePage } from "@/components/ui/BasePage"
-import { 
-  StatCard, 
-  Section, 
-  FormField, 
-  Button 
+import BasePage from "@/components/ui/BasePage"
+import {
+  StatCard,
+  Section,
+  FormField,
+  Button
 } from '@/components/ui/DarkThemeComponents'
 import { gridLayouts } from '@/styles/dark-theme'
-import { useI18n } from '@/contexts/I18nContext'
+// import { useI18n } from '@/contexts/I18nContext'
 import { withRBAC } from '@/components/auth/withRBAC'
 import {
   TransactionTrendChart,
@@ -67,16 +67,16 @@ function IntegratedDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // 파트너 목록 가져오기 (슈퍼 어드민용)
-  const fetchPartners = useCallback(async () => {
+  const _fetchPartners = useCallback(async () => {
     try {
       // TODO: 실제 API 연동
-      // const response = await fetch('/api/partners/list', {
+      // const _response = await fetch('/api/partners/list', {
       //   headers: { 'Authorization': `Bearer ${token}` }
       // })
-      // const partners = await response.json()
-      
+      // const _partners = await response.json()
+
       // 임시 목 데이터 (파트너 어드민 시스템과 연동 예정)
-      const mockPartners = [
+      const _mockPartners = [
         { id: 1, name: "DantaroExchange" },
         { id: 2, name: "CryptoLink Korea" },
         { id: 3, name: "BlockChain Ventures" },
@@ -93,27 +93,27 @@ function IntegratedDashboard() {
   }, [fetchPartners])
 
   // 안전한 숫자 처리 유틸리티
-  const safeNumber = (value: number | undefined | null): number => {
+  const _safeNumber = (value: number | undefined | null): number => {
     return typeof value === 'number' && !isNaN(value) ? value : 0
   }
 
-  const safeLocaleString = (value: number | undefined | null): string => {
+  const _safeLocaleString = (value: number | undefined | null): string => {
     return safeNumber(value).toLocaleString()
   }
 
-  const safePercentage = (value: number | undefined | null): string => {
+  const _safePercentage = (value: number | undefined | null): string => {
     return safeNumber(value).toFixed(1)
   }
 
-  const fetchDashboardData = useCallback(async () => {
+  const _fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       // 실제 API 호출 시도
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const _apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       let response: Response
-      
+
       try {
         response = await fetch(`${apiUrl}/api/v1/integrated-dashboard/dashboard/${partnerId}`, {
           method: 'GET',
@@ -121,28 +121,28 @@ function IntegratedDashboard() {
             'Content-Type': 'application/json',
           },
         })
-        
+
         if (response.ok) {
-          const data = await response.json()
+          const _data = await response.json()
           setDashboardData(data)
           return
         }
       } catch (apiError) {
         console.log('API 호출 실패, fallback 데이터 사용:', apiError)
       }
-      
+
       // Fallback: mock 서버 또는 정적 데이터
       try {
         response = await fetch(`http://localhost:3001/api/integrated-dashboard/${partnerId}`)
         if (response.ok) {
-          const data = await response.json()
+          const _data = await response.json()
           setDashboardData(data)
           return
         }
       } catch (mockError) {
         console.log('Mock 서버 호출 실패, 정적 데이터 사용:', mockError)
       }
-      
+
       // 최종 fallback 데이터
       const fallbackData: DashboardData = {
         wallet_overview: {
@@ -181,9 +181,9 @@ function IntegratedDashboard() {
           growth_rate: 12.8
         }
       }
-      
+
       setDashboardData(fallbackData)
-      
+
     } catch (err) {
       console.error('Dashboard data fetch error:', err)
       setError(t.integratedDashboard.fetchError)
@@ -220,18 +220,18 @@ function IntegratedDashboard() {
     )
   }
 
-  const handlePartnerChange = (newPartnerId: number) => {
+  const _handlePartnerChange = (newPartnerId: number) => {
     setPartnerId(newPartnerId)
     // 파트너 변경 시 자동으로 데이터 새로고침
     fetchDashboardData()
   }
 
-  const headerActions = (
+  const _headerActions = (
     <div className="flex items-center gap-4">
       {/* 파트너 선택 드롭다운 */}
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-gray-300">파트너 선택:</label>
-        <select 
+        <select
           value={partnerId}
           onChange={(e) => handlePartnerChange(Number(e.target.value))}
           className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -250,7 +250,7 @@ function IntegratedDashboard() {
   )
 
   return (
-    <BasePage 
+    <BasePage
       title={t.integratedDashboard.title}
       description={`${partners.find(p => p.id === partnerId)?.name || `파트너 ${partnerId}`}의 상세 분석 대시보드`}
       headerActions={headerActions}
@@ -344,13 +344,13 @@ function IntegratedDashboard() {
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
+                  <div
+                    className="bg-red-500 h-2 rounded-full"
                     style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.hot.percentage)}%` }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-200">{t.integratedDashboard.walletDistribution.warmWallet}</span>
@@ -364,13 +364,13 @@ function IntegratedDashboard() {
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-yellow-500 h-2 rounded-full" 
+                  <div
+                    className="bg-yellow-500 h-2 rounded-full"
                     style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.warm.percentage)}%` }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-200">{t.integratedDashboard.walletDistribution.coldWallet}</span>
@@ -384,8 +384,8 @@ function IntegratedDashboard() {
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-blue-500 h-2 rounded-full" 
+                  <div
+                    className="bg-blue-500 h-2 rounded-full"
                     style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.cold.percentage)}%` }}
                   ></div>
                 </div>
@@ -448,26 +448,26 @@ function IntegratedDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-gray-800 p-4 rounded-lg shadow-md">
               <h3 className="text-lg font-semibold text-gray-200 mb-4">거래량 추세</h3>
-              <TransactionTrendChart 
-                data={generateTransactionTrendData()} 
+              <TransactionTrendChart
+                data={generateTransactionTrendData()}
               />
             </div>
             <div className="bg-gray-800 p-4 rounded-lg shadow-md">
               <h3 className="text-lg font-semibold text-gray-200 mb-4">거래 볼륨</h3>
-              <VolumeAreaChart 
-                data={generateTransactionTrendData()} 
+              <VolumeAreaChart
+                data={generateTransactionTrendData()}
               />
             </div>
             <div className="bg-gray-800 p-4 rounded-lg shadow-md">
               <h3 className="text-lg font-semibold text-gray-200 mb-4">지갑 분산도</h3>
-              <WalletDistributionChart 
-                data={generateWalletDistributionData()} 
+              <WalletDistributionChart
+                data={generateWalletDistributionData()}
               />
             </div>
             <div className="bg-gray-800 p-4 rounded-lg shadow-md">
               <h3 className="text-lg font-semibold text-gray-200 mb-4">수익 추세</h3>
-              <RevenueBarChart 
-                data={generateTransactionTrendData()} 
+              <RevenueBarChart
+                data={generateTransactionTrendData()}
               />
             </div>
           </div>
@@ -478,6 +478,6 @@ function IntegratedDashboard() {
 }
 
 // Export protected component with RBAC
-export default withRBAC(IntegratedDashboard, { 
+export default withRBAC(IntegratedDashboard, {
   requiredPermissions: ['partners.view', 'analytics.view']
 })

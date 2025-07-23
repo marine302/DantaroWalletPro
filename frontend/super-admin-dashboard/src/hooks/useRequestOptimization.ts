@@ -8,14 +8,14 @@ export function useDebounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): T {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const _timeoutRef = useRef<NodeJS.Timeout>();
 
-  const debouncedFunc = useCallback(
+  const _debouncedFunc = useCallback(
     (...args: Parameters<T>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      
+
       timeoutRef.current = setTimeout(() => {
         func(...args);
       }, delay);
@@ -34,11 +34,11 @@ export function useThrottle<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): T {
-  const lastCallRef = useRef<number>(0);
+  const _lastCallRef = useRef<number>(0);
 
-  const throttledFunc = useCallback(
+  const _throttledFunc = useCallback(
     (...args: Parameters<T>) => {
-      const now = Date.now();
+      const _now = Date.now();
       if (now - lastCallRef.current >= delay) {
         lastCallRef.current = now;
         return func(...args);
@@ -72,8 +72,8 @@ class RequestBatcher {
     batchFunction: (batchedParams: any[]) => Promise<T[]>
   ): Promise<T> {
     return new Promise((resolve, reject) => {
-      let batch = this.batches.get(key);
-      
+      const _batch = this.batches.get(key);
+
       if (!batch) {
         batch = {
           requests: [],
@@ -90,15 +90,15 @@ class RequestBatcher {
     key: string,
     batchFunction: (batchedParams: any[]) => Promise<T[]>
   ) {
-    const batch = this.batches.get(key);
+    const _batch = this.batches.get(key);
     if (!batch) return;
 
     this.batches.delete(key);
 
     try {
-      const batchedParams = batch.requests.map(req => req.params);
-      const results = await batchFunction(batchedParams);
-      
+      const _batchedParams = batch.requests.map(req => req.params);
+      const _results = await batchFunction(batchedParams);
+
       batch.requests.forEach((request, index) => {
         request.resolve(results[index]);
       });
@@ -110,7 +110,7 @@ class RequestBatcher {
   }
 }
 
-export const requestBatcher = new RequestBatcher();
+export const _requestBatcher = new RequestBatcher();
 
 /**
  * Hook for batched API requests
@@ -137,7 +137,7 @@ class RequestDeduplicator {
       return this.ongoing.get(key);
     }
 
-    const promise = requestFunction()
+    const _promise = requestFunction()
       .finally(() => {
         this.ongoing.delete(key);
       });
@@ -147,7 +147,7 @@ class RequestDeduplicator {
   }
 }
 
-export const requestDeduplicator = new RequestDeduplicator();
+export const _requestDeduplicator = new RequestDeduplicator();
 
 /**
  * Hook for deduplicated API requests
