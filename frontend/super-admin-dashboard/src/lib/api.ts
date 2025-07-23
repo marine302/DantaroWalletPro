@@ -108,12 +108,28 @@ class ApiClient {
     if (this.useBackendAPI) {
       try {
         console.log(`🚀 Trying Backend API: ${method} ${endpoint}`);
-        const response: AxiosResponse<T> = await this.backendClient.request({
+        const response: AxiosResponse<any> = await this.backendClient.request({
           url: endpoint,
           ...requestConfig
         });
         console.log(`✅ Backend API Success: ${method} ${endpoint}`);
-        return response.data;
+        
+        // 백엔드 응답이 { success: true, data: {...} } 형태인 경우 data 추출
+        if (response.data && typeof response.data === 'object' && response.data.success && response.data.data) {
+          return response.data.data as T;
+        }
+        // PaginatedResponse의 경우 페이지네이션 정보도 처리
+        if (response.data && typeof response.data === 'object' && response.data.success && response.data.data && response.data.data.items) {
+          const data = response.data.data;
+          return {
+            items: data.items,
+            total: data.total,
+            page: data.page,
+            size: data.size,
+            pages: Math.ceil(data.total / data.size)
+          } as T;
+        }
+        return response.data as T;
       } catch (error) {
         console.warn(`❌ Backend API Failed: ${method} ${endpoint}`, error);
         console.log(`🔄 Falling back to Mock API...`);
@@ -203,7 +219,8 @@ class ApiClient {
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    return this.makeResilientRequest<DashboardStats>('/admin/dashboard/stats');
+    // 백엔드 API는 /admin/dashboard/overview 엔드포인트를 사용
+    return this.makeResilientRequest<DashboardStats>('/admin/dashboard/overview');
   }
 
   async getSystemHealth(): Promise<SystemHealth> {
@@ -212,6 +229,8 @@ class ApiClient {
 
   // Partners
   async getPartners(page = 1, size = 20): Promise<PaginatedResponse<Partner>> {
+    // 백엔드는 /partners/ 엔드포인트를 사용하고 인증이 필요함
+    // 일시적으로 Mock API 사용하도록 임시 처리
     return this.makeResilientRequest<PaginatedResponse<Partner>>('/partners/', 'GET', undefined, {
       params: { page, size },
     });

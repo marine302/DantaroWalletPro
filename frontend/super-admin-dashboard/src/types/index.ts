@@ -107,14 +107,21 @@ export interface SystemAdmin {
 
 // Dashboard statistics types
 export interface DashboardStats {
+  total_users: number;
   total_partners: number;
-  active_partners: number;
-  total_revenue: number;
-  daily_volume: number;
-  total_energy_consumed: number;
-  available_energy: number;
-  total_transactions_today: number;
-  active_wallets: number;
+  total_wallets: number;
+  recent_transactions: number;
+  recent_volume: number;
+  system_status: string;
+  last_updated: string;
+  // 이전 프론트엔드 호환성을 위한 계산된 필드들
+  active_partners?: number;
+  total_revenue?: number;
+  daily_volume?: number;
+  total_energy_consumed?: number;
+  available_energy?: number;
+  total_transactions_today?: number;
+  active_wallets?: number;
 }
 
 // System monitoring types

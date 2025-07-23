@@ -107,18 +107,23 @@ function Home() {
     );
   }
 
-  // Fallback data for UI consistency
+  // Fallback data for UI consistency (백엔드 구조에 맞게 업데이트)
   const displayStats = stats || {
-    total_partners: 5,
-    active_partners: 4,
-    total_users: 150,
-    active_users: 120,
-    total_revenue: 75000.0,
-    total_transactions_today: 25,
-    daily_volume: 125000.0,
-    total_energy: 1500000,
-    available_energy: 1150000,
-    active_wallets: 45,
+    total_users: 0,
+    total_partners: 0,
+    total_wallets: 0,
+    recent_transactions: 0,
+    recent_volume: 0.0,
+    system_status: 'operational',
+    last_updated: new Date().toISOString(),
+    // 이전 프론트엔드 호환성을 위한 기본값
+    active_partners: 0,
+    total_revenue: 0,
+    daily_volume: 0,
+    total_energy_consumed: 0,
+    available_energy: 0,
+    total_transactions_today: 0,
+    active_wallets: 0,
   };
 
   const displayPartners = partnersResponse?.items || [];
@@ -186,56 +191,41 @@ function Home() {
           </Section>
         )}
 
-        {/* Legacy Dashboard Stats (for backup/comparison) */}
+        {/* Dashboard Stats (백엔드 데이터에 맞게 업데이트) */}
         <Section title="통계 요약" className="mb-8">
           <div className={gridLayouts.statsGrid}>
             <StatCard
-              title={t.dashboard.totalPartners}
-              value={safeFormatNumber(displayStats.total_partners)}
+              title={t.dashboard.totalUsers || "총 사용자"}
+              value={safeFormatNumber(displayStats.total_users)}
               icon={<Users className="h-5 w-5" />}
             />
             <StatCard
-              title={t.dashboard.activePartners}
-              value={safeFormatNumber(displayStats.active_partners)}
+              title={t.dashboard.totalPartners}
+              value={safeFormatNumber(displayStats.total_partners)}
               icon={<TrendingUp className="h-5 w-5" />}
-              trend="up"
             />
             <StatCard
-              title={t.dashboard.totalRevenue}
-              value={safeCurrency(displayStats.total_revenue)}
+              title={t.dashboard.totalWallets || "총 지갑"}
+              value={safeFormatNumber(displayStats.total_wallets)}
               icon={<DollarSign className="h-5 w-5" />}
-              trend="up"
             />
             <StatCard
-              title={t.dashboard.availableEnergy}
-              value={safeFormatNumber(displayStats.available_energy)}
-              icon={<Zap className="h-5 w-5" />}
+              title={t.dashboard.recentTransactions || "최근 거래"}
+              value={safeFormatNumber(displayStats.recent_transactions)}
+              icon={<Activity className="h-5 w-5" />}
+            />
+            <StatCard
+              title={t.dashboard.recentVolume || "최근 거래량"}
+              value={safeCurrency(displayStats.recent_volume)}
+              icon={<DollarSign className="h-5 w-5" />}
+            />
+            <StatCard
+              title={t.dashboard.systemStatus || "시스템 상태"}
+              value={displayStats.system_status}
+              icon={<Monitor className="h-5 w-5" />}
             />
           </div>
         </Section>
-        <div className={gridLayouts.statsGrid}>
-          <StatCard
-            title={t.dashboard.dailyVolume}
-            value={safeCurrency(displayStats.daily_volume)}
-            icon={<Activity className="h-5 w-5" />}
-          />
-          <StatCard
-            title={t.dashboard.totalEnergy}
-            value={safeFormatNumber(1500000)}
-            icon={<Zap className="h-5 w-5" />}
-          />
-          <StatCard
-            title={t.dashboard.transactionsToday}
-            value={safeFormatNumber(displayStats.total_transactions_today)}
-            icon={<TrendingUp className="h-5 w-5" />}
-            trend="up"
-          />
-          <StatCard
-            title={t.dashboard.activeWallets}
-            value={safeFormatNumber(displayStats.active_wallets)}
-            icon={<Users className="h-5 w-5" />}
-          />
-        </div>
 
         {/* Recent Partners Section */}
         <Section title={t.dashboard.recentPartners}>

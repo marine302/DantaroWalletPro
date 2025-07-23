@@ -107,19 +107,65 @@ app.get('/admin/dashboard/stats', (req, res) => {
   res.json(generateDashboardStats());
 });
 
+// 백엔드 API 호환성을 위한 /admin/dashboard/overview 엔드포인트
+app.get('/admin/dashboard/overview', (req, res) => {
+  const stats = generateDashboardStats();
+  // 백엔드 API 응답 형태로 변환: { success: true, data: {...} }
+  res.json({
+    success: true,
+    data: {
+      total_users: stats.active_wallets || 89,
+      total_partners: stats.total_partners || 3,
+      total_wallets: stats.active_wallets || 0,
+      recent_transactions: stats.total_transactions_today || 0,
+      recent_volume: stats.daily_volume || 0.0,
+      system_status: "operational",
+      last_updated: new Date().toISOString()
+    }
+  });
+});
+
 // 추가: /api/dashboard/stats 엔드포인트
 app.get('/api/dashboard/stats', (req, res) => {
   res.json(generateDashboardStats());
 });
 
-app.get('/admin/system/health', (req, res) => {
+// System Admins API - 백엔드 호환성
+app.get('/admin/system/admins', (req, res) => {
+  const admins = generateUserList().filter(user => 
+    ['super-admin', 'admin'].includes(user.role)
+  ).map(user => ({
+    id: user.id,
+    username: user.name.toLowerCase().replace(/\s+/g, '_'),
+    email: user.email,
+    full_name: user.name,
+    role: user.role === 'super-admin' ? 'super_admin' : 'admin',
+    is_active: user.status === 'active',
+    created_at: user.createdAt,
+    last_login: user.lastLogin
+  }));
+
+  // 백엔드 API 응답 형태
   res.json({
-    status: 'healthy',
-    uptime: Math.floor(Math.random() * 100000),
-    memoryUsage: Math.floor(Math.random() * 100),
-    cpuUsage: Math.floor(Math.random() * 100),
-    diskUsage: Math.floor(Math.random() * 100),
-    lastChecked: new Date().toISOString()
+    success: true,
+    data: admins
+  });
+});
+
+// System Health API - 백엔드 호환성  
+app.get('/admin/system/health', (req, res) => {
+  // 백엔드 API 응답 형태
+  res.json({
+    success: true,
+    data: {
+      status: 'healthy',
+      database_status: 'connected',
+      tron_network_status: 'connected',
+      last_check: new Date().toISOString(),
+      uptime: Math.floor(Math.random() * 100000),
+      errors_count: 0,
+      response_time: '15ms'
+    }
   });
 });
 
@@ -243,11 +289,15 @@ app.get('/partners/', (req, res) => {
   const startIndex = (page - 1) * size;
   const endIndex = startIndex + parseInt(size);
   
+  // 백엔드 API 호환성을 위한 응답 형태
   res.json({
-    data: filtered.slice(startIndex, endIndex),
-    total: filtered.length,
-    page: parseInt(page),
-    size: parseInt(size)
+    success: true,
+    data: {
+      items: filtered.slice(startIndex, endIndex),
+      total: filtered.length,
+      page: parseInt(page),
+      size: parseInt(size)
+    }
   });
 });
 
