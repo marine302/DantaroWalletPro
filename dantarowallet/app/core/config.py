@@ -160,6 +160,21 @@ class Settings(BaseSettings):
     # 테스트 환경 설정
     TESTING: bool = False
 
+    # External Energy Providers Configuration
+    # TronNRG API Configuration
+    TRONNRG_API_KEY: str = ""
+    TRONNRG_BASE_URL: str = "https://api.tronnrg.com/v1"
+
+    # EnergyTRON API Configuration
+    ENERGYTRON_API_KEY: str = "demo_key_energytron"
+    ENERGYTRON_PARTNER_ID: str = "partner_demo"
+    ENERGYTRON_BASE_URL: str = "https://api.energytron.io/v1"
+
+    # External Energy Service Configuration
+    EXTERNAL_ENERGY_TIMEOUT: int = 30
+    EXTERNAL_ENERGY_RETRY_COUNT: int = 3
+    EXTERNAL_ENERGY_RETRY_DELAY: int = 1  # seconds
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
