@@ -6,7 +6,10 @@ import { WebSocketManager, SSEManager, realtimeManager } from '@/lib/realtime'
 
 describe('WebSocketManager', () => {
   let wsManager: WebSocketManager
-  let mockWebSocket: any
+  let mockWebSocket: Partial<WebSocket> & {
+    send: jest.MockedFunction<(data: string | ArrayBufferLike | Blob | ArrayBufferView) => void>
+    close: jest.MockedFunction<(code?: number, reason?: string) => void>
+  }
 
   beforeEach(() => {
     wsManager = new WebSocketManager('ws://test.com')
@@ -75,7 +78,7 @@ describe('WebSocketManager', () => {
 
     it('handles incoming messages', () => {
       const callback = jest.fn()
-      const subscriptionId = wsManager.subscribe('test-channel', callback)
+      wsManager.subscribe('test-channel', callback)
 
       const message = {
         type: 'test-channel',
@@ -87,7 +90,7 @@ describe('WebSocketManager', () => {
       if (mockWebSocket.onmessage) {
         mockWebSocket.onmessage({
           data: JSON.stringify(message)
-        })
+        } as MessageEvent)
       }
 
       expect(callback).toHaveBeenCalledWith(message)
@@ -124,7 +127,9 @@ describe('WebSocketManager', () => {
 
 describe('SSEManager', () => {
   let sseManager: SSEManager
-  let mockEventSource: any
+  let mockEventSource: Partial<EventSource> & {
+    close: jest.MockedFunction<() => void>
+  }
 
   beforeEach(() => {
     sseManager = new SSEManager()

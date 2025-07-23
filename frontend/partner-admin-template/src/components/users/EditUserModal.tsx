@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   X, 
-  User, 
+  User as UserIcon, 
   Mail, 
   Phone, 
   Shield,
@@ -15,11 +15,13 @@ import {
   Save
 } from 'lucide-react'
 
+import type { User } from '@/types'
+
 interface EditUserModalProps {
-  user: any | null
+  user: User | null
   isOpen: boolean
   onClose: () => void
-  onSave: (userData: any) => Promise<void>
+  onSave: (userData: Partial<User> & { id: string }) => Promise<void>
   isLoading?: boolean
 }
 
@@ -37,13 +39,17 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
 
   useEffect(() => {
     if (user && isOpen) {
+      // kyc_status 타입 매핑: not_started -> none
+      const kycStatus = user.kyc_status || user.kycStatus || 'none'
+      const mappedKycStatus = kycStatus === 'not_started' ? 'none' : kycStatus as 'pending' | 'approved' | 'rejected' | 'none'
+      
       setFormData({
         username: user.username || '',
         email: user.email || '',
         phone: user.phone || '',
         status: user.status || 'active',
         tier: user.tier || 'basic',
-        kyc_status: user.kyc_status || user.kycStatus || 'none'
+        kyc_status: mappedKycStatus
       })
       setErrors({})
     }
@@ -81,7 +87,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    if (!validateForm() || !user) return
 
     try {
       await onSave({
@@ -138,7 +144,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <UserIcon className="h-5 w-5" />
               사용자 정보 수정
             </CardTitle>
             <Button
@@ -158,7 +164,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
             {/* 기본 정보 */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium flex items-center gap-2">
-                <User className="h-4 w-4" />
+                <UserIcon className="h-4 w-4" />
                 기본 정보
               </h3>
               
@@ -230,7 +236,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
                   </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' | 'suspended' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   >
@@ -253,7 +259,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
                   </label>
                   <select
                     value={formData.tier}
-                    onChange={(e) => setFormData(prev => ({ ...prev, tier: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tier: e.target.value as 'basic' | 'premium' | 'vip' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   >
@@ -273,7 +279,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave, isLoading = false
                   </label>
                   <select
                     value={formData.kyc_status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, kyc_status: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, kyc_status: e.target.value as 'none' | 'pending' | 'approved' | 'rejected' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   >

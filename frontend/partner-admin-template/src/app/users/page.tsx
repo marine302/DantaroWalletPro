@@ -14,6 +14,7 @@ import { UserDetailModal } from '@/components/users/UserDetailModal'
 import { EditUserModal } from '@/components/users/EditUserModal'
 import { DeleteUserModal } from '@/components/users/DeleteUserModal'
 import type { User } from '@/types'
+import type { UserFilters } from '@/types/user'
 
 interface UserStatsData {
   total_users: number
@@ -53,11 +54,11 @@ function UsersPage() {
   }, [searchTerm, statusFilter, kycFilter]);
 
   // 필터 객체 생성
-  const filters = React.useMemo(() => {
-    const filterObj: { search?: string; status?: string; kycStatus?: string } = {};
+  const filters = React.useMemo((): UserFilters => {
+    const filterObj: UserFilters = {};
     if (searchTerm) filterObj.search = searchTerm;
-    if (statusFilter) filterObj.status = statusFilter;
-    if (kycFilter) filterObj.kycStatus = kycFilter;
+    if (statusFilter) filterObj.status = statusFilter as 'active' | 'inactive' | 'suspended' | 'pending';
+    if (kycFilter) filterObj.kycStatus = kycFilter as 'none' | 'pending' | 'approved' | 'rejected';
     return filterObj;
   }, [searchTerm, statusFilter, kycFilter]);
 
@@ -251,7 +252,7 @@ function UsersPage() {
     setIsDeleteModalOpen(true)
   }
 
-  const handleUpdateUser = async (userData: any) => {
+  const handleUpdateUser = async (userData: Partial<User> & { id: string }) => {
     await updateUserMutation.mutateAsync({
       userId: userData.id,
       updates: userData

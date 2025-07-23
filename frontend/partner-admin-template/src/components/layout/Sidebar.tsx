@@ -14,7 +14,9 @@ import {
   Zap,
   X,
   CreditCard,
-  TrendingUp
+  TrendingUp,
+  Battery,
+  FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -26,8 +28,10 @@ interface SidebarProps {
 const navigation = [
   { name: '대시보드', href: '/', icon: Home },
   { name: '지갑 관리', href: '/wallet', icon: Wallet },
-  { name: '에너지 풀', href: '/energy', icon: Zap },
+  { name: '에너지 렌탈', href: '/energy-rental', icon: Battery },
+  { name: '에너지 풀 관리', href: '/energy', icon: Zap },
   { name: '출금 관리', href: '/withdrawals', icon: CreditCard },
+  { name: '출금 정책', href: '/withdrawal-policy', icon: FileText },
   { name: '사용자 관리', href: '/users', icon: Users },
   { name: '분석 리포트', href: '/analytics', icon: TrendingUp },
   { name: '알림', href: '/notifications', icon: Bell },

@@ -91,7 +91,7 @@ export class WebSocketManager {
   }
 
   // 메시지 전송
-  send(message: any) {
+  send(message: Record<string, unknown>) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     } else {
@@ -224,7 +224,7 @@ export class SSEManager {
 
   // 모든 SSE 연결 해제
   disconnectAll() {
-    for (const [id, eventSource] of this.eventSources) {
+    for (const [, eventSource] of this.eventSources) {
       eventSource.close();
     }
     this.eventSources.clear();

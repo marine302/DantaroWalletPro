@@ -1,95 +1,103 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { EnergyRentalManagementSection } from '@/components/energy-rental/EnergyRentalManagementSection'
+import { useEnergyRentalOverview, useBackendConnection } from '@/lib/hooks/useEnergyRentalHooks'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, AlertTriangle, Wifi, WifiOff } from 'lucide-react'
 
 export default function EnergyRentalPage() {
-  // 목업 데이터
-  const [overview] = useState({
-    total_energy_capacity: 50000000,
-    average_utilization: 78.5,
-    total_revenue_today: 1250,
-    active_rentals: 145,
-    total_revenue_month: 35000,
-    profit_margin: 22.5,
-    total_energy_rented: 39250000
-  })
+  const { isConnected } = useBackendConnection()
+  const {
+    plans,
+    usage,
+    allocation,
+    pools,
+    system,
+    isLoading,
+    hasError,
+    refetch
+  } = useEnergyRentalOverview()
 
-  const [pools] = useState([
-    {
-      id: 'pool_001',
-      name: 'High-Yield Pool A',
-      status: 'active',
-      created_at: '2025-07-15T00:00:00Z',
-      utilization_rate: 85.2,
-      available_energy: 7500000,
-      total_energy: 50000000,
-      staked_trx: 150000,
-      rental_rate: 0.02,
-      daily_revenue: 3000,
-      auto_rebalance: true
-    },
-    {
-      id: 'pool_002',
-      name: 'Stable Pool B',
-      status: 'paused',
-      created_at: '2025-07-10T00:00:00Z',
-      utilization_rate: 45.8,
-      available_energy: 27100000,
-      total_energy: 50000000,
-      staked_trx: 100000,
-      rental_rate: 0.015,
-      daily_revenue: 1500,
-      auto_rebalance: false
-    }
-  ])
+  // 백엔드 연결 상태 표시
+  const ConnectionStatus = () => (
+    <div className="flex items-center gap-2 text-sm">
+      {isConnected === null ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : isConnected ? (
+        <>
+          <Wifi className="w-4 h-4 text-green-500" />
+          <span className="text-green-600">백엔드 연결됨</span>
+        </>
+      ) : (
+        <>
+          <WifiOff className="w-4 h-4 text-red-500" />
+          <span className="text-red-600">백엔드 연결 실패 (목 데이터 사용 중)</span>
+        </>
+      )}
+    </div>
+  )
 
-  const [transactions] = useState([
-    {
-      id: 'tx_001',
-      customer_name: 'DeFi Protocol A',
-      energy_amount: 5000000,
-      duration_hours: 24,
-      total_cost: 2400,
-      start_time: '2025-07-20T08:00:00Z',
-      end_time: '2025-07-21T08:00:00Z',
-      status: 'active'
-    },
-    {
-      id: 'tx_002',
-      customer_name: 'Trading Bot B',
-      energy_amount: 2000000,
-      duration_hours: 12,
-      total_cost: 600,
-      start_time: '2025-07-20T10:00:00Z',
-      end_time: '2025-07-20T22:00:00Z',
-      status: 'completed'
-    }
-  ])
-
-  const handleCreatePool = () => {
-    console.log('새 에너지 풀 생성')
+  if (isLoading) {
+    return (
+      <Sidebar>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">에너지 렌탈 데이터를 불러오는 중...</p>
+          </div>
+        </div>
+      </Sidebar>
+    )
   }
-
-  const handleTogglePool = (poolId: string, currentStatus: string) => {
-    console.log('풀 상태 변경:', poolId, currentStatus)
-  }
-
-  const handleRefresh = () => {
-    console.log('에너지 렌탈 데이터 새로고침')
-  }
-
   return (
     <Sidebar>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="p-8 space-y-6">
+        {/* 헤더 */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">에너지 렌탈 관리</h1>
+            <p className="text-gray-600 mt-1">Super Admin에서 에너지를 렌탈하여 사용자에게 제공</p>
+          </div>
+          <ConnectionStatus />
+        </div>
+
+        {/* 백엔드 연결 상태 알림 */}
+        {isConnected === false && (
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              백엔드 서버에 연결할 수 없습니다. 목 데이터를 사용하여 개발 중입니다.
+              백엔드 준비 완료 후 실제 데이터로 자동 전환됩니다.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* 에러 상태 */}
+        {hasError && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              데이터를 불러오는 중 오류가 발생했습니다.
+              <button 
+                onClick={refetch}
+                className="ml-2 underline hover:no-underline"
+              >
+                다시 시도
+              </button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* 에너지 렌탈 관리 섹션 */}
         <EnergyRentalManagementSection
-          overview={overview}
+          plans={plans}
+          usage={usage}
+          allocation={allocation}
           pools={pools}
-          transactions={transactions}
-          onCreatePool={handleCreatePool}
-          onTogglePool={handleTogglePool}
-          onRefresh={handleRefresh}
+          system={system}
+          isBackendConnected={isConnected === true}
         />
       </div>
     </Sidebar>

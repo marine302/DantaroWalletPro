@@ -1,5 +1,6 @@
 // Mock 서비스 - 빌드용 스텁
 export const MockService = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   login: async (email: string, _password: string) => ({ 
     success: true,
     message: 'Login successful',
@@ -22,6 +23,7 @@ export const MockService = {
       expires_in: 3600
     } 
   }),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   register: async (email: string, username: string, _password: string) => ({ 
     success: true,
     message: 'Registration successful', 

@@ -8,22 +8,7 @@ import { Search, RefreshCw } from 'lucide-react'
 import { BulkActions } from './BulkActions'
 import { UserTable } from './UserTable'
 import { Pagination } from './Pagination'
-
-interface User {
-  id: string
-  username: string
-  email: string
-  phone?: string
-  wallet_address: string
-  balance: number
-  status: 'active' | 'inactive' | 'suspended' | 'pending'
-  created_at: string
-  last_login?: string
-  kyc_status: 'none' | 'pending' | 'approved' | 'rejected'
-  tier: 'basic' | 'premium' | 'vip'
-  referral_code?: string
-  referred_by?: string
-}
+import type { User } from '@/types'
 
 interface UserManagementSectionProps {
   // 필터 상태

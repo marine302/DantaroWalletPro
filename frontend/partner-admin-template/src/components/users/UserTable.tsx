@@ -12,22 +12,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
-
-interface User {
-  id: string
-  username: string
-  email: string
-  phone?: string
-  wallet_address: string
-  balance: number
-  status: 'active' | 'inactive' | 'suspended' | 'pending'
-  created_at: string
-  last_login?: string
-  kyc_status: 'none' | 'pending' | 'approved' | 'rejected'
-  tier: 'basic' | 'premium' | 'vip'
-  referral_code?: string
-  referred_by?: string
-}
+import type { User } from '@/types'
 
 interface UserTableProps {
   users: User[]
@@ -184,21 +169,22 @@ export function UserTable({
                   </Badge>
                 </td>
                 <td className="px-4 py-4">
-                  <Badge className={getKycBadge(user.kyc_status)}>
-                    {user.kyc_status === 'approved' ? '승인' :
-                     user.kyc_status === 'pending' ? '대기' :
-                     user.kyc_status === 'rejected' ? '거부' : '미제출'}
+                  <Badge className={getKycBadge((user.kycStatus || user.kyc_status) || 'none')}>
+                    {(user.kycStatus || user.kyc_status) === 'approved' ? '승인' :
+                     (user.kycStatus || user.kyc_status) === 'pending' ? '대기' :
+                     (user.kycStatus || user.kyc_status) === 'rejected' ? '거부' : '미제출'}
                   </Badge>
                 </td>
                 <td className="px-4 py-4">
-                  <Badge className={getTierBadge(user.tier)}>
+                  <Badge className={getTierBadge(user.tier || 'basic')}>
                     {user.tier === 'basic' ? '베이직' :
-                     user.tier === 'premium' ? '프리미엄' : 'VIP'}
+                     user.tier === 'premium' ? '프리미엄' : 
+                     user.tier === 'vip' ? 'VIP' : '베이직'}
                   </Badge>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-900">
-                    {formatDate(user.created_at)}
+                    {formatDate(user.createdAt || user.created_at || '')}
                   </div>
                   {user.last_login && (
                     <div className="text-xs text-gray-500">

@@ -2,7 +2,8 @@
  * 사용자 관리 서비스 - 실제 API 연동 및 로컬 상태 관리
  */
 
-import type { User, UserStats } from '../../types';
+import type { User } from '../../types';
+import type { UserStats } from '../../types/user';
 
 export interface UserFilters {
   search?: string;
@@ -34,7 +35,7 @@ export interface UpdateUserRequest {
   username?: string;
   email?: string;
   phone?: string;
-  status?: 'active' | 'inactive' | 'suspended';
+  status?: 'active' | 'inactive' | 'suspended' | 'pending';
   tier?: 'basic' | 'premium' | 'vip';
   kyc_status?: 'none' | 'pending' | 'approved' | 'rejected';
 }
@@ -44,6 +45,8 @@ const generateMockUsers = (count: number = 50): User[] => {
   const users: User[] = [];
   const statuses: ('active' | 'inactive' | 'suspended' | 'pending')[] = ['active', 'inactive', 'suspended', 'pending'];
   const kycStatuses: ('pending' | 'approved' | 'rejected' | 'not_started')[] = ['not_started', 'pending', 'approved', 'rejected'];
+  // 추후 사용 예정
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tiers: ('basic' | 'premium' | 'vip')[] = ['basic', 'premium', 'vip'];
 
   for (let i = 1; i <= count; i++) {
@@ -111,16 +114,13 @@ class UserDataManager {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     const stats: UserStats = {
-      totalUsers: users.length,
-      activeUsers: users.filter(u => u.status === 'active').length,
-      newUsersToday: users.filter(u => new Date(u.createdAt) >= today).length,
-      totalBalance: users.reduce((sum, u) => sum + u.balance, 0),
-      averageBalance: users.length > 0 ? users.reduce((sum, u) => sum + u.balance, 0) / users.length : 0,
-      kycApproved: users.filter(u => u.kycStatus === 'approved').length,
-      kycPending: users.filter(u => u.kycStatus === 'pending').length,
-      dailyGrowth: Math.random() * 10 - 5, // Mock
-      weeklyGrowth: Math.random() * 30 - 15, // Mock
-      monthlyGrowth: Math.random() * 50 - 25 // Mock
+      total_users: users.length,
+      active_users: users.filter(u => u.status === 'active').length,
+      new_users_today: users.filter(u => new Date(u.createdAt || u.created_at || '') >= today).length,
+      total_balance: users.reduce((sum, u) => sum + u.balance, 0),
+      average_balance: users.length > 0 ? users.reduce((sum, u) => sum + u.balance, 0) / users.length : 0,
+      kyc_approved: users.filter(u => (u.kycStatus || u.kyc_status) === 'approved').length,
+      kyc_pending: users.filter(u => (u.kycStatus || u.kyc_status) === 'pending').length
     };
 
     localStorage.setItem(this.STATS_STORAGE_KEY, JSON.stringify(stats));
@@ -129,16 +129,13 @@ class UserDataManager {
   static getStats(): UserStats {
     if (typeof window === 'undefined') {
       return {
-        totalUsers: 0,
-        activeUsers: 0,
-        newUsersToday: 0,
-        totalBalance: 0,
-        averageBalance: 0,
-        kycApproved: 0,
-        kycPending: 0,
-        dailyGrowth: 0,
-        weeklyGrowth: 0,
-        monthlyGrowth: 0
+        total_users: 0,
+        active_users: 0,
+        new_users_today: 0,
+        total_balance: 0,
+        average_balance: 0,
+        kyc_approved: 0,
+        kyc_pending: 0
       };
     }
 
@@ -150,7 +147,15 @@ class UserDataManager {
     // 통계 데이터가 없으면 생성
     this.updateStats();
     const newData = localStorage.getItem(this.STATS_STORAGE_KEY);
-    return newData ? JSON.parse(newData) : {};
+    return newData ? JSON.parse(newData) : {
+      total_users: 0,
+      active_users: 0,
+      new_users_today: 0,
+      total_balance: 0,
+      average_balance: 0,
+      kyc_approved: 0,
+      kyc_pending: 0
+    };
   }
 }
 
@@ -261,14 +266,19 @@ class UserService {
         email: userData.email,
         phone: userData.phone,
         walletAddress: userData.wallet_address || `TR${Math.random().toString(36).substring(2, 32).toUpperCase()}`,
+        wallet_address: userData.wallet_address || `TR${Math.random().toString(36).substring(2, 32).toUpperCase()}`,
         balance: 0,
         status: 'active',
         kycStatus: 'none',
+        kyc_status: 'none',
         tier: userData.tier || 'basic',
         createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        last_login: new Date().toISOString(),
         totalTransactions: 0,
         totalVolume: 0,
-        referralCode: `REF${newId.padStart(4, '0')}`
+        referral_code: `REF${newId.padStart(4, '0')}`
       };
 
       users.push(newUser);
@@ -379,13 +389,13 @@ class UserService {
           user.walletAddress,
           user.balance,
           user.status,
-          user.kycStatus,
+          user.kycStatus || user.kyc_status || 'none',
           user.tier,
-          user.createdAt,
-          user.lastLogin || '',
+          user.createdAt || user.created_at || '',
+          user.lastLogin || user.last_login || '',
           user.totalTransactions,
           user.totalVolume,
-          user.referralCode || ''
+          user.referral_code || ''
         ].join(','))
       ].join('\n');
 

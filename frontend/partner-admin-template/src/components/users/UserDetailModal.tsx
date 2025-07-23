@@ -6,21 +6,21 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   X, 
-  User, 
+  User as UserIcon, 
   Mail, 
   Phone, 
   Wallet, 
   Calendar,
   Shield,
-  Star,
   Clock,
   DollarSign,
   CreditCard
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import type { User } from '@/types'
 
 interface UserDetailModalProps {
-  user: any | null
+  user: User | null
   isOpen: boolean
   onClose: () => void
 }
@@ -62,7 +62,7 @@ export function UserDetailModal({ user, isOpen, onClose }: UserDetailModalProps)
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center gap-2">
-            <User className="h-5 w-5" />
+            <UserIcon className="h-5 w-5" />
             사용자 상세 정보
           </h2>
           <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
@@ -75,7 +75,7 @@ export function UserDetailModal({ user, isOpen, onClose }: UserDetailModalProps)
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+                <UserIcon className="h-4 w-4" />
                 기본 정보
               </CardTitle>
             </CardHeader>
@@ -101,9 +101,10 @@ export function UserDetailModal({ user, isOpen, onClose }: UserDetailModalProps)
               <div>
                 <label className="text-sm font-medium text-gray-500">등급</label>
                 <div className="mt-1">
-                  <Badge className={getTierBadge(user.tier)}>
+                  <Badge className={getTierBadge(user.tier || 'basic')}>
                     {user.tier === 'basic' ? '베이직' :
-                     user.tier === 'premium' ? '프리미엄' : 'VIP'}
+                     user.tier === 'premium' ? '프리미엄' : 
+                     user.tier === 'vip' ? 'VIP' : '베이직'}
                   </Badge>
                 </div>
               </div>

@@ -7,23 +7,12 @@ import {
   CheckCircle, 
   Clock, 
   XCircle,
-  Loader2
+  Loader2,
+  Zap,
+  TrendingUp
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
-
-interface WithdrawalRequest {
-  id: string
-  user_id: string
-  user_name: string
-  amount: number
-  currency: string
-  destination_address: string
-  status: 'pending' | 'approved' | 'processing' | 'completed' | 'failed' | 'rejected'
-  request_time: string
-  processed_time?: string
-  transaction_hash?: string
-  fee: number
-}
+import { WithdrawalRequest } from '@/types'
 
 interface WithdrawalTableProps {
   withdrawals: WithdrawalRequest[]
@@ -114,6 +103,7 @@ export function WithdrawalTable({
             <th className="text-left py-3 px-4 font-medium text-gray-600">요청 ID</th>
             <th className="text-left py-3 px-4 font-medium text-gray-600">사용자</th>
             <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-600">에너지/수익</th>
             <th className="text-left py-3 px-4 font-medium text-gray-600">대상 주소</th>
             <th className="text-left py-3 px-4 font-medium text-gray-600">상태</th>
             <th className="text-left py-3 px-4 font-medium text-gray-600">요청 시간</th>
@@ -123,20 +113,20 @@ export function WithdrawalTable({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={8} className="px-4 py-8 text-center">
+              <td colSpan={9} className="px-4 py-8 text-center">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                 <p className="text-gray-500 mt-2">출금 요청을 불러오는 중...</p>
               </td>
             </tr>
           ) : error ? (
             <tr>
-              <td colSpan={8} className="px-4 py-8 text-center text-red-600">
+              <td colSpan={9} className="px-4 py-8 text-center text-red-600">
                 출금 요청을 불러오는데 실패했습니다.
               </td>
             </tr>
           ) : withdrawals.length === 0 ? (
             <tr>
-              <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+              <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                 검색 조건에 맞는 출금 요청이 없습니다.
               </td>
             </tr>
@@ -163,7 +153,37 @@ export function WithdrawalTable({
                 <td className="py-3 px-4 text-gray-900">
                   <div>
                     <p className="font-medium">{formatCurrency(withdrawal.amount)} {withdrawal.currency}</p>
-                    <p className="text-sm text-gray-500">수수료: {formatCurrency(withdrawal.fee)} {withdrawal.currency}</p>
+                    <p className="text-sm text-gray-500">
+                      수수료: {formatCurrency(withdrawal.fee)} {withdrawal.fee_currency || withdrawal.currency}
+                    </p>
+                  </div>
+                </td>
+                <td className="py-3 px-4 text-gray-900">
+                  <div className="space-y-1">
+                    {withdrawal.energy_consumed !== undefined && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <Zap className="w-3 h-3 text-yellow-500" />
+                        <span className="text-gray-600">{withdrawal.energy_consumed.toLocaleString()} Energy</span>
+                      </div>
+                    )}
+                    {withdrawal.energy_cost !== undefined && (
+                      <div className="text-xs text-gray-500">
+                        비용: {formatCurrency(withdrawal.energy_cost)} TRX
+                      </div>
+                    )}
+                    {withdrawal.profit_margin !== undefined && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <TrendingUp className="w-3 h-3 text-green-500" />
+                        <span className={`font-medium ${withdrawal.profit_margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {withdrawal.profit_margin >= 0 ? '+' : ''}{formatCurrency(withdrawal.profit_margin)} {withdrawal.fee_currency || 'USDT'}
+                        </span>
+                      </div>
+                    )}
+                    {(withdrawal.energy_consumed === undefined && withdrawal.energy_cost === undefined && withdrawal.profit_margin === undefined) && (
+                      <div className="text-xs text-gray-400">
+                        에너지 정보 없음
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="py-3 px-4">

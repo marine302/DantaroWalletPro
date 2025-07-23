@@ -64,13 +64,13 @@ export function StatsCards({ stats }: StatsCardsProps) {
           <CardContent>
             <div className="text-2xl font-bold">{card.value}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              {card.change >= 0 ? (
+              {(card.change ?? 0) >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
               ) : (
                 <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
               )}
-              <span className={card.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {card.change >= 0 ? '+' : ''}{card.change.toFixed(1)}%
+              <span className={(card.change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}>
+                {(card.change ?? 0) >= 0 ? '+' : ''}{(card.change ?? 0).toFixed(1)}%
               </span>
               <span className="ml-1">{card.changeLabel}</span>
             </div>

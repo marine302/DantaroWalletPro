@@ -9,8 +9,10 @@ import {
   Trash2
 } from 'lucide-react'
 
+import type { User } from '@/types'
+
 interface DeleteUserModalProps {
-  user: any | null
+  user: User | null
   isOpen: boolean
   onClose: () => void
   onConfirm: (userId: string) => Promise<void>

@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Plus, RefreshCw } from 'lucide-react'
 import { useUsers, useUserStats, useBulkUpdateUsers, useExportUsers, useCreateUser } from '@/lib/hooks'
 import { withAuth } from '@/contexts/AuthContext'
-import type { User as BaseUser, UserStats as UserStatsType } from '@/types'
+import type { User as BaseUser } from '@/types'
+import type { UserFilters } from '@/types/user'
 
-// 확장된 사용자 인터페이스 (추가 필드 포함)
-interface User extends BaseUser {
+// 확장된 사용자 인터페이스 (추가 필드 포함) - 현재 미사용이지만 추후 확장을 위해 유지
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface ExtendedUser extends BaseUser {
   phone?: string
   wallet_address?: string // 호환성을 위해
   created_at?: string // 호환성을 위해  
@@ -20,7 +22,7 @@ interface User extends BaseUser {
   kyc_status?: 'none' | 'pending' | 'approved' | 'rejected' // 호환성을 위해
   tier?: 'basic' | 'premium' | 'vip'
   referral_code?: string
-  referred_by?: number
+  referred_by?: string
 }
 
 interface UserStats {
@@ -61,11 +63,11 @@ function UsersPage() {
   }, [searchTerm, statusFilter, kycFilter]);
 
   // 필터 객체 생성
-  const filters = React.useMemo(() => {
-    const filterObj: { search?: string; status?: string; kycStatus?: string } = {};
+  const filters = React.useMemo((): UserFilters => {
+    const filterObj: UserFilters = {};
     if (searchTerm) filterObj.search = searchTerm;
-    if (statusFilter) filterObj.status = statusFilter;
-    if (kycFilter) filterObj.kycStatus = kycFilter;
+    if (statusFilter) filterObj.status = statusFilter as 'active' | 'inactive' | 'suspended' | 'pending';
+    if (kycFilter) filterObj.kycStatus = kycFilter as 'none' | 'pending' | 'approved' | 'rejected';
     return filterObj;
   }, [searchTerm, statusFilter, kycFilter]);
 
@@ -85,72 +87,79 @@ function UsersPage() {
   const createUserMutation = useCreateUser();
 
   // 폴백 데이터
-  const fallbackUsers: User[] = [
+  const fallbackUsers: BaseUser[] = [
     {
       id: '1',
       username: 'john_doe',
       email: 'john@example.com',
       phone: '+82-10-1234-5678',
-      wallet_address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+      walletAddress: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
       balance: 15000.50,
       status: 'active',
-      created_at: '2024-01-15T09:30:00Z',
-      last_login: '2024-07-13T08:45:00Z',
-      kyc_status: 'approved',
+      createdAt: '2024-01-15T09:30:00Z',
+      lastLogin: '2024-07-13T08:45:00Z',
+      kycStatus: 'approved',
       tier: 'premium',
-      referral_code: 'JOHN2024',
-      referred_by: undefined
+      totalTransactions: 0,
+      totalVolume: 0
     },
     {
       id: '2',
       username: 'jane_smith',
       email: 'jane@example.com',
       phone: '+82-10-9876-5432',
-      wallet_address: 'TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9',
+      walletAddress: 'TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9',
       balance: 8750.25,
       status: 'active',
-      created_at: '2024-02-20T14:15:00Z',
-      last_login: '2024-07-12T19:30:00Z',
-      kyc_status: 'approved',
+      createdAt: '2024-02-20T14:15:00Z',
+      lastLogin: '2024-07-12T19:30:00Z',
+      kycStatus: 'approved',
       tier: 'basic',
-      referral_code: 'JANE2024'
+      totalTransactions: 0,
+      totalVolume: 0
     },
     {
       id: '3',
       username: 'bob_wilson',
       email: 'bob@example.com',
-      wallet_address: 'TLPpXqUYssrZPCWwP1MUK8yqeZsKAFa2Z8',
+      walletAddress: 'TLPpXqUYssrZPCWwP1MUK8yqeZsKAFa2Z8',
       balance: 2340.00,
       status: 'inactive',
-      created_at: '2024-03-10T11:00:00Z',
-      last_login: '2024-07-01T16:20:00Z',
-      kyc_status: 'pending',
-      tier: 'basic'
+      createdAt: '2024-03-10T11:00:00Z',
+      lastLogin: '2024-07-01T16:20:00Z',
+      kycStatus: 'pending',
+      tier: 'basic',
+      totalTransactions: 0,
+      totalVolume: 0
     },
     {
       id: '4',
       username: 'alice_johnson',
       email: 'alice@example.com',
       phone: '+82-10-5555-1234',
-      wallet_address: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+      walletAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
       balance: 45600.75,
       status: 'active',
-      created_at: '2024-01-05T10:30:00Z',
-      last_login: '2024-07-13T07:15:00Z',
-      kyc_status: 'approved',
+      createdAt: '2024-01-05T10:30:00Z',
+      lastLogin: '2024-07-13T07:15:00Z',
+      kycStatus: 'approved',
       tier: 'vip',
-      referral_code: 'ALICE2024'
+      totalTransactions: 0,
+      totalVolume: 0
     },
     {
       id: '5',
       username: 'charlie_brown',
       email: 'charlie@example.com',
-      wallet_address: 'TSSMHYeV2uE9qYH14Hvcs6HjRNjPYWMGpT',
+      walletAddress: 'TSSMHYeV2uE9qYH14Hvcs6HjRNjPYWMGpT',
       balance: 0.00,
       status: 'suspended',
-      created_at: '2024-06-15T16:45:00Z',
-      kyc_status: 'rejected',
-      tier: 'basic'
+      createdAt: '2024-06-15T16:45:00Z',
+      lastLogin: '2024-06-20T10:00:00Z',
+      kycStatus: 'rejected',
+      tier: 'basic',
+      totalTransactions: 0,
+      totalVolume: 0
     }
   ];
 
@@ -165,7 +174,7 @@ function UsersPage() {
   };
 
   // 데이터 매핑
-  const users = (usersData as { users?: User[] })?.users || fallbackUsers;
+  const users = (usersData as { users?: BaseUser[] })?.users || fallbackUsers;
   
   // 백엔드 응답을 프론트엔드 UserStats 형식으로 변환
   const statsResponse = statsData as UserStatsResponse | null;
@@ -189,7 +198,7 @@ function UsersPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(users.map((u: User) => u.id))
+      setSelectedUsers(users.map((u: BaseUser) => u.id))
     } else {
       setSelectedUsers([])
     }

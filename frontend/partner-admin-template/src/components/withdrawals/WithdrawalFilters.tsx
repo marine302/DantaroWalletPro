@@ -5,20 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { WithdrawalTable } from './WithdrawalTable'
-
-interface WithdrawalRequest {
-  id: string
-  user_id: string
-  user_name: string
-  amount: number
-  currency: string
-  destination_address: string
-  status: 'pending' | 'approved' | 'processing' | 'completed' | 'failed' | 'rejected'
-  request_time: string
-  processed_time?: string
-  transaction_hash?: string
-  fee: number
-}
+import { WithdrawalRequest } from '@/types'
 
 interface WithdrawalManagementSectionProps {
   // 필터 상태
