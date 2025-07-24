@@ -60,7 +60,7 @@ Tron 블록체인 기반의 에너지 대여 서비스를 위한 파트너 관�
 
 ### ✅ Phase 3: 백엔드 API 연동 시스템 구축 완료
 - **API 클라이언트**: HTTP 요청, 인증, 에러 핸들링 통합 시스템
-- **서비스 계층**: 도메인별 API 서비스 모듈화 (user, withdrawal, energy, analytics)
+- **서비스 계층**: 도메인별 API 서비스 모듈화 (user, withdrawal, analytics)
 - **React Query 훅**: 데이터 페칭, 캐싱, 실시간 업데이트 통합
 - **실시간 데이터**: WebSocket/SSE 기반 실시간 통신 시스템
 - **테스트 인프라**: Jest, Testing Library 기반 테스트 환경 구축
@@ -117,7 +117,7 @@ Tron 블록체인 기반의 에너지 대여 서비스를 위한 파트너 관�
 
 **API 연동 및 데이터 관리:**
 - **API 클라이언트**: 통합 HTTP 클라이언트, 인증, 에러 핸들링
-- **서비스 모듈**: user, withdrawal, energy, analytics, auth, mock 서비스
+- **서비스 모듈**: user, withdrawal, analytics, auth, mock 서비스
 - **React Query 훅**: 데이터 페칭, 캐싱, 실시간 업데이트
 - **실시간 통신**: WebSocket/SSE 기반 실시간 데이터 처리
 
@@ -130,22 +130,14 @@ Tron 블록체인 기반의 에너지 대여 서비스를 위한 파트너 관�
 - **분석 (Analytics)**: `AnalyticsManagementSection` - 대시보드, 실시간 데이터, 차트 모듈화
 - **사용자 관리 (Users)**: `UserManagementSection` - 사용자 목록, 필터링, KYC 상태 관리
 - **출금 관리 (Withdrawals)**: `WithdrawalManagementSection` - 출금 요청, 승인, 모니터링
-- **대시보드 (Dashboard)**: `StatsCards`, `EnergyRentalWidget` - 메인 대시보드 위젯들
-- **에너지 관리 (Energy)**: `EnergyManagementSection` - 에너지 풀, 트랜잭션, 설정
+- **대시보드 (Dashboard)**: `StatsCards` - 메인 대시보드 위젯들
 - **알림 (Notifications)**: `NotificationManagementSection` - 시스템 알림, 설정 관리
 - **설정 (Settings)**: `SettingsManagementSection` - 계정, 보안, 시스템 설정
 - **지갑 (Wallet)**: `WalletManagementSection` - 다중 지갑 관리 및 거래 내역
 - **감사 (Audit)**: `AuditManagementSection` - 감사 로그 및 컴플라이언스
-- **에너지 렌탈 (Energy Rental)**: `EnergyRentalManagementSection` - 에너지 풀 관리
 - **상태 점검 (Health Check)**: `HealthCheckManagementSection` - 시스템 모니터링
 - **온보딩 (Onboarding)**: `OnboardingManagementSection` - 파트너 온보딩
 - **출금 정책 (Withdrawal Policy)**: `WithdrawalPolicyManagementSection` - 정책 관리
-- **지갑 (Wallet)**: `WalletManagementSection` - 지갑 연결, 잔액, 트랜잭션
-- **감사 (Audit)**: `AuditManagementSection` - 감사 로그, 컴플라이언스 리포트
-- **에너지 렌탈 (Energy Rental)**: `EnergyRentalManagementSection` - 에너지 풀 관리
-- **헬스 체크 (Health Check)**: `HealthCheckManagementSection` - 시스템 상태 점검
-- **온보딩 (Onboarding)**: `OnboardingManagementSection` - 파트너 온보딩 가이드
-- **출금 정책 (Withdrawal Policy)**: `WithdrawalPolicyManagementSection` - 정책 설정
 
 **공통 컴포넌트:**
 - `PageHeader`: 모든 페이지 공통 헤더 (제목, 설명, 액션 버튼)
@@ -155,7 +147,7 @@ Tron 블록체인 기반의 에너지 대여 서비스를 위한 파트너 관�
 
 **타입 시스템:**
 - `src/types/index.ts`에 모든 도메인 타입 통합 정의
-- 에너지, 사용자, 출금, 알림, 설정, 지갑 등 주요 엔티티 타입
+- 사용자, 출금, 알림, 설정, 지갑 등 주요 엔티티 타입
 - 컴포넌트 props 타입과 데이터 모델 타입 일치화
 
 **코드 품질:**
@@ -205,14 +197,6 @@ src/components/
 ├── dashboard/              # 대시보드 전용
 │   ├── RecentTransactions.tsx
 │   └── NotificationCenter.tsx
-├── energy/                 # 에너지 관리 전용
-│   ├── EnergyManagementSection.tsx
-│   ├── EnergyStats.tsx
-│   ├── EnergyPoolsTab.tsx
-│   ├── EnergyPoolCard.tsx
-│   ├── EnergyTransactionTable.tsx
-│   ├── EnergySettingsTab.tsx
-│   └── EnergyFilters.tsx
 ├── notifications/          # 알림 관리 전용
 │   └── NotificationManagementSection.tsx
 ├── settings/               # 설정 관리 전용
@@ -236,10 +220,9 @@ src/components/
 2. **분석 및 보고서**: 수익/비용 분석, 사용자/거래 통계 ✅ 완료
 3. **사용자 관리**: 파트너 사용자 목록 및 상태 관리 ✅ 완료
 4. **출금 관리**: 출금 요청 승인/거부 처리 ✅ 완료
-5. **에너지 관리**: Tron 에너지 풀 모니터링 및 관리 ✅ 완료
-6. **알림 관리**: 시스템 알림 및 메시지 관리 ✅ 신규 완성
-7. **설정 관리**: 파트너 프로필, 보안, 시스템 설정 ✅ 신규 완성
-8. **지갑 관리**: TronLink 지갑 연결 및 다중 지갑 관리 ✅ 대폭 개선
+5. **알림 관리**: 시스템 알림 및 메시지 관리 ✅ 신규 완성
+6. **설정 관리**: 파트너 프로필, 보안, 시스템 설정 ✅ 신규 완성
+7. **지갑 관리**: TronLink 지갑 연결 및 다중 지갑 관리 ✅ 대폭 개선
 
 ## 개발 환경 설정
 

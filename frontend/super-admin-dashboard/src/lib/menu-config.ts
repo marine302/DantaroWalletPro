@@ -48,50 +48,6 @@ export const getMenuConfig = (t: any): MenuItem[] => [
     description: t.nav.integratedDashboardDesc || '파트너별 상세 데이터 분석 및 차트'
   },
   {
-    id: 'energy',
-    labelKey: 'nav.energy',
-    icon: Zap,
-    href: '#',
-    description: t.nav.energyDesc || '에너지 거래 및 관리',
-    children: [
-      {
-        id: 'energy-overview',
-        labelKey: 'nav.energyOverview',
-        icon: Activity,
-        href: '/energy',
-        description: t.nav.energyOverviewDesc || '에너지 거래 현황'
-      },
-      {
-        id: 'energy-market',
-        labelKey: 'nav.energyMarket',
-        icon: TrendingUp,
-        href: '/energy-market',
-        description: t.nav.energyMarketDesc || '에너지 마켓 현황'
-      },
-      {
-        id: 'external-market',
-        labelKey: 'nav.externalMarket',
-        icon: Target,
-        href: '/energy/external-market',
-        description: t.nav.externalMarketDesc || '외부 마켓 연동'
-      },
-      {
-        id: 'auto-purchase',
-        labelKey: 'nav.autoPurchase',
-        icon: Zap,
-        href: '/energy/auto-purchase',
-        description: t.nav.autoPurchaseDesc || '자동 구매 설정'
-      },
-      {
-        id: 'purchase-history',
-        labelKey: 'nav.purchaseHistory',
-        icon: FileText,
-        href: '/energy/purchase-history',
-        description: t.nav.purchaseHistoryDesc || '구매 이력 조회'
-      }
-    ]
-  },
-  {
     id: 'partners',
     labelKey: 'nav.partners',
     icon: Users,

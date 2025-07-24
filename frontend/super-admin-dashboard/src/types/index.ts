@@ -23,7 +23,6 @@ export interface PartnerConfig {
   min_withdrawal_amount: number;
   max_withdrawal_amount: number;
   daily_withdrawal_limit: number;
-  energy_allocation: number;
   extra_data?: ExtraData;
   created_at: string;
   updated_at: string;
@@ -38,31 +37,6 @@ export interface PartnerDailyStatistics {
   total_fees: number;
   new_wallets: number;
   active_wallets: number;
-  extra_data?: ExtraData;
-}
-
-// Energy Pool types
-export interface EnergyPool {
-  id: number;
-  total_energy: number;
-  available_energy: number;
-  reserved_energy: number;
-  tron_balance: number;
-  last_updated: string;
-  auto_recharge_enabled: boolean;
-  min_energy_threshold: number;
-  recharge_amount: number;
-  extra_data?: ExtraData;
-}
-
-export interface EnergyTransaction {
-  id: number;
-  transaction_type: 'recharge' | 'allocation' | 'consumption' | 'return';
-  amount: number;
-  partner_id?: number;
-  transaction_hash?: string;
-  status: 'pending' | 'confirmed' | 'failed';
-  created_at: string;
   extra_data?: ExtraData;
 }
 
@@ -118,8 +92,6 @@ export interface DashboardStats {
   active_partners?: number;
   total_revenue?: number;
   daily_volume?: number;
-  total_energy_consumed?: number;
-  available_energy?: number;
   total_transactions_today?: number;
   active_wallets?: number;
 }
@@ -173,7 +145,6 @@ export interface CreatePartnerRequest {
   min_withdrawal_amount: number;
   max_withdrawal_amount: number;
   daily_withdrawal_limit: number;
-  energy_allocation: number;
 }
 
 export interface UpdatePartnerRequest extends Partial<CreatePartnerRequest> {

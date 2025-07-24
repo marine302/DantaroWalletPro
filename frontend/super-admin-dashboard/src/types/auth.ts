@@ -23,12 +23,6 @@ export type Permission =
   | 'partners.approve'
   | 'partners.suspend'
 
-  // Energy Market
-  | 'energy.view'
-  | 'energy.trade'
-  | 'energy.manage_providers'
-  | 'energy.set_prices'
-
   // Financial
   | 'finance.view'
   | 'finance.manage_fees'
@@ -94,7 +88,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     // All permissions
     'users.view', 'users.create', 'users.edit', 'users.delete', 'users.manage_roles',
     'partners.view', 'partners.create', 'partners.edit', 'partners.delete', 'partners.approve', 'partners.suspend',
-    'energy.view', 'energy.trade', 'energy.manage_providers', 'energy.set_prices',
     'finance.view', 'finance.manage_fees', 'finance.view_revenue', 'finance.export_data',
     'system.view_logs', 'system.manage_settings', 'system.backup', 'system.maintenance',
     'audit.view', 'audit.export', 'audit.manage_compliance',
@@ -105,7 +98,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     // Most permissions except critical system operations
     'users.view', 'users.create', 'users.edit',
     'partners.view', 'partners.create', 'partners.edit', 'partners.approve', 'partners.suspend',
-    'energy.view', 'energy.trade', 'energy.manage_providers',
     'finance.view', 'finance.view_revenue', 'finance.export_data',
     'system.view_logs', 'system.manage_settings',
     'audit.view', 'audit.export',
@@ -116,7 +108,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     // Read-only permissions
     'users.view',
     'partners.view',
-    'energy.view',
     'finance.view',
     'system.view_logs',
     'audit.view',
@@ -127,7 +118,6 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     // Audit and compliance focused permissions
     'users.view',
     'partners.view',
-    'energy.view',
     'finance.view', 'finance.view_revenue',
     'system.view_logs',
     'audit.view', 'audit.export', 'audit.manage_compliance',

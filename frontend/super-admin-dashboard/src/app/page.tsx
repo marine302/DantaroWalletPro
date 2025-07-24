@@ -4,7 +4,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import { Users, DollarSign, Zap, Activity, TrendingUp, Monitor } from 'lucide-react';
+import { Users, DollarSign, Activity, TrendingUp, Monitor } from 'lucide-react';
 import {
   StatCard,
   Section,
@@ -35,12 +35,12 @@ function Home() {
 
     // Check if user is authenticated
     const _token = localStorage.getItem('authToken');
-    if (!token) {
-      router.push('/login');
+    if (!_token) {
+      _router.push('/login');
       return;
     }
     setIsAuthenticated(true);
-  }, [router]);
+  }, [_router]);
 
   const {
     data: stats,
@@ -117,8 +117,6 @@ function Home() {
     total_revenue: 75000.0,
     total_transactions_today: 25,
     daily_volume: 125000.0,
-    total_energy: 1500000,
-    available_energy: 1150000,
     active_wallets: 45,
   };
 
@@ -192,48 +190,38 @@ function Home() {
           <div className={gridLayouts.statsGrid}>
             <StatCard
               title={t.dashboard.totalPartners}
-              value={safeFormatNumber(displayStats.total_partners)}
+              value={safeFormatNumber(_displayStats.total_partners)}
               icon={<Users className="h-5 w-5" />}
             />
             <StatCard
               title={t.dashboard.activePartners}
-              value={safeFormatNumber(displayStats.active_partners)}
+              value={safeFormatNumber(_displayStats.active_partners)}
               icon={<TrendingUp className="h-5 w-5" />}
               trend="up"
             />
             <StatCard
               title={t.dashboard.totalRevenue}
-              value={safeCurrency(displayStats.total_revenue)}
+              value={safeCurrency(_displayStats.total_revenue)}
               icon={<DollarSign className="h-5 w-5" />}
               trend="up"
-            />
-            <StatCard
-              title={t.dashboard.availableEnergy}
-              value={safeFormatNumber(displayStats.available_energy)}
-              icon={<Zap className="h-5 w-5" />}
             />
           </div>
         </Section>
         <div className={gridLayouts.statsGrid}>
           <StatCard
             title={t.dashboard.dailyVolume}
-            value={safeCurrency(displayStats.daily_volume)}
+            value={safeCurrency(_displayStats.daily_volume)}
             icon={<Activity className="h-5 w-5" />}
           />
           <StatCard
-            title={t.dashboard.totalEnergy}
-            value={safeFormatNumber(1500000)}
-            icon={<Zap className="h-5 w-5" />}
-          />
-          <StatCard
             title={t.dashboard.transactionsToday}
-            value={safeFormatNumber(displayStats.total_transactions_today)}
+            value={safeFormatNumber(_displayStats.total_transactions_today)}
             icon={<TrendingUp className="h-5 w-5" />}
             trend="up"
           />
           <StatCard
             title={t.dashboard.activeWallets}
-            value={safeFormatNumber(displayStats.active_wallets)}
+            value={safeFormatNumber(_displayStats.active_wallets)}
             icon={<Users className="h-5 w-5" />}
           />
         </div>
@@ -244,9 +232,9 @@ function Home() {
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-          ) : displayPartners.length > 0 ? (
+          ) : _displayPartners.length > 0 ? (
             <div className="space-y-4">
-              {displayPartners.map((partner) => (
+              {_displayPartners.map((partner) => (
                 <div key={partner.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
                   <div>
                     <h4 className="text-white font-medium">{partner.name || `Partner ${partner.id}`}</h4>
@@ -258,7 +246,7 @@ function Home() {
                     </span>
                     <Button
                       variant="secondary"
-                      onClick={() => router.push(`/partners/${partner.id}`)}
+                      onClick={() => _router.push(`/partners/${partner.id}`)}
                     >
                       {t.common.viewDetails}
                     </Button>
@@ -266,7 +254,7 @@ function Home() {
                 </div>
               ))}
               <div className="text-center pt-4">
-                <Button onClick={() => router.push('/partners')}>
+                <Button onClick={() => _router.push('/partners')}>
                   {t.common.viewAll}
                 </Button>
               </div>
@@ -275,7 +263,7 @@ function Home() {
             <div className="text-center py-8">
               <p className="text-gray-400">{t.dashboard.noPartnersFound}</p>
               <Button
-                onClick={() => router.push('/partners')}
+                onClick={() => _router.push('/partners')}
                 className="mt-4"
               >
                 {t.dashboard.addPartner}

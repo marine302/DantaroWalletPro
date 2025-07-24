@@ -37,21 +37,21 @@ export default function NotificationTestPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Button
             variant="danger"
-            onClick={() => addTestNotification(NotificationPriority.HIGH, NotificationChannel.SYSTEM)}
+            onClick={() => _addTestNotification(NotificationPriority.HIGH, NotificationChannel.SYSTEM)}
             className="w-full"
           >
             🚨 높은 우선순위
           </Button>
           <Button
             variant="primary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
             className="w-full"
           >
             🔔 보통 우선순위
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.LOW, NotificationChannel.TRADING)}
+            onClick={() => _addTestNotification(NotificationPriority.LOW, NotificationChannel.TRADING)}
             className="w-full"
           >
             💡 낮은 우선순위
@@ -61,7 +61,7 @@ export default function NotificationTestPage() {
         <div className="flex justify-center">
           <Button
             variant="outline"
-            onClick={clearAllNotifications}
+            onClick={_clearAllNotifications}
             className="w-full md:w-auto"
           >
             🗑️ 모든 알림 삭제
@@ -73,35 +73,35 @@ export default function NotificationTestPage() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.SYSTEM)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.SYSTEM)}
             className="w-full"
           >
             🔧 시스템
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.SECURITY)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.SECURITY)}
             className="w-full"
           >
             🛡️ 보안
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.TRADING)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.TRADING)}
             className="w-full"
           >
             💱 거래
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
             className="w-full"
           >
             🤝 파트너
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.COMPLIANCE)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.COMPLIANCE)}
             className="w-full"
           >
             📋 컴플라이언스
@@ -113,28 +113,28 @@ export default function NotificationTestPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Button
             variant="danger"
-            onClick={() => addTestNotification(NotificationPriority.CRITICAL, NotificationChannel.SECURITY)}
+            onClick={() => _addTestNotification(NotificationPriority.CRITICAL, NotificationChannel.SECURITY)}
             className="w-full"
           >
             🚨 치명적
           </Button>
           <Button
             variant="danger"
-            onClick={() => addTestNotification(NotificationPriority.HIGH, NotificationChannel.SYSTEM)}
+            onClick={() => _addTestNotification(NotificationPriority.HIGH, NotificationChannel.SYSTEM)}
             className="w-full"
           >
             ⚠️ 높음
           </Button>
           <Button
             variant="primary"
-            onClick={() => addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
+            onClick={() => _addTestNotification(NotificationPriority.MEDIUM, NotificationChannel.PARTNER)}
             className="w-full"
           >
             🔔 보통
           </Button>
           <Button
             variant="secondary"
-            onClick={() => addTestNotification(NotificationPriority.LOW, NotificationChannel.TRADING)}
+            onClick={() => _addTestNotification(NotificationPriority.LOW, NotificationChannel.TRADING)}
             className="w-full"
           >
             💡 낮음

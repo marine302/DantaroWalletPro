@@ -163,7 +163,7 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
 
         {/* 빠른 액션 버튼들 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {actionTypes.map((action) => (
+          {_actionTypes.map((action) => (
             <Button
               key={action.value}
               onClick={() => {
@@ -244,7 +244,7 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
                     onChange={(e) => setActionType(e.target.value as EmergencyAction['type'])}
                     className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
                   >
-                    {actionTypes.map((action) => (
+                    {_actionTypes.map((action) => (
                       <option key={action.value} value={action.value}>
                         {action.label}
                       </option>

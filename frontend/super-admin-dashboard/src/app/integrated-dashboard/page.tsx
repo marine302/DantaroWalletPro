@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/DarkThemeComponents'
 import { gridLayouts } from '@/styles/dark-theme'
 import { withRBAC } from '@/components/auth/withRBAC'
+import { apiClient } from '@/lib/api'
 import {
   TransactionTrendChart,
   VolumeAreaChart,
@@ -82,15 +83,15 @@ function IntegratedDashboard() {
         { id: 3, name: "BlockChain Ventures" },
         { id: 4, name: "FinTech Solutions" }
       ]
-      setPartners(mockPartners)
+      setPartners(_mockPartners)
     } catch (error) {
       console.error('파트너 목록 가져오기 실패:', error)
     }
   }, [])
 
   useEffect(() => {
-    fetchPartners()
-  }, [fetchPartners])
+    _fetchPartners()
+  }, [_fetchPartners])
 
   // 안전한 숫자 처리 유틸리티
   const _safeNumber = (value: number | undefined | null): number => {
@@ -98,11 +99,11 @@ function IntegratedDashboard() {
   }
 
   const _safeLocaleString = (value: number | undefined | null): string => {
-    return safeNumber(value).toLocaleString()
+    return _safeNumber(value).toLocaleString()
   }
 
   const _safePercentage = (value: number | undefined | null): string => {
-    return safeNumber(value).toFixed(1)
+    return _safeNumber(value).toFixed(1)
   }
 
   const _fetchDashboardData = useCallback(async () => {
@@ -112,19 +113,13 @@ function IntegratedDashboard() {
 
       // 실제 API 호출 시도
       const _apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      let response: Response
+      let _response: Response
 
       try {
-        response = await fetch(`${apiUrl}/api/v1/integrated-dashboard/dashboard/${partnerId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+        const _data = await apiClient.get(`/integrated-dashboard/dashboard/${partnerId}`) as DashboardData
 
-        if (response.ok) {
-          const _data = await response.json()
-          setDashboardData(data)
+        if (_data) {
+          setDashboardData(_data)
           return
         }
       } catch (apiError) {
@@ -133,10 +128,10 @@ function IntegratedDashboard() {
 
       // Fallback: mock 서버 또는 정적 데이터
       try {
-        response = await fetch(`http://localhost:3001/api/integrated-dashboard/${partnerId}`)
-        if (response.ok) {
-          const _data = await response.json()
-          setDashboardData(data)
+        const mockResponse = await fetch(`http://localhost:3001/api/integrated-dashboard/${partnerId}`)
+        if (mockResponse.ok) {
+          const _data = await mockResponse.json()
+          setDashboardData(_data)
           return
         }
       } catch (mockError) {
@@ -193,8 +188,8 @@ function IntegratedDashboard() {
   }, [partnerId, t.integratedDashboard.fetchError])
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [fetchDashboardData])
+    _fetchDashboardData()
+  }, [_fetchDashboardData])
 
   if (loading) {
     return (
@@ -223,7 +218,7 @@ function IntegratedDashboard() {
   const _handlePartnerChange = (newPartnerId: number) => {
     setPartnerId(newPartnerId)
     // 파트너 변경 시 자동으로 데이터 새로고침
-    fetchDashboardData()
+    _fetchDashboardData()
   }
 
   const _headerActions = (
@@ -233,7 +228,7 @@ function IntegratedDashboard() {
         <label className="text-sm font-medium text-gray-300">파트너 선택:</label>
         <select
           value={partnerId}
-          onChange={(e) => handlePartnerChange(Number(e.target.value))}
+          onChange={(e) => _handlePartnerChange(Number(e.target.value))}
           className="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           {partners.map(partner => (
@@ -243,7 +238,7 @@ function IntegratedDashboard() {
           ))}
         </select>
       </div>
-      <Button onClick={fetchDashboardData}>
+      <Button onClick={_fetchDashboardData}>
         새로고침
       </Button>
     </div>
@@ -253,7 +248,7 @@ function IntegratedDashboard() {
     <BasePage
       title={t.integratedDashboard.title}
       description={`${partners.find(p => p.id === partnerId)?.name || `파트너 ${partnerId}`}의 상세 분석 대시보드`}
-      headerActions={headerActions}
+      headerActions={_headerActions}
     >
       <div className="space-y-6">
 
@@ -262,20 +257,20 @@ function IntegratedDashboard() {
           <div className={gridLayouts.statsGrid}>
             <StatCard
               title={t.integratedDashboard.walletOverview.totalBalance}
-              value={`${safeLocaleString(dashboardData.wallet_overview.total_balance)} TRX`}
+              value={`${_safeLocaleString(dashboardData.wallet_overview.total_balance)} TRX`}
             />
             <StatCard
               title={t.integratedDashboard.walletOverview.walletCount}
-              value={safeNumber(dashboardData.wallet_overview.wallet_count)}
+              value={_safeNumber(dashboardData.wallet_overview.wallet_count)}
             />
             <StatCard
               title={t.integratedDashboard.walletOverview.securityScore}
-              value={`${safeNumber(dashboardData.wallet_overview.security_score)}%`}
+              value={`${_safeNumber(dashboardData.wallet_overview.security_score)}%`}
               trend="up"
             />
             <StatCard
               title={t.integratedDashboard.walletOverview.diversificationIndex}
-              value={safePercentage(dashboardData.wallet_overview.diversification_index)}
+              value={_safePercentage(dashboardData.wallet_overview.diversification_index)}
               trend="neutral"
             />
           </div>
@@ -286,15 +281,15 @@ function IntegratedDashboard() {
           <div className={gridLayouts.statsGrid}>
             <StatCard
               title={t.integratedDashboard.transactionFlow.dailyTransactions}
-              value={safeNumber(dashboardData.transaction_flow.total_count)}
+              value={_safeNumber(dashboardData.transaction_flow.total_count)}
             />
             <StatCard
               title={t.integratedDashboard.transactionFlow.totalVolume}
-              value={`${safeLocaleString(dashboardData.transaction_flow.total_volume)} TRX`}
+              value={`${_safeLocaleString(dashboardData.transaction_flow.total_volume)} TRX`}
             />
             <StatCard
               title={t.integratedDashboard.transactionFlow.avgAmount}
-              value={`${safeLocaleString(dashboardData.transaction_flow.avg_amount)} TRX`}
+              value={`${_safeLocaleString(dashboardData.transaction_flow.avg_amount)} TRX`}
             />
             <StatCard
               title={t.integratedDashboard.transactionFlow.trend}
@@ -309,19 +304,19 @@ function IntegratedDashboard() {
           <div className={gridLayouts.statsGrid}>
             <StatCard
               title={t.integratedDashboard.energyStatus.totalEnergy}
-              value={safeLocaleString(dashboardData.energy_status.total_energy)}
+              value={_safeLocaleString(dashboardData.energy_status.total_energy)}
             />
             <StatCard
               title={t.integratedDashboard.energyStatus.availableEnergy}
-              value={safeLocaleString(dashboardData.energy_status.available_energy)}
+              value={_safeLocaleString(dashboardData.energy_status.available_energy)}
             />
             <StatCard
               title={t.integratedDashboard.energyStatus.usageRate}
-              value={`${safeNumber(dashboardData.energy_status.usage_rate)}%`}
+              value={`${_safeNumber(dashboardData.energy_status.usage_rate)}%`}
             />
             <StatCard
               title={t.integratedDashboard.energyStatus.efficiency}
-              value={`${safeNumber(dashboardData.energy_status.efficiency_score)}%`}
+              value={`${_safeNumber(dashboardData.energy_status.efficiency_score)}%`}
               trend="up"
             />
           </div>
@@ -336,17 +331,17 @@ function IntegratedDashboard() {
                   <span className="text-sm font-medium text-gray-200">{t.integratedDashboard.walletDistribution.hotWallet}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-300">
-                      {safeLocaleString(dashboardData.wallet_overview.distribution.hot.balance)} TRX
+                      {_safeLocaleString(dashboardData.wallet_overview.distribution.hot.balance)} TRX
                     </span>
                     <span className="text-xs text-gray-400">
-                      ({safePercentage(dashboardData.wallet_overview.distribution.hot.percentage)}%)
+                      ({_safePercentage(dashboardData.wallet_overview.distribution.hot.percentage)}%)
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-red-500 h-2 rounded-full"
-                    style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.hot.percentage)}%` }}
+                    style={{ width: `${_safeNumber(dashboardData.wallet_overview.distribution.hot.percentage)}%` }}
                   ></div>
                 </div>
               </div>
@@ -356,17 +351,17 @@ function IntegratedDashboard() {
                   <span className="text-sm font-medium text-gray-200">{t.integratedDashboard.walletDistribution.warmWallet}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-300">
-                      {safeLocaleString(dashboardData.wallet_overview.distribution.warm.balance)} TRX
+                      {_safeLocaleString(dashboardData.wallet_overview.distribution.warm.balance)} TRX
                     </span>
                     <span className="text-xs text-gray-400">
-                      ({safePercentage(dashboardData.wallet_overview.distribution.warm.percentage)}%)
+                      ({_safePercentage(dashboardData.wallet_overview.distribution.warm.percentage)}%)
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-yellow-500 h-2 rounded-full"
-                    style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.warm.percentage)}%` }}
+                    style={{ width: `${_safeNumber(dashboardData.wallet_overview.distribution.warm.percentage)}%` }}
                   ></div>
                 </div>
               </div>
@@ -376,17 +371,17 @@ function IntegratedDashboard() {
                   <span className="text-sm font-medium text-gray-200">{t.integratedDashboard.walletDistribution.coldWallet}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-300">
-                      {safeLocaleString(dashboardData.wallet_overview.distribution.cold.balance)} TRX
+                      {_safeLocaleString(dashboardData.wallet_overview.distribution.cold.balance)} TRX
                     </span>
                     <span className="text-xs text-gray-400">
-                      ({safePercentage(dashboardData.wallet_overview.distribution.cold.percentage)}%)
+                      ({_safePercentage(dashboardData.wallet_overview.distribution.cold.percentage)}%)
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full"
-                    style={{ width: `${safeNumber(dashboardData.wallet_overview.distribution.cold.percentage)}%` }}
+                    style={{ width: `${_safeNumber(dashboardData.wallet_overview.distribution.cold.percentage)}%` }}
                   ></div>
                 </div>
               </div>
@@ -398,20 +393,20 @@ function IntegratedDashboard() {
             <div className="grid grid-cols-2 gap-4">
               <StatCard
                 title={t.integratedDashboard.userAnalytics.totalUsers}
-                value={safeNumber(dashboardData.user_analytics.total_users)}
+                value={_safeNumber(dashboardData.user_analytics.total_users)}
               />
               <StatCard
                 title={t.integratedDashboard.userAnalytics.activeUsers}
-                value={safeNumber(dashboardData.user_analytics.active_users)}
+                value={_safeNumber(dashboardData.user_analytics.active_users)}
               />
               <StatCard
                 title={t.integratedDashboard.userAnalytics.newUsers}
-                value={safeNumber(dashboardData.user_analytics.new_users)}
+                value={_safeNumber(dashboardData.user_analytics.new_users)}
                 trend="up"
               />
               <StatCard
                 title={t.integratedDashboard.userAnalytics.retentionRate}
-                value={`${safePercentage(dashboardData.user_analytics.retention_rate)}%`}
+                value={`${_safePercentage(dashboardData.user_analytics.retention_rate)}%`}
                 trend="up"
               />
             </div>
@@ -423,20 +418,20 @@ function IntegratedDashboard() {
           <div className={gridLayouts.statsGrid}>
             <StatCard
               title={t.integratedDashboard.revenueMetrics.totalRevenue}
-              value={`$${safeLocaleString(dashboardData.revenue_metrics.total_revenue)}`}
+              value={`$${_safeLocaleString(dashboardData.revenue_metrics.total_revenue)}`}
             />
             <StatCard
               title={t.integratedDashboard.revenueMetrics.commissionEarned}
-              value={`$${safeLocaleString(dashboardData.revenue_metrics.commission_earned)}`}
+              value={`$${_safeLocaleString(dashboardData.revenue_metrics.commission_earned)}`}
             />
             <StatCard
               title={t.integratedDashboard.revenueMetrics.profitMargin}
-              value={`${safePercentage(dashboardData.revenue_metrics.profit_margin)}%`}
+              value={`${_safePercentage(dashboardData.revenue_metrics.profit_margin)}%`}
               trend="up"
             />
             <StatCard
               title={t.integratedDashboard.revenueMetrics.growthRate}
-              value={`${safePercentage(dashboardData.revenue_metrics.growth_rate)}%`}
+              value={`${_safePercentage(dashboardData.revenue_metrics.growth_rate)}%`}
               trend="up"
             />
           </div>

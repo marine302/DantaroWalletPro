@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "./manage-services.sh start",
+    "dev-quick": "next dev -p 3020",
     "start": "./manage-services.sh start",
     "stop": "./manage-services.sh stop",
     "restart": "./manage-services.sh restart",
     "status": "./manage-services.sh status",
     "logs": "./manage-services.sh logs",
     "build": "next build",
+    "build-fast": "NODE_ENV=development next build",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
@@ -19,6 +21,7 @@
     "check-errors": "node check-runtime-errors.js",
     "dev-safe": "./dev-with-error-check.sh",
     "quality-check": "npm run lint:fix && npm run type-check && npm run build",
+    "integration-test": "./integration-test.sh",
     "pre-commit": "npm run quality-check",
     "fix-all": "./fix-eslint-auto.sh && npm run quality-check",
     "prepare": "husky install || true"

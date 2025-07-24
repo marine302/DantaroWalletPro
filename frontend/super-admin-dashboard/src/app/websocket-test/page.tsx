@@ -11,43 +11,43 @@ export default function WebSocketTestPage() {
 
   useEffect(() => {
     const _wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
-    console.log('🔌 Attempting to connect to WebSocket:', wsUrl);
+    console.log('🔌 Attempting to connect to WebSocket:', _wsUrl);
 
-    const _ws = new WebSocket(wsUrl);
-    setWsInstance(ws);
+    const _ws = new WebSocket(_wsUrl);
+    setWsInstance(_ws);
 
-    ws.onopen = () => {
+    _ws.onopen = () => {
       console.log('✅ WebSocket connected');
       setConnectionStatus('Connected');
-      setMessages(prev => [...prev, `✅ Connected to ${wsUrl} at ${new Date().toLocaleTimeString()}`]);
+      setMessages(prev => [...prev, `✅ Connected to ${_wsUrl} at ${new Date().toLocaleTimeString()}`]);
     };
 
-    ws.onmessage = (event) => {
+    _ws.onmessage = (event) => {
       try {
         const _data = JSON.parse(event.data);
-        console.log('📨 Received data:', data);
-        setMessages(prev => [...prev, `📨 ${data.type}: ${JSON.stringify(data, null, 2)}`]);
+        console.log('📨 Received data:', _data);
+        setMessages(prev => [...prev, `📨 ${_data.type}: ${JSON.stringify(_data, null, 2)}`]);
       } catch (error) {
         console.log('📨 Received text:', event.data);
         setMessages(prev => [...prev, `📨 Raw: ${event.data}`]);
       }
     };
 
-    ws.onclose = (event) => {
+    _ws.onclose = (event) => {
       console.log('❌ WebSocket closed:', event.code, event.reason);
       setConnectionStatus('Disconnected');
       setMessages(prev => [...prev, `❌ Disconnected: ${event.code} ${event.reason || ''} at ${new Date().toLocaleTimeString()}`]);
     };
 
-    ws.onerror = (error) => {
+    _ws.onerror = (error) => {
       console.error('🚨 WebSocket error:', error);
       setConnectionStatus('Error');
       setMessages(prev => [...prev, `🚨 Error occurred at ${new Date().toLocaleTimeString()}`]);
     };
 
     return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
+      if (_ws.readyState === WebSocket.OPEN) {
+        _ws.close();
       }
     };
   }, []);
@@ -94,10 +94,10 @@ export default function WebSocketTestPage() {
             </span>
           </div>
           <div className="space-x-2">
-            <Button onClick={sendTestMessage} disabled={connectionStatus !== 'Connected'}>
+            <Button onClick={_sendTestMessage} disabled={connectionStatus !== 'Connected'}>
               📤 Test Ping
             </Button>
-            <Button onClick={reconnect} variant="secondary">
+            <Button onClick={_reconnect} variant="secondary">
               🔄 Reconnect
             </Button>
           </div>
@@ -108,7 +108,7 @@ export default function WebSocketTestPage() {
       <Section title="제어 패널">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Button
-            onClick={sendTestMessage}
+            onClick={_sendTestMessage}
             disabled={connectionStatus !== 'Connected'}
             className="w-full"
           >
@@ -139,7 +139,7 @@ export default function WebSocketTestPage() {
             ⚡ 에너지 구독
           </Button>
           <Button
-            onClick={clearMessages}
+            onClick={_clearMessages}
             variant="danger"
             className="w-full"
           >

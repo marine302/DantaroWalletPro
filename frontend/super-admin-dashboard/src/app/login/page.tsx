@@ -16,9 +16,9 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      router.push('/');
+      _router.push('/');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, _router]);
 
   const _handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
-      router.push('/');
+      _router.push('/');
     } catch (err) {
       setError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       console.error('Login error:', err);
@@ -51,7 +51,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={_handleSubmit}>
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">

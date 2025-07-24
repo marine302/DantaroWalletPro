@@ -16,7 +16,7 @@ function PartnersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPartners();
+    _fetchPartners();
 
   }, []);
 
@@ -65,7 +65,7 @@ function PartnersPage() {
       // 실제 API 호출 시도, 실패하면 목 데이터 사용
       try {
         const _response = await apiClient.getPartners();
-        setPartners(response.items || mockPartners);
+        setPartners(_response.items || mockPartners);
       } catch (apiErr) {
         console.warn('API failed, using mock data:', apiErr);
         setPartners(mockPartners);
@@ -84,10 +84,10 @@ function PartnersPage() {
 
   const _headerActions = (
     <div className="flex gap-2">
-      <Button variant="secondary" onClick={handleViewOnboarding}>
+      <Button variant="secondary" onClick={_handleViewOnboarding}>
         신규 파트너 온보딩
       </Button>
-      <Button variant="primary" onClick={() => fetchPartners()}>
+      <Button variant="primary" onClick={() => _fetchPartners()}>
         새로고침
       </Button>
     </div>
@@ -97,7 +97,7 @@ function PartnersPage() {
     <BasePage
       title={t.partners.title}
       description={t.partners.description}
-      headerActions={headerActions}
+      headerActions={_headerActions}
     >
       <Section title={t.partners.partnerList}>
         {loading && (
@@ -119,7 +119,7 @@ function PartnersPage() {
                 </div>
                 <div className="mt-3">
                   <button
-                    onClick={fetchPartners}
+                    onClick={_fetchPartners}
                     className="text-sm bg-red-800/30 text-red-200 px-3 py-1 rounded-md hover:bg-red-800/50"
                   >
                     {t.common.retry}

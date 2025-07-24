@@ -2,7 +2,7 @@
 
 import { useI18n } from '@/contexts/I18nContext';
 import React, { useState } from 'react';
-import BasePage from '@/components/ui/BasePage';
+import { BasePage } from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { Badge } from '@/components/ui/Badge';
 import { withRBAC } from '@/components/auth/withRBAC';
@@ -109,7 +109,7 @@ function PartnerOnboardingPage() {
   };
 
   const _headerActions = (
-    <Button variant="primary" onClick={handleNewPartnerRegistration}>
+    <Button variant="primary" onClick={_handleNewPartnerRegistration}>
       새 파트너 등록
     </Button>
   );
@@ -118,7 +118,7 @@ function PartnerOnboardingPage() {
     <BasePage
       title={t.partnerOnboarding?.title || "파트너 온보딩 관리"}
       description={t.partnerOnboarding?.description || "파트너사의 온보딩 프로세스를 관리하고 모니터링합니다"}
-      headerActions={headerActions}
+      headerActions={_headerActions}
     >
       {/* 통계 현황 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
@@ -208,9 +208,9 @@ function PartnerOnboardingPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      getStageColor(partner.onboardingStage) === 'success' ? 'bg-green-900/30 text-green-300' :
-                      getStageColor(partner.onboardingStage) === 'primary' ? 'bg-blue-900/30 text-blue-300' :
-                      getStageColor(partner.onboardingStage) === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                      _getStageColor(partner.onboardingStage) === 'success' ? 'bg-green-900/30 text-green-300' :
+                      _getStageColor(partner.onboardingStage) === 'primary' ? 'bg-blue-900/30 text-blue-300' :
+                      _getStageColor(partner.onboardingStage) === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
                       'bg-gray-900/30 text-gray-300'
                     }`}>
                       {partner.onboardingStage}
@@ -218,9 +218,9 @@ function PartnerOnboardingPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      getStatusColor(partner.status) === 'success' ? 'bg-green-900/30 text-green-300' :
-                      getStatusColor(partner.status) === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
-                      getStatusColor(partner.status) === 'danger' ? 'bg-red-900/30 text-red-300' :
+                      _getStatusColor(partner.status) === 'success' ? 'bg-green-900/30 text-green-300' :
+                      _getStatusColor(partner.status) === 'warning' ? 'bg-yellow-900/30 text-yellow-300' :
+                      _getStatusColor(partner.status) === 'danger' ? 'bg-red-900/30 text-red-300' :
                       'bg-gray-900/30 text-gray-300'
                     }`}>
                       {partner.status}
@@ -246,7 +246,7 @@ function PartnerOnboardingPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Button
                       variant="secondary"
-                      onClick={() => handleAdvanceStage(partner.id)}
+                      onClick={() => _handleAdvanceStage(partner.id)}
                       className="mr-2"
                     >
                       단계 진행

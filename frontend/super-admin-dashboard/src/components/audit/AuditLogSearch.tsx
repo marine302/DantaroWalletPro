@@ -120,7 +120,7 @@ export function AuditLogSearch() {
         const _logDate = log.timestamp.toISOString().split('T')[0];
 
         // 날짜 필터
-        if (logDate < filters.dateFrom || logDate > filters.dateTo) return false;
+        if (_logDate < filters.dateFrom || _logDate > filters.dateTo) return false;
 
         // 이벤트 타입 필터
         if (filters.eventType !== 'all' && log.event_type !== filters.eventType) return false;
@@ -141,17 +141,17 @@ export function AuditLogSearch() {
             log.ip_address || ''
           ].join(' ').toLowerCase();
 
-          if (!searchableText.includes(keyword)) return false;
+          if (!_searchableText.includes(_keyword)) return false;
         }
 
         return true;
       });
 
       setSearchResults({
-        logs: filteredLogs.slice(0, 50), // 페이지네이션 구현 예정
-        total: filteredLogs.length,
+        logs: _filteredLogs.slice(0, 50), // 페이지네이션 구현 예정
+        total: _filteredLogs.length,
         page: 1,
-        totalPages: Math.ceil(filteredLogs.length / 50)
+        totalPages: Math.ceil(_filteredLogs.length / 50)
       });
 
     } catch (error) {
@@ -176,49 +176,49 @@ export function AuditLogSearch() {
       }));
 
       if (exportFormat === 'csv') {
-        const _csv = convertToCSV(data);
-        downloadFile(csv, 'audit_logs.csv', 'text/csv');
+        const _csv = convertToCSV(_data);
+        downloadFile(_csv, 'audit_logs.csv', 'text/csv');
       } else if (exportFormat === 'json') {
-        const _json = JSON.stringify(data, null, 2);
-        downloadFile(json, 'audit_logs.json', 'application/json');
+        const _json = JSON.stringify(_data, null, 2);
+        downloadFile(_json, 'audit_logs.json', 'application/json');
       }
 
-      alert(`✅ Exported ${data.length} records as ${exportFormat.toUpperCase()}`);
+      alert(`✅ Exported ${_data.length} records as ${exportFormat.toUpperCase()}`);
     } catch (error) {
       console.error('Export failed:', error);
       alert('❌ Export failed');
     }
   }
 
-  function convertToCSV(data: any[]) {
-    if (data.length === 0) return '';
+  function convertToCSV(_data: any[]) {
+    if (_data.length === 0) return '';
 
-    const _headers = Object.keys(data[0]);
+    const _headers = Object.keys(_data[0]);
     const _csvRows = [
-      headers.join(','),
-      ...data.map(row =>
-        headers.map(header => {
+      _headers.join(','),
+      ..._data.map(row =>
+        _headers.map(header => {
           const _value = row[header];
-          return typeof value === 'string' && value.includes(',')
-            ? `"${value}"`
-            : value;
+          return typeof _value === 'string' && _value.includes(',')
+            ? `"${_value}"`
+            : _value;
         }).join(',')
       )
     ];
 
-    return csvRows.join('\n');
+    return _csvRows.join('\n');
   }
 
   function downloadFile(content: string, filename: string, mimeType: string) {
     const _blob = new Blob([content], { type: mimeType });
-    const _url = URL.createObjectURL(blob);
+    const _url = URL.createObjectURL(_blob);
     const _link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    _link.href = _url;
+    _link.download = filename;
+    document.body.appendChild(_link);
+    _link.click();
+    document.body.removeChild(_link);
+    URL.revokeObjectURL(_url);
   }
 
   function getSeverityColor(severity: string) {
