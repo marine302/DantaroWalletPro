@@ -7,7 +7,6 @@ TRON 블록체인 통합 모듈.
 
 from app.core.tron.balance import TronBalanceService
 from app.core.tron.constants import TronAddressValidator, TronConstants, TronNetwork
-from app.core.tron.energy import TronEnergyService
 from app.core.tron.network import TronNetworkClient, TronNetworkService
 from app.core.tron.service import TronService
 from app.core.tron.stats import TronNetworkStatsService
@@ -21,7 +20,6 @@ __all__ = [
     "TronConstants",
     "TronNetwork",
     "TronAddressValidator",
-    "TronEnergyService",
     "TronNetworkService",
     "TronNetworkClient",
     "TronNetworkStatsService",

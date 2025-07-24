@@ -15,9 +15,6 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.logging import get_logger
 from app.models import Partner, User
-from app.models.energy_price import EnergyPrice
-from app.models.energy_provider import EnergyProvider
-from app.models.energy_usage_history import EnergyUsageHistory
 from app.models.partner_onboarding import PartnerOnboarding
 from app.models.withdrawal import Withdrawal
 
@@ -139,88 +136,24 @@ async def check_database_health(db: Session) -> Dict[str, Any]:
 
 @router.websocket("/energy-prices")
 async def websocket_energy_prices(websocket: WebSocket, db: Session = Depends(get_db)):
-    """실시간 에너지 가격 업데이트"""
+    """실시간 에너지 가격 업데이트 (더미 데이터)"""
     await manager.connect(websocket, "energy_prices")
     try:
         while True:
             try:
-                # 실제 DB에서 최신 에너지 가격 조회 (안전한 방식)
-                try:
-                    energy_prices = (
-                        db.execute(
-                            select(EnergyPrice)
-                            .where(EnergyPrice.is_active == True)
-                            .order_by(desc(EnergyPrice.updated_at))
-                        )
-                        .scalars()
-                        .all()
-                    )
-                except Exception as e:
-                    logger.error(f"Error querying energy prices: {e}")
-                    energy_prices = []
+                # 더미 에너지 가격 데이터
+                prices = [
+                    {
+                        "provider": "Default Provider",
+                        "price_per_energy": 0.0001,
+                        "available": 1000000,
+                        "response_time": 150,
+                        "updated_at": datetime.utcnow().isoformat(),
+                    }
+                ]
 
-                prices = []
-                for price in energy_prices:
-                    try:
-                        provider = (
-                            db.execute(
-                                select(EnergyProvider).where(
-                                    EnergyProvider.id == price.provider_id
-                                )
-                            )
-                            .scalars()
-                            .first()
-                        )
-                    except Exception as e:
-                        logger.error(f"Error querying provider: {e}")
-                        provider = None
-
-                    if provider:
-                        # 안전한 속성 접근
-                        available_energy = getattr(price, "available_energy", 0)
-                        response_time_ms = getattr(price, "response_time_ms", 0)
-
-                        prices.append(
-                            {
-                                "provider": provider.name,
-                                "price_per_energy": float(price.price_per_energy),
-                                "available": (
-                                    int(available_energy)
-                                    if available_energy is not None
-                                    else 0
-                                ),
-                                "response_time": (
-                                    int(response_time_ms)
-                                    if response_time_ms is not None
-                                    else 0
-                                ),
-                                "updated_at": (
-                                    price.updated_at.isoformat()
-                                    if price.updated_at
-                                    else None
-                                ),
-                            }
-                        )
-
-                # 가격이 없으면 기본값 제공
-                if not prices:
-                    prices = [
-                        {
-                            "provider": "Default",
-                            "price_per_energy": 0.0001,
-                            "available": 0,
-                            "response_time": 0,
-                        }
-                    ]
-
-                best_price = (
-                    min(prices, key=lambda x: x["price_per_energy"]) if prices else None
-                )
-                average_price = (
-                    sum(p["price_per_energy"] for p in prices) / len(prices)
-                    if prices
-                    else 0
-                )
+                best_price = prices[0] if prices else None
+                average_price = 0.0001
 
                 message = {
                     "type": "energy_prices",
@@ -276,15 +209,8 @@ async def websocket_system_health(websocket: WebSocket, db: Session = Depends(ge
                         or 0
                     )
 
-                    # 활성 에너지 공급자 수 조회
-                    active_providers = (
-                        db.execute(
-                            select(func.count(EnergyProvider.id)).where(
-                                EnergyProvider.is_active == True
-                            )
-                        ).scalar()
-                        or 0
-                    )
+                    # 활성 에너지 공급자 수 (더미 데이터)
+                    active_providers = 1
 
                     # 최근 온보딩 현황 조회
                     recent_onboarding = (

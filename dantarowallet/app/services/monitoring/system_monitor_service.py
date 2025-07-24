@@ -12,7 +12,7 @@ from sqlalchemy import and_, desc, func, or_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models import EnergyPool, PartnerApiLog
+from app.models import PartnerApiLog
 from app.models.fee_config import FeeConfig
 from app.models.partner import Partner
 from app.schemas.monitoring import (
@@ -43,12 +43,6 @@ class SystemMonitorService:
             )
             suspended_partners = (
                 self.db.query(Partner).filter(Partner.status == "suspended").count()
-            )
-
-            # 에너지 통계
-                self.db.query(EnergyPool).order_by(desc(EnergyPool.id)).first()
-            )
-                else 0.0
             )
 
             # API 호출 통계 (최근 24시간)
@@ -151,10 +145,6 @@ class SystemMonitorService:
                 )
                 .scalar()
                 or 0
-            )
-
-            # 에너지 상태
-                "sufficient"
             )
 
             # 전체 헬스 점수 계산
@@ -330,20 +320,6 @@ class SystemMonitorService:
         """시스템 알림 조회"""
         try:
             alerts = []
-
-            # 에너지 부족 알림
-                self.db.query(EnergyPool).order_by(desc(EnergyPool.id)).first()
-            )
-            if (
-            ):
-                alerts.append(
-                    Alert(
-                        severity="critical",
-                        title="Critical Energy Level",
-                        partner_id=None,
-                        created_at=datetime.utcnow(),
-                    )
-                )
 
             # API 오류율 높은 파트너
             yesterday = datetime.utcnow() - timedelta(hours=24)

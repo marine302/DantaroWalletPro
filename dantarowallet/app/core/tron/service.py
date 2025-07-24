@@ -7,7 +7,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from app.core.tron.balance import TronBalanceService
-from app.core.tron.energy import TronEnergyService
 from app.core.tron.network import TronNetworkService
 from app.core.tron.stats import TronNetworkStatsService
 from app.core.tron.transaction import TronTransactionService
@@ -32,7 +31,6 @@ class TronService:
             self._wallet_manager = TronWalletManager()
             self._balance_service = TronBalanceService()
             self._transaction_service = TronTransactionService()
-            self._energy_service = TronEnergyService()
             self._stats_service = TronNetworkStatsService()
             self._initialized = True
             logger.info("TronService initialized successfully")
@@ -160,45 +158,7 @@ class TronService:
         )
 
     # =============================================================================
-    # 에너지 및 리소스 관련 메서드
-    # =============================================================================
-
-    async def get_account_resources(self, address: str) -> Dict[str, Any]:
-        """계정의 에너지 및 대역폭 정보 조회"""
-        return await self._energy_service.get_account_resources(address)
-
-    async def get_energy_price_info(self) -> Dict[str, Any]:
-        """현재 에너지 가격 정보 조회"""
-        return await self._energy_service.get_energy_price_info()
-
-    async def estimate_transaction_cost(
-        self, transaction_type: str = "USDT_TRANSFER"
-    ) -> Dict[str, Any]:
-        """트랜잭션 타입별 예상 비용 계산"""
-        return await self._energy_service.estimate_transaction_cost(transaction_type)
-
-    async def get_energy_info(self, address: Optional[str] = None) -> Dict[str, Any]:
-        """계정의 에너지 정보 조회"""
-        if address is None:
-            raise ValueError("주소가 필요합니다")
-        return await self._energy_service.get_energy_info(address)
-
-    async def get_energy_price(self) -> Dict[str, Any]:
-        """현재 에너지 가격 정보 조회"""
-        return await self._energy_service.get_energy_price()
-
-    async def estimate_transaction_energy(
-        self,
-        contract_address: str,
-        function_selector: str,
-        parameter: str = "",
-        caller_address: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """트랜잭션에 필요한 에너지 추정"""
-        return await self._energy_service.estimate_transaction_energy(
-            contract_address, function_selector, parameter, caller_address
-        )
-
+    # 네트워크 상태 및 통계 메서드
     # =============================================================================
     # 네트워크 통계 관련 메서드
     # =============================================================================

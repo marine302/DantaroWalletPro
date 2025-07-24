@@ -11,7 +11,6 @@ from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_sync_db
-from app.models.energy_pool import EnergyPoolModel
 from app.models.partner import Partner
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -181,18 +180,10 @@ async def get_dashboard_overview(db: Session = Depends(get_sync_db)) -> Dict[str
         # 지갑 잔액 통계
         total_balance = db.query(func.sum(Wallet.balance)).scalar() or 0
 
-        # 에너지 통계
-        energy_stats = db.query(
-            func.sum(EnergyPoolModel.total_energy),
-            func.sum(EnergyPoolModel.available_energy),
-            func.sum(EnergyPoolModel.frozen_trx),
-        ).first()
-
-        total_energy = energy_stats[0] if energy_stats and energy_stats[0] else 1000000
-        available_energy = (
-            energy_stats[1] if energy_stats and energy_stats[1] else 750000
-        )
-        frozen_trx = energy_stats[2] if energy_stats and energy_stats[2] else 50000
+        # 에너지 통계 (더미 데이터)
+        total_energy = 1000000
+        available_energy = 750000
+        frozen_trx = 50000
 
         # 최근 거래 내역
         recent_transactions = (

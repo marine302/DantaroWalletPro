@@ -17,9 +17,6 @@ class SystemMetrics(BaseModel):
     active_partners: int
     pending_partners: int
     suspended_partners: int
-    total_energy: int
-    available_energy: int
-    energy_utilization: float  # 퍼센트
     total_api_calls: int
     successful_api_calls: int
     api_error_rate: float  # 퍼센트

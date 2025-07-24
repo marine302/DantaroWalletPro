@@ -71,6 +71,7 @@ class IntegratedDashboard:
                 "transaction_flow": (
                     results[1] if not isinstance(results[1], Exception) else {}
                 ),
+                "system_status": (
                     results[2] if not isinstance(results[2], Exception) else {}
                 ),
                 "user_analytics": (
@@ -202,19 +203,12 @@ class IntegratedDashboard:
             logger.error(f"거래 흐름 분석 실패: {str(e)}")
             return {}
 
-
-                # safe_get_value 사용으로 안전한 값 처리
-                pool_available = Decimal(
-                )
-
-
-            # 에너지 사용률
-            usage_rate = 0
-                usage_rate = float(
-                )
-
-            # 에너지 트랜잭션 통계
-
+    async def _get_energy_overview(self) -> Dict[str, Any]:
+        """에너지 풀 개요 (더미 데이터)"""
+        try:
+            # 더미 에너지 데이터
+            usage_rate = 75.5
+            
             return {
                 "usage_rate": usage_rate,
                 "cost_per_transaction": self.calculate_cost_per_transaction(

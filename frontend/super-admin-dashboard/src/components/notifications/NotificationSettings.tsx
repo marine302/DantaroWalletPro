@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { notificationManager } from '@/lib/notification-manager';
+import { _notificationManager } from '@/lib/notification-manager';
 import { NotificationSettings, NotificationPriority, NotificationChannel } from '@/types/notification';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,39 +13,39 @@ interface NotificationSettingsProps {
 export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> = ({
   onClose
 }) => {
-  const [settings, setSettings] = useState<NotificationSettings>(notificationManager.getSettings());
+  const [settings, setSettings] = useState<NotificationSettings>(_notificationManager.getSettings());
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    const _currentSettings = notificationManager.getSettings();
-    setSettings(currentSettings);
+    const _currentSettings = _notificationManager.getSettings();
+    setSettings(_currentSettings);
   }, []);
 
   const _handleSettingChange = (key: keyof NotificationSettings, value: any) => {
     const _newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
+    setSettings(_newSettings);
     setHasChanges(true);
   };
 
   const _handlePriorityChange = (priority: NotificationPriority, enabled: boolean) => {
     const _newPriorities = { ...settings.priorities, [priority]: enabled };
-    handleSettingChange('priorities', newPriorities);
+    _handleSettingChange('priorities', _newPriorities);
   };
 
   const _handleChannelChange = (channel: NotificationChannel, enabled: boolean) => {
     const _newChannels = { ...settings.channels, [channel]: enabled };
-    handleSettingChange('channels', newChannels);
+    _handleSettingChange('channels', _newChannels);
   };
 
   const _handleSave = () => {
-    notificationManager.updateSettings(settings);
+    _notificationManager.updateSettings(settings);
     setHasChanges(false);
     onClose?.();
   };
 
   const _handleReset = () => {
-    const _currentSettings = notificationManager.getSettings();
-    setSettings(currentSettings);
+    const _currentSettings = _notificationManager.getSettings();
+    setSettings(_currentSettings);
     setHasChanges(false);
   };
 
@@ -56,8 +56,8 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
     }
 
     const _permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      handleSettingChange('pushEnabled', true);
+    if (_permission === 'granted') {
+      _handleSettingChange('pushEnabled', true);
     }
   };
 
@@ -97,7 +97,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
               <input
                 type="checkbox"
                 checked={settings.enabled}
-                onChange={(e) => handleSettingChange('enabled', e.target.checked)}
+                onChange={(e) => _handleSettingChange('enabled', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -117,7 +117,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
               <input
                 type="checkbox"
                 checked={settings.soundEnabled}
-                onChange={(e) => handleSettingChange('soundEnabled', e.target.checked)}
+                onChange={(e) => _handleSettingChange('soundEnabled', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -138,7 +138,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={requestNotificationPermission}
+                  onClick={_requestNotificationPermission}
                   className="text-xs"
                 >
                   권한 요청
@@ -148,7 +148,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
                 <input
                   type="checkbox"
                   checked={settings.pushEnabled}
-                  onChange={(e) => handleSettingChange('pushEnabled', e.target.checked)}
+                  onChange={(e) => _handleSettingChange('pushEnabled', e.target.checked)}
                   disabled={Notification.permission !== 'granted'}
                   className="sr-only peer"
                 />
@@ -170,7 +170,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
               <input
                 type="checkbox"
                 checked={settings.autoMarkAsRead}
-                onChange={(e) => handleSettingChange('autoMarkAsRead', e.target.checked)}
+                onChange={(e) => _handleSettingChange('autoMarkAsRead', e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -202,7 +202,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
                 <input
                   type="checkbox"
                   checked={settings.priorities[priority]}
-                  onChange={(e) => handlePriorityChange(priority, e.target.checked)}
+                  onChange={(e) => _handlePriorityChange(priority, e.target.checked)}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -227,7 +227,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
                 <input
                   type="checkbox"
                   checked={settings.channels[channel]}
-                  onChange={(e) => handleChannelChange(channel, e.target.checked)}
+                  onChange={(e) => _handleChannelChange(channel, e.target.checked)}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -252,7 +252,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
               min="1"
               max="50"
               value={settings.maxActiveNotifications}
-              onChange={(e) => handleSettingChange('maxActiveNotifications', parseInt(e.target.value))}
+              onChange={(e) => _handleSettingChange('maxActiveNotifications', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -266,7 +266,7 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
               min="1"
               max="365"
               value={settings.historyRetentionDays}
-              onChange={(e) => handleSettingChange('historyRetentionDays', parseInt(e.target.value))}
+              onChange={(e) => _handleSettingChange('historyRetentionDays', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -277,13 +277,13 @@ export const NotificationSettingsComponent: React.FC<NotificationSettingsProps> 
       <div className="flex justify-end space-x-3">
         <Button
           variant="outline"
-          onClick={handleReset}
+          onClick={_handleReset}
           disabled={!hasChanges}
         >
           초기화
         </Button>
         <Button
-          onClick={handleSave}
+          onClick={_handleSave}
           disabled={!hasChanges}
           className="bg-blue-600 hover:bg-blue-700"
         >

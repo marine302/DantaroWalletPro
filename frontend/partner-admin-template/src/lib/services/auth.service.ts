@@ -6,6 +6,38 @@ import { httpClient } from '../api';
 import type { LoginCredentials, RegisterData, User, AuthResponse } from '../../types';
 import { mockAuthService, shouldUseMockData } from './mock.service';
 
+// API 응답 타입 정의
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+  user: User;
+}
+
+interface RegisterResponse {
+  data: {
+    success: boolean;
+    message: string;
+    data: {
+      access_token: string;
+      refresh_token: string;
+      user: User;
+      expires_in?: number;
+    };
+  };
+}
+
+interface RefreshTokenResponse {
+  data: {
+    success: boolean;
+    message: string;
+    data: {
+      access_token: string;
+      refresh_token: string;
+    };
+  };
+}
+
 // JWT 토큰 저장/관리
 export class TokenManager {
   private static readonly TOKEN_KEY = process.env.NEXT_PUBLIC_JWT_COOKIE_NAME || 'dantaro_admin_token';
@@ -62,7 +94,7 @@ export const authService = {
     }
 
     // 실제 API 호출
-    const response = await httpClient.post<any>('/auth/login', credentials as unknown as Record<string, unknown>);
+    const response = await httpClient.post<LoginResponse>('/auth/login', credentials as unknown as Record<string, unknown>);
     
     if (response.access_token) {
       TokenManager.setTokens(
@@ -79,7 +111,7 @@ export const authService = {
         access_token: response.access_token,
         refresh_token: response.refresh_token,
         user: response.user,
-        expires_in: response.expires_in
+        expires_in: response.expires_in || 3600
       }
     };
   },
@@ -103,7 +135,7 @@ export const authService = {
     }
 
     // 실제 API 호출
-    const response = await httpClient.post<any>('/auth/register', data as unknown as Record<string, unknown>);
+    const response = await httpClient.post<RegisterResponse>('/auth/register', data as unknown as Record<string, unknown>);
     
     if (response.data.success) {
       TokenManager.setTokens(
@@ -112,7 +144,16 @@ export const authService = {
       );
     }
     
-    return response.data;
+    return {
+      success: response.data.success,
+      message: response.data.message,
+      data: {
+        access_token: response.data.data.access_token,
+        refresh_token: response.data.data.refresh_token,
+        user: response.data.data.user,
+        expires_in: response.data.data.expires_in || 3600
+      }
+    };
   },
 
   /**
@@ -135,7 +176,7 @@ export const authService = {
       throw new Error('Refresh token not found');
     }
 
-    const response = await httpClient.post<any>('/auth/refresh', {
+    const response = await httpClient.post<RefreshTokenResponse>('/auth/refresh', {
       refresh_token: refreshToken
     });
 
@@ -144,9 +185,36 @@ export const authService = {
         response.data.data.access_token,
         response.data.data.refresh_token
       );
+      
+      // 새로운 토큰으로 사용자 정보 조회
+      try {
+        const userInfo = await this.getCurrentUser();
+        return {
+          success: response.data.success,
+          message: response.data.message,
+          data: {
+            access_token: response.data.data.access_token,
+            refresh_token: response.data.data.refresh_token,
+            user: userInfo,
+            expires_in: 3600
+          }
+        };
+      } catch {
+        // 사용자 정보 조회 실패 시 기본 정보로 반환
+        return {
+          success: response.data.success,
+          message: response.data.message,
+          data: {
+            access_token: response.data.data.access_token,
+            refresh_token: response.data.data.refresh_token,
+            user: {} as User, // 빈 사용자 객체
+            expires_in: 3600
+          }
+        };
+      }
     }
 
-    return response.data;
+    throw new Error('Token refresh failed');
   },
 
   /**
