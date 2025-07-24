@@ -7,7 +7,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from app.core.tron.balance import TronBalanceService
-from app.core.tron.energy import TronEnergyService
 from app.core.tron.network import TronNetworkService
 from app.core.tron.stats import TronNetworkStatsService
 from app.core.tron.transaction import TronTransactionService
@@ -32,7 +31,6 @@ class TronService:
             self._wallet_manager = TronWalletManager()
             self._balance_service = TronBalanceService()
             self._transaction_service = TronTransactionService()
-            self._energy_service = TronEnergyService()
             self._stats_service = TronNetworkStatsService()
             self._initialized = True
             logger.info("TronService initialized successfully")
