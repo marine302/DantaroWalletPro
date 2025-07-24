@@ -275,7 +275,7 @@ export function EmergencyBlockingPanel({ onAction }: BlockingPanelProps) {
                     className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white mb-2"
                   >
                     <option value="">Select reason template</option>
-                    {reasonTemplates.map((template, idx) => (
+                    {_reasonTemplates.map((template, idx) => (
                       <option key={idx} value={template}>
                         {template}
                       </option>
