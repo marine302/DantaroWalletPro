@@ -14,6 +14,10 @@ help:
 	@echo "  db-downgrade     Downgrade database by one version"
 	@echo "  db-history       Show database migration history"
 	@echo ""
+	@echo "API Documentation:"
+	@echo "  api-docs         Update role-based API documentation"
+	@echo "  api-test         Test API endpoints"
+	@echo ""
 	@echo "Refactoring & Quality:"
 	@echo "  metrics          Generate code metrics report"
 	@echo "  refactor-check   Check which files need refactoring"
@@ -127,3 +131,14 @@ pre-dev: install auto-fix auto-check build-test
 watch-dev:
 	@echo "👀 개발 모드: 파일 변경 시 자동 검사"
 	poetry run watchdog --recursive --ignore-directories=__pycache__ --ignore-directories=.git --patterns="*.py" --command="make auto-fix && make auto-check" app/
+
+# API Documentation commands
+api-docs:
+	@echo "📚 역할별 API 문서 업데이트..."
+	./scripts/update_api_docs.sh
+
+api-test:
+	@echo "🧪 주요 API 엔드포인트 테스트..."
+	@curl -s http://localhost:8000/health | jq '.status' || echo "❌ Health check 실패"
+	@curl -s http://localhost:8000/api/v1/simple-energy/providers | jq '.success' || echo "❌ Simple Energy 실패"
+	@echo "✅ API 테스트 완료"
