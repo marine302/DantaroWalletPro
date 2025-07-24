@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.api.v1.api import api_router
-from app.api.v1.endpoints import optimization
+from app.api.v1.endpoints.admin import optimization
 from app.core.config import settings
 from app.core.exceptions import DantaroException
 from app.core.logging import setup_logging
@@ -67,56 +67,72 @@ async def lifespan(app: FastAPI):
     logger.info(f"🛑 Shutting down {settings.APP_NAME}")
 
 
-# FastAPI 태그 메타데이터 - 각 엔드포인트 그룹의 용도를 명확히 정의
+# FastAPI 태그 메타데이터 - 역할별 API 구분을 위한 명확한 정의
 tags_metadata = [
-    # === Super Admin Dashboard 전용 ===
+    # === 🔐 SUPER ADMIN DASHBOARD APIs (Port 3020) ===
     {
         "name": "admin",
-        "description": "**🔐 Super Admin Dashboard** - Administrative operations for super administrators",
+        "description": "**🔐 SUPER ADMIN ONLY** - Administrative operations for super administrators",
         "externalDocs": {
-            "description": "Frontend: /frontend/super-admin-dashboard/",
+            "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
         },
     },
     {
-        "name": "admin_dashboard",
-        "description": "**📊 Super Admin Dashboard** - Dashboard statistics and system health monitoring",
+        "name": "admin_dashboard", 
+        "description": "**� SUPER ADMIN ONLY** - Dashboard statistics and system health monitoring",
         "externalDocs": {
-            "description": "Frontend: /frontend/super-admin-dashboard/",
+            "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
         },
     },
     {
         "name": "admin_fees",
-        "description": "**💰 Super Admin Dashboard** - Fee configuration and revenue management",
+        "description": "**� SUPER ADMIN ONLY** - Fee configuration and revenue management",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/admin/docs",
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "admin_energy",
-        "description": "**⚡ Super Admin Dashboard** - Energy pool administration and monitoring",
+        "description": "**🔐 SUPER ADMIN ONLY** - Energy pool administration and monitoring",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/admin/docs",
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "admin_partners",
-        "description": "**🤝 Super Admin Dashboard** - Partner management and performance tracking",
+        "description": "**🔐 SUPER ADMIN ONLY** - Partner management and performance tracking",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/admin/docs",
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "audit-compliance",
-        "description": "**🔍 Super Admin Dashboard** - Transaction auditing and compliance monitoring",
+        "description": "**� SUPER ADMIN ONLY** - Transaction auditing and compliance monitoring",
         "externalDocs": {
-            "description": "Frontend: /app/audit-compliance/page.tsx",
+            "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020/audit-compliance",
         },
     },
     {
         "name": "integrated_dashboard",
-        "description": "**📈 Super Admin Dashboard** - Comprehensive partner analytics dashboard",
+        "description": "**� SUPER ADMIN ONLY** - Comprehensive partner analytics dashboard",
         "externalDocs": {
-            "description": "Frontend: /app/integrated-dashboard/page.tsx",
+            "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020/integrated-dashboard",
         },
     },
     {
         "name": "withdrawal_management",
-        "description": "**💸 Super Admin Dashboard** - Advanced withdrawal policies and batch processing",
+        "description": "**� SUPER ADMIN ONLY** - Advanced withdrawal policies and batch processing",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/admin/docs",
+            "url": "http://localhost:3020",
+        },
     },
     {
         "name": "sweep",
@@ -124,95 +140,151 @@ tags_metadata = [
     },
     {
         "name": "partner_onboarding",
-        "description": "**🚀 Super Admin Dashboard** - Partner onboarding automation and progress tracking",
+        "description": "**� SUPER ADMIN ONLY** - Partner onboarding automation and progress tracking",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/admin/docs",
+            "url": "http://localhost:3020",
+        },
     },
-    # === Partner Admin Template 전용 ===
+    # === 🔗 PARTNER ADMIN TEMPLATE APIs (Port 3030) ===
     {
         "name": "tronlink",
-        "description": "**🔗 Partner Admin Template** - TronLink wallet integration for partner users",
+        "description": "**🔗 PARTNER ADMIN ONLY** - TronLink wallet integration for partner users",
         "externalDocs": {
-            "description": "Frontend: /frontend/partner-admin-template/",
+            "description": "Partner Admin Template | API Docs: /api/v1/partner/docs",
             "url": "http://localhost:3030",
         },
     },
     {
         "name": "energy_management",
-        "description": "**⚡ Partner Admin Template** - Energy pool CRUD operations for partners",
+        "description": "**🔗 PARTNER ADMIN ONLY** - Energy pool CRUD operations for partners",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/partner/docs",
+            "url": "http://localhost:3030",
+        },
     },
     {
         "name": "fee_policy",
-        "description": "**💰 Partner Admin Template** - Partner-specific fee policies and tier management",
+        "description": "**� PARTNER ADMIN ONLY** - Partner-specific fee policies and tier management",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/partner/docs", 
+            "url": "http://localhost:3030",
+        },
     },
-    # === 공통 사용 (양쪽 프론트엔드) ===
+    {
+        "name": "partner",
+        "description": "**🔗 PARTNER ADMIN ONLY** - Partner profile and settings management",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/partner/docs",
+            "url": "http://localhost:3030",
+        },
+    },
+    {
+        "name": "partner_energy_rental",
+        "description": "**🔗 PARTNER ADMIN ONLY** - Partner energy rental from super admin",
+        "externalDocs": {
+            "description": "API Docs: /api/v1/partner/docs",
+            "url": "http://localhost:3030",
+        },
+    },
+    # === 🔄 COMMON APIs (양쪽 프론트엔드 공통 사용) ===
     {
         "name": "authentication",
-        "description": "**🔐 Common** - User authentication and authorization (both frontends)",
+        "description": "**� COMMON** - User authentication and authorization (both frontends)",
+        "externalDocs": {
+            "description": "Super Admin: /api/v1/admin/docs | Partner Admin: /api/v1/partner/docs",
+            "url": "http://localhost:8000",
+        },
     },
     {
         "name": "balance",
-        "description": "**💰 Common** - Internal balance management (different from on-chain wallet balance)",
+        "description": "**� COMMON** - Internal balance management (different from on-chain wallet balance)",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
         "name": "wallet",
-        "description": "**👝 Common** - User wallet management and on-chain balance operations",
+        "description": "**� COMMON** - User wallet management and on-chain balance operations",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
         "name": "deposit",
-        "description": "**📥 Common** - Deposit monitoring and processing",
+        "description": "**� COMMON** - Deposit monitoring and processing",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
         "name": "withdrawal",
-        "description": "**📤 Common** - Basic withdrawal operations",
-    },
-    {
-        "name": "energy",
-        "description": "**⚡ Common** - Energy monitoring and analytics (different purposes per frontend)",
-    },
-    {
-        "name": "external_energy",
-        "description": "**🔌 Common** - External energy provider integration",
-    },
-    # === 시스템/분석 ===
-    {
-        "name": "analytics",
-        "description": "**📊 Analytics** - Transaction analytics and anomaly detection",
-    },
-    {
-        "name": "statistics",
-        "description": "**📈 Statistics** - General system statistics and metrics",
-    },
-    {
-        "name": "transactions",
-        "description": "**💳 Management** - Transaction management and monitoring",
+        "description": "**� COMMON** - Basic withdrawal operations",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
         "name": "users",
-        "description": "**👥 Management** - User management and activity tracking",
+        "description": "**� COMMON** - User management and activity tracking",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
-        "name": "partners",
-        "description": "**🤝 Management** - Basic partner CRUD operations",
-    },
-    # === 시스템 ===
-    {
-        "name": "health",
-        "description": "**🏥 System** - Health check endpoints",
-    },
-    {
-        "name": "root",
-        "description": "**🏠 System** - Root API information",
+        "name": "transactions", 
+        "description": "**� COMMON** - Transaction management and monitoring",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
     },
     {
-        "name": "auth-pages",
-        "description": "**📄 Web Pages** - Authentication web pages",
+        "name": "analytics",
+        "description": "**� COMMON** - Transaction analytics and reports",
+        "externalDocs": {
+            "description": "Used by both Super Admin and Partner Admin",
+            "url": "http://localhost:8000",
+        },
+    },
+    # === 🌟 DEVELOPMENT & TESTING APIs ===
+    {
+        "name": "simple-energy",
+        "description": "**🌟 DEVELOPMENT** - Simple Energy Service for easy development and testing",
+        "externalDocs": {
+            "description": "Development API | API Docs: /api/v1/dev/docs",
+            "url": "http://localhost:8000/api/v1/dev/docs",
+        },
     },
     {
-        "name": "web-dashboard",
-        "description": "**🌐 Web Pages** - Dashboard web pages",
+        "name": "test",
+        "description": "**� DEVELOPMENT** - Testing endpoints and utilities",
+        "externalDocs": {
+            "description": "Development API | API Docs: /api/v1/dev/docs",
+            "url": "http://localhost:8000/api/v1/dev/docs",
+        },
     },
     {
         "name": "optimization",
-        "description": "**⚡ System Optimization** - Backend performance optimization and monitoring",
+        "description": "**🌟 DEVELOPMENT** - Backend performance optimization and monitoring",
+        "externalDocs": {
+            "description": "Development API | API Docs: /api/v1/dev/docs",
+            "url": "http://localhost:8000/api/v1/dev/docs",
+        },
+    },
+    # === 🏥 SYSTEM APIs ===
+    {
+        "name": "health",
+        "description": "**� SYSTEM** - Health check endpoints",
+    },
+    {
+        "name": "root", 
+        "description": "**🏥 SYSTEM** - Root API information and role-based documentation links",
     },
 ]
 
@@ -316,21 +388,194 @@ async def health_check():
     }
 
 
-# 루트 경로 정보
+# 루트 경로 정보 (역할별 API 문서 안내)
 @app.get("/", tags=["root"])
 async def root():
     """API에 대한 기본 정보를 제공합니다."""
     return {
         "message": f"Welcome to {settings.APP_NAME} API",
         "version": settings.APP_VERSION,
-        "docs": f"{settings.API_V1_PREFIX}/docs" if settings.DEBUG else None,
-        "health": "/health",
         "environment": settings.TRON_NETWORK,
+        "health": "/health",
+        "api_docs": {
+            "super_admin": {
+                "title": "🔐 Super Admin API",
+                "description": "시스템 관리, 파트너 관리, 에너지 풀 관리",
+                "frontend": "http://localhost:3020 (Super Admin Dashboard)",
+                "docs": "/api/v1/admin/docs",
+                "openapi": "/api/v1/admin/openapi.json"
+            },
+            "partner_admin": {
+                "title": "🔗 Partner Admin API", 
+                "description": "TronLink 연동, 파트너 에너지 관리, 수수료 정책",
+                "frontend": "http://localhost:3030 (Partner Admin Template)",
+                "docs": "/api/v1/partner/docs",
+                "openapi": "/api/v1/partner/openapi.json"
+            },
+            "development": {
+                "title": "🌟 Development API",
+                "description": "Simple Energy Service, 테스트, 최적화",
+                "docs": "/api/v1/dev/docs", 
+                "openapi": "/api/v1/dev/openapi.json"
+            },
+            "complete": {
+                "title": "📋 Complete API (All)",
+                "description": "모든 API 엔드포인트 (개발용)",
+                "docs": f"{settings.API_V1_PREFIX}/docs" if settings.DEBUG else None,
+                "openapi": f"{settings.API_V1_PREFIX}/openapi.json" if settings.DEBUG else None
+            }
+        }
     }
 
 
 # API 라우터 등록
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+# === 역할별 API 문서 엔드포인트 ===
+from fastapi.responses import HTMLResponse
+from app.core.role_based_docs import (
+    create_super_admin_openapi, 
+    create_partner_admin_openapi,
+    create_development_openapi
+)
+
+@app.get("/api/v1/admin/openapi.json", tags=["admin_docs"])
+async def get_super_admin_openapi():
+    """Super Admin 전용 OpenAPI 스키마"""
+    return create_super_admin_openapi(app)
+
+@app.get("/api/v1/admin/docs", response_class=HTMLResponse, include_in_schema=False)
+async def get_super_admin_docs():
+    """Super Admin 전용 Swagger UI"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🔐 Super Admin API - DantaroWallet</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui.css" />
+        <style>
+            .swagger-ui .topbar {{ display: none; }}
+            .swagger-ui .info .title {{ color: #1f2937; }}
+            .swagger-ui .info .title:after {{ 
+                content: " 🔐 Super Admin Only"; 
+                color: #dc2626; 
+                font-size: 0.7em;
+                border: 1px solid #dc2626;
+                padding: 2px 6px;
+                border-radius: 4px;
+                margin-left: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui-bundle.js"></script>
+        <script>
+            const ui = SwaggerUIBundle({{
+                url: '/api/v1/admin/openapi.json',
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.presets.standalone
+                ],
+                layout: "StandaloneLayout"
+            }});
+        </script>
+    </body>
+    </html>
+    """
+
+@app.get("/api/v1/partner/openapi.json", tags=["partner_docs"])
+async def get_partner_admin_openapi():
+    """Partner Admin 전용 OpenAPI 스키마"""
+    return create_partner_admin_openapi(app)
+
+@app.get("/api/v1/partner/docs", response_class=HTMLResponse, include_in_schema=False)
+async def get_partner_admin_docs():
+    """Partner Admin 전용 Swagger UI"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🔗 Partner Admin API - DantaroWallet</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui.css" />
+        <style>
+            .swagger-ui .topbar {{ display: none; }}
+            .swagger-ui .info .title {{ color: #1f2937; }}
+            .swagger-ui .info .title:after {{ 
+                content: " 🔗 Partner Admin Only"; 
+                color: #059669; 
+                font-size: 0.7em;
+                border: 1px solid #059669;
+                padding: 2px 6px;
+                border-radius: 4px;
+                margin-left: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui-bundle.js"></script>
+        <script>
+            const ui = SwaggerUIBundle({{
+                url: '/api/v1/partner/openapi.json',
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.presets.standalone
+                ],
+                layout: "StandaloneLayout"
+            }});
+        </script>
+    </body>
+    </html>
+    """
+
+@app.get("/api/v1/dev/openapi.json", tags=["dev_docs"])
+async def get_development_openapi():
+    """개발/테스트 전용 OpenAPI 스키마"""
+    return create_development_openapi(app)
+
+@app.get("/api/v1/dev/docs", response_class=HTMLResponse, include_in_schema=False) 
+async def get_development_docs():
+    """개발/테스트 전용 Swagger UI"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🌟 Development API - DantaroWallet</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui.css" />
+        <style>
+            .swagger-ui .topbar {{ display: none; }}
+            .swagger-ui .info .title {{ color: #1f2937; }}
+            .swagger-ui .info .title:after {{ 
+                content: " 🌟 Development Only"; 
+                color: #7c3aed; 
+                font-size: 0.7em;
+                border: 1px solid #7c3aed;
+                padding: 2px 6px;
+                border-radius: 4px;
+                margin-left: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui-bundle.js"></script>
+        <script>
+            const ui = SwaggerUIBundle({{
+                url: '/api/v1/dev/openapi.json',
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.presets.standalone
+                ],
+                layout: "StandaloneLayout"
+            }});
+        </script>
+    </body>
+    </html>
+    """
 
 
 # === 공개 API 엔드포인트들 (인증 불필요) ===

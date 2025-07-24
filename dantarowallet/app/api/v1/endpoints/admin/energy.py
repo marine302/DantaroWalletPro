@@ -1,416 +1,446 @@
 """
-TRON 에너지 풀 관리 API 엔드포인트 (copilot-doc-24)
+Doc #25: 에너지 풀 고급 관리 API 엔드포인트
+실시간 모니터링, 예측 분석, 알림 시스템
 """
 
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_admin_user
-from app.core.database import get_db
-from app.core.logger import get_logger
-from app.models.user import User
+from app.api.deps import get_current_partner, get_db
+from app.models.energy_pool import EnergyAlert, PartnerEnergyPool
+from app.models.partner import Partner
 from app.schemas.energy import (
-    AutoManagementSettings,
-    CreateEnergyPoolRequest,
+    EnergyAlertListResponse,
+    EnergyAnalyticsResponse,
+    EnergyDashboardResponse,
+    EnergyMonitoringResponse,
+    EnergyPatternAnalysisResponse,
     EnergyPoolResponse,
-    EnergyPoolStatusResponse,
-    EnergyPriceHistoryResponse,
-    EnergySimulationRequest,
-    EnergySimulationResponse,
-    EnergyUsageLogResponse,
-    EnergyUsageStatsResponse,
+    GlobalEnergyAnalyticsResponse,
     MessageResponse,
 )
-from app.services.energy.pool_manager import EnergyPoolManager
-from app.services.energy.price_monitor import EnergyPriceMonitor
-from app.services.energy.usage_tracker import EnergyUsageTracker
 
-logger = get_logger(__name__)
-router = APIRouter(tags=["admin_energy"])
+# EnergyPredictionService를 직접 임포트
+from app.services.energy_monitoring_service import (
+    EnergyMonitoringService,
+    EnergyPredictionService,
+)
+
+router = APIRouter()
 
 
-# 의존성 함수들
-async def get_energy_pool_manager(
+@router.get("/monitor/{partner_id}", response_model=EnergyMonitoringResponse)
+async def monitor_partner_energy(
+    partner_id: int,
     db: AsyncSession = Depends(get_db),
-) -> EnergyPoolManager:
-    """에너지 풀 매니저 의존성"""
-    from tronpy import Tron
-
-    # Redis는 현재 없으므로 Mock 객체 사용
-    class MockRedis:
-        async def get(self, key):
-            return None
-
-        async def setex(self, key, ttl, value):
-            pass
-
-        async def publish(self, channel, message):
-            pass
-
-    # Create a proper Tron client
-    tron_client = Tron()  # Uses mainnet by default
-    redis_client = MockRedis()
-    return EnergyPoolManager(db, tron_client, redis_client)
-
-
-async def get_usage_tracker(db: AsyncSession = Depends(get_db)) -> EnergyUsageTracker:
-    """사용량 추적기 의존성"""
-
-    class MockRedis:
-        async def get(self, key):
-            return None
-
-        async def setex(self, key, ttl, value):
-            pass
-
-        async def publish(self, channel, message):
-            pass
-
-    redis_client = MockRedis()
-    return EnergyUsageTracker(db, redis_client)
-
-
-async def get_price_monitor(db: AsyncSession = Depends(get_db)) -> EnergyPriceMonitor:
-    """가격 모니터 의존성"""
-
-    class MockRedis:
-        async def get(self, key):
-            return None
-
-        async def setex(self, key, ttl, value):
-            pass
-
-    redis_client = MockRedis()
-    return EnergyPriceMonitor(db, redis_client)
-
-
-@router.get("/status", response_model=EnergyPoolStatusResponse)
-async def get_energy_pool_status(
-    pool_id: int = Query(1, description="에너지 풀 ID"),
-    current_admin: User = Depends(get_current_admin_user),
-    energy_service: EnergyPoolManager = Depends(get_energy_pool_manager),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 풀 현황 조회"""
-    try:
-        status = await energy_service.check_pool_status(pool_id)
-
-        # 추가 정보 조회
-        # usage_trend = await energy_service.get_usage_trend(pool_id, days=7)
-        # depletion_estimate = await energy_service.estimate_depletion_time(pool_id)
-
-        # 임시로 기본값 사용
-        usage_trend = {"trend": "stable", "daily_average": 50000}
-        depletion_estimate = (
-            None if status.get("available_energy", 0) > 100000 else "2 days"
+    """파트너 에너지 실시간 모니터링 (Doc #25)"""
+    # 권한 확인 (자신의 데이터만 조회 가능)
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 에너지 상태만 조회할 수 있습니다"
         )
 
-        recommendations = []
-        if status.get("status") == "critical":
-            recommendations.append("즉시 에너지 충전이 필요합니다")
-        elif status.get("status") == "low":
-            recommendations.append("에너지 충전을 권장합니다")
-        else:
-            recommendations.append("에너지 상태가 양호합니다")
+    try:
+        monitoring_service = EnergyMonitoringService(db)
+        monitoring_data = await monitoring_service.monitor_partner_energy(partner_id)
 
-        return EnergyPoolStatusResponse(
-            **status,
-            usage_trend=usage_trend,
-            estimated_depletion=depletion_estimate,
-            recommendations=recommendations,
+        return EnergyMonitoringResponse(
+            success=True, data=monitoring_data, timestamp=datetime.utcnow()
         )
     except Exception as e:
-        logger.error(f"에너지 풀 상태 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 풀 상태 조회 실패")
+        raise HTTPException(status_code=500, detail=f"에너지 모니터링 실패: {str(e)}")
 
 
-@router.post("/create-pool", response_model=EnergyPoolResponse)
-async def create_energy_pool(
-    pool_data: CreateEnergyPoolRequest,
-    current_admin: User = Depends(get_current_admin_user),
-    energy_service: EnergyPoolManager = Depends(get_energy_pool_manager),
-):
-    """새 에너지 풀 생성"""
-    # 보안상 실제 프라이빗 키 처리는 제한
-    if len(pool_data.owner_private_key) != 64:
-        raise HTTPException(status_code=400, detail="올바르지 않은 프라이빗 키 형식")
-
-    try:
-        pool = await energy_service.create_energy_pool(
-            pool_name=pool_data.pool_name,
-            owner_private_key=pool_data.owner_private_key,
-            initial_trx_amount=int(pool_data.initial_trx_amount),  # Decimal to int 변환
-        )
-
-        return EnergyPoolResponse.model_validate(pool)
-    except Exception as e:
-        logger.error(f"에너지 풀 생성 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/usage-stats", response_model=EnergyUsageStatsResponse)
-async def get_energy_usage_statistics(
-    pool_id: int = Query(1),
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
-    current_admin: User = Depends(get_current_admin_user),
-    usage_tracker: EnergyUsageTracker = Depends(get_usage_tracker),
-):
-    """에너지 사용 통계 조회"""
-    try:
-        # 임시 통계 데이터 반환 (실제 메서드 구현 전까지)
-        stats = {
-            "total_usage": 0,
-            "daily_average": 0,
-            "peak_usage": 0,
-            "pool_efficiency": 95.5,
-            "cost_savings": 1250.0,
-        }
-
-        return EnergyUsageStatsResponse(**stats)
-    except Exception as e:
-        logger.error(f"에너지 사용 통계 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 사용 통계 조회 실패")
-
-
-@router.get("/usage-logs", response_model=List[EnergyUsageLogResponse])
-async def get_energy_usage_logs(
-    pool_id: int = Query(1),
-    limit: int = Query(100, le=1000),
-    offset: int = Query(0),
-    user_id: Optional[int] = None,
-    transaction_type: Optional[str] = None,
-    current_admin: User = Depends(get_current_admin_user),
+@router.get("/analytics/{partner_id}", response_model=EnergyAnalyticsResponse)
+async def get_energy_analytics(
+    partner_id: int,
+    days: int = Query(default=30, ge=1, le=90, description="분석 기간 (일)"),
     db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 사용 로그 조회"""
-    try:
-        from sqlalchemy import select
-
-        from app.models.energy_pool import EnergyUsageLog
-
-        query = select(EnergyUsageLog).where(EnergyUsageLog.pool_id == pool_id)
-
-        if user_id:
-            query = query.where(EnergyUsageLog.user_id == user_id)
-        if transaction_type:
-            query = query.where(EnergyUsageLog.transaction_type == transaction_type)
-
-        query = query.order_by(EnergyUsageLog.used_at.desc())
-        query = query.limit(limit).offset(offset)
-
-        result = await db.execute(query)
-        logs = result.scalars().all()
-
-        return [EnergyUsageLogResponse.model_validate(log) for log in logs]
-    except Exception as e:
-        logger.error(f"에너지 사용 로그 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 사용 로그 조회 실패")
-
-
-@router.post("/simulate-usage", response_model=EnergySimulationResponse)
-async def simulate_energy_usage(
-    simulation_data: EnergySimulationRequest,
-    current_admin: User = Depends(get_current_admin_user),
-    energy_service: EnergyPoolManager = Depends(get_energy_pool_manager),
-):
-    """에너지 사용량 시뮬레이션"""
-    try:
-        # 임시 시뮬레이션 결과 반환
-        simulation_result = {
-            "estimated_energy_cost": 150.0,
-            "estimated_trx_cost": 75.0,
-            "savings": 25.5,
-            "efficiency_score": 92.3,
-            "recommendations": ["에너지 풀 크기 최적화", "거래 시간대 조정"],
-        }
-
-        return EnergySimulationResponse(**simulation_result)
-    except Exception as e:
-        logger.error(f"에너지 시뮬레이션 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 시뮬레이션 실패")
-
-
-@router.put("/auto-manage", response_model=MessageResponse)
-async def update_auto_management_settings(
-    pool_id: int,
-    settings: AutoManagementSettings,
-    current_admin: User = Depends(get_current_admin_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """자동 에너지 관리 설정"""
-    try:
-        from sqlalchemy import update
-
-        from app.models.energy_pool import EnergyPoolModel
-
-        # Check if pool exists
-        pool = await db.get(EnergyPoolModel, pool_id)
-        if not pool:
-            raise HTTPException(status_code=404, detail="에너지 풀을 찾을 수 없습니다")
-
-        # Update the pool settings
-        await db.execute(
-            update(EnergyPoolModel)
-            .where(EnergyPoolModel.id == pool_id)
-            .values(
-                auto_refill=settings.enabled,
-                auto_refill_amount=settings.refill_amount,
-                auto_refill_trigger=settings.trigger_percentage,
-            )
+    """파트너 에너지 사용 분석 (Doc #25)"""
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 에너지 분석만 조회할 수 있습니다"
         )
 
-        await db.commit()
-
-        return MessageResponse(message="자동 관리 설정이 업데이트되었습니다")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"자동 관리 설정 업데이트 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="자동 관리 설정 업데이트 실패")
-
-
-@router.get("/price-history", response_model=List[EnergyPriceHistoryResponse])
-async def get_energy_price_history(
-    days: int = Query(7, le=30),
-    current_admin: User = Depends(get_current_admin_user),
-    price_monitor: EnergyPriceMonitor = Depends(get_price_monitor),
-):
-    """에너지 가격 히스토리 조회"""
     try:
-        history = await price_monitor.get_price_history(days)
+        monitoring_service = EnergyMonitoringService(db)
+        analytics_data = await monitoring_service.get_energy_analytics(partner_id, days)
 
-        return [
-            EnergyPriceHistoryResponse(
-                id=i + 1,
-                trx_price_usd=record["trx_price_usd"],
-                energy_price_trx=record["energy_price_trx"],
-                energy_price_usd=record["energy_price_usd"],
-                market_demand=record["market_demand"],
-                network_congestion=record["network_congestion"],
-                recorded_at=datetime.fromisoformat(record["recorded_at"]),
-            )
-            for i, record in enumerate(history)
-        ]
+        return EnergyAnalyticsResponse(
+            success=True, analytics=analytics_data, generated_at=datetime.utcnow()
+        )
     except Exception as e:
-        logger.error(f"에너지 가격 히스토리 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 가격 히스토리 조회 실패")
+        raise HTTPException(status_code=500, detail=f"에너지 분석 실패: {str(e)}")
 
 
-@router.get("/cost-estimate")
-async def get_energy_cost_estimate(
-    transaction_type: str = Query("transfer", description="거래 유형"),
-    token_type: str = Query("TRC20", description="토큰 유형"),
-    current_admin: User = Depends(get_current_admin_user),
-    energy_service: EnergyPoolManager = Depends(get_energy_pool_manager),
+@router.get("/alerts/{partner_id}", response_model=EnergyAlertListResponse)
+async def get_energy_alerts(
+    partner_id: int,
+    hours: int = Query(default=24, ge=1, le=168, description="조회 기간 (시간)"),
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 비용 추정"""
+    """파트너 에너지 알림 조회 (Doc #25)"""
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(status_code=403, detail="자신의 알림만 조회할 수 있습니다")
+
     try:
-        # 임시 비용 추정 반환
-        estimate = {
-            "estimated_energy": 28000,
-            "estimated_cost_trx": 14.5,
-            "estimated_cost_usd": 1.25,
-            "transaction_type": transaction_type,
-            "token_type": token_type,
-        }
+        monitoring_service = EnergyMonitoringService(db)
 
-        return estimate
-    except Exception as e:
-        logger.error(f"에너지 비용 추정 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 비용 추정 실패")
+        # 에너지 풀 조회
+        result = await db.execute(
+            select(PartnerEnergyPool).where(PartnerEnergyPool.partner_id == partner_id)
+        )
+        energy_pool = result.scalar_one_or_none()
 
+        if not energy_pool:
+            return EnergyAlertListResponse(success=True, alerts=[], total_count=0)
 
-@router.post("/update-prices")
-async def update_energy_prices(
-    current_admin: User = Depends(get_current_admin_user),
-    price_monitor: EnergyPriceMonitor = Depends(get_price_monitor),
-):
-    """에너지 가격 수동 업데이트"""
-    try:
-        # 임시 가격 업데이트 결과
-        updated_prices = {
-            "energy_price_trx": 0.00052,
-            "trx_price_usd": 0.0865,
-            "last_updated": datetime.now().isoformat(),
-        }
+        # 최근 알림 조회
+        # alerts = await monitoring_service._get_recent_alerts(getattr(energy_pool, 'id'), hours)
+        alerts = []  # 임시 처리
 
-        return {"message": "에너지 가격이 업데이트되었습니다", "prices": updated_prices}
-    except Exception as e:
-        logger.error(f"에너지 가격 업데이트 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="에너지 가격 업데이트 실패")
-
-
-@router.get("/network-status")
-async def get_network_status(
-    current_admin: User = Depends(get_current_admin_user),
-    energy_service: EnergyPoolManager = Depends(get_energy_pool_manager),
-):
-    """TRON 네트워크 상태 조회"""
-    try:
-        # 임시 네트워크 상태 반환
-        return {
-            "network_congestion": "medium",
-            "trx_price_usd": 0.0865,
-            "energy_price_trx": 0.00052,
-            "energy_price_usd": 0.00052 * 0.0865,
-            "status": "normal",
-            "last_updated": datetime.utcnow().isoformat(),
-        }
-    except Exception as e:
-        logger.error(f"네트워크 상태 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="네트워크 상태 조회 실패")
-
-
-@router.get("/efficiency-report")
-async def get_efficiency_report(
-    pool_id: int = Query(1),
-    days: int = Query(30, le=90),
-    current_admin: User = Depends(get_current_admin_user),
-    usage_tracker: EnergyUsageTracker = Depends(get_usage_tracker),
-):
-    """에너지 효율성 리포트"""
-    try:
-        # 임시 효율성 리포트 반환
-        report = {
-            "pool_id": pool_id,
-            "period_days": days,
-            "efficiency_score": 94.2,
-            "total_energy_used": 145000,
-            "total_cost_saved": 850.5,
-            "recommendations": ["피크 시간대 사용량 최적화", "에너지 풀 크기 조정"],
-        }
-
-        return report
-    except Exception as e:
-        logger.error(f"효율성 리포트 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="효율성 리포트 조회 실패")
-
-
-@router.get("/top-consumers")
-async def get_top_energy_consumers(
-    pool_id: int = Query(1),
-    days: int = Query(7, le=30),
-    limit: int = Query(10, le=50),
-    current_admin: User = Depends(get_current_admin_user),
-    usage_tracker: EnergyUsageTracker = Depends(get_usage_tracker),
-):
-    """상위 에너지 소비자 조회"""
-    try:
-        # 임시 상위 소비자 데이터
-        consumers = [
-            {"user_id": 1, "username": "user1", "energy_used": 15000, "cost": 75.0},
-            {"user_id": 2, "username": "user2", "energy_used": 12500, "cost": 62.5},
-            {"user_id": 3, "username": "user3", "energy_used": 10000, "cost": 50.0},
+        alert_data = [
+            {
+                "id": alert.id,
+                "type": alert.alert_type,
+                "severity": alert.severity,
+                "title": alert.title,
+                "message": alert.message,
+                "threshold_value": float(alert.threshold_value or 0),
+                "current_value": float(alert.current_value or 0),
+                "estimated_hours_remaining": alert.estimated_hours_remaining,
+                "acknowledged": bool(alert.acknowledged),
+                "created_at": alert.created_at,
+            }
+            for alert in alerts
         ]
 
-        return {
-            "period_days": days,
-            "top_consumers": consumers[:limit],
-            "total_consumers": len(consumers),
-        }
+        return EnergyAlertListResponse(
+            success=True, alerts=alert_data, total_count=len(alerts)
+        )
+
     except Exception as e:
-        logger.error(f"상위 소비자 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail="상위 소비자 조회 실패")
+        raise HTTPException(status_code=500, detail=f"알림 조회 실패: {str(e)}")
+
+
+@router.get("/global/analytics", response_model=GlobalEnergyAnalyticsResponse)
+async def get_global_energy_analytics(
+    days: int = Query(default=30, ge=1, le=90, description="분석 기간 (일)"),
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """전체 에너지 사용 분석 (관리자용)"""
+    # 관리자 권한 체크 (실제로는 슈퍼 어드민 권한 확인)
+    try:
+        monitoring_service = EnergyMonitoringService(db)
+        analytics_data = await monitoring_service.get_energy_analytics(
+            partner_id=1, days=days
+        )  # 임시 처리
+
+        return GlobalEnergyAnalyticsResponse(
+            success=True,
+            global_analytics=analytics_data,
+            generated_at=datetime.utcnow(),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"전체 에너지 분석 실패: {str(e)}")
+
+
+@router.post("/update/{partner_id}", response_model=EnergyMonitoringResponse)
+async def update_energy_status(
+    partner_id: int,
+    wallet_address: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """파트너의 에너지 상태 실시간 업데이트"""
+    # 권한 확인
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 에너지 상태만 업데이트할 수 있습니다"
+        )
+
+    monitoring_service = EnergyMonitoringService(db)
+
+    # 모니터링 데이터 조회
+    try:
+        monitoring_data = await monitoring_service.monitor_partner_energy(partner_id)
+
+        return EnergyMonitoringResponse(
+            success=True, data=monitoring_data, timestamp=datetime.utcnow()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"에너지 상태 업데이트 실패: {str(e)}"
+        )
+
+
+@router.get("/dashboard/{partner_id}", response_model=EnergyDashboardResponse)
+async def get_energy_dashboard(
+    partner_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 풀 대시보드 데이터 조회"""
+    # 권한 확인
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 대시보드만 조회할 수 있습니다"
+        )
+
+    monitoring_service = EnergyMonitoringService(db)
+    # dashboard_data = await monitoring_service.get_energy_dashboard_data(partner_id)
+    dashboard_data = {}  # 임시 처리
+
+    if not dashboard_data["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=dashboard_data.get("error", "대시보드 데이터 조회 실패"),
+        )
+
+    return EnergyDashboardResponse(**dashboard_data)
+
+
+@router.get("/patterns/{partner_id}", response_model=EnergyPatternAnalysisResponse)
+async def analyze_usage_patterns(
+    partner_id: int,
+    days: int = 7,
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 사용 패턴 분석"""
+    # 권한 확인
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 사용 패턴만 분석할 수 있습니다"
+        )
+
+    if days < 1 or days > 30:
+        raise HTTPException(
+            status_code=400, detail="분석 기간은 1-30일 사이여야 합니다"
+        )
+
+    prediction_service = EnergyPredictionService(db)
+    # analysis_result = await prediction_service.analyze_usage_patterns(partner_id, days)
+    analysis_result = {}  # 임시 처리
+
+    if not analysis_result["success"]:
+        raise HTTPException(
+            status_code=400, detail=analysis_result.get("error", "패턴 분석 실패")
+        )
+
+    return EnergyPatternAnalysisResponse(**analysis_result)
+
+
+@router.post("/alerts/{partner_id}/acknowledge/{alert_id}")
+async def acknowledge_alert(
+    partner_id: int,
+    alert_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 알림 확인 처리"""
+    # 권한 확인
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(status_code=403, detail="자신의 알림만 확인할 수 있습니다")
+
+    from sqlalchemy import and_, select
+
+    from app.models.energy_pool import EnergyAlert, PartnerEnergyPool
+
+    # 알림 조회 및 권한 확인
+    result = await db.execute(
+        select(EnergyAlert)
+        .join(PartnerEnergyPool)
+        .where(
+            and_(EnergyAlert.id == alert_id, PartnerEnergyPool.partner_id == partner_id)
+        )
+    )
+    alert = result.scalar_one_or_none()
+
+    if not alert:
+        raise HTTPException(status_code=404, detail="알림을 찾을 수 없습니다")
+
+    if getattr(alert, "acknowledged", False):
+        raise HTTPException(status_code=400, detail="이미 확인된 알림입니다")
+
+    # 알림 확인 처리 - SQLAlchemy update 사용
+    from sqlalchemy import update
+
+    await db.execute(
+        update(EnergyAlert)
+        .where(EnergyAlert.id == alert_id)
+        .values(acknowledged=True, acknowledged_at=datetime.utcnow())
+    )
+
+    await db.commit()
+
+    return {"success": True, "message": "알림이 확인되었습니다"}
+
+
+# 중복된 알림 엔드포인트 제거됨 - 위에서 이미 정의됨
+
+
+@router.get("/usage-logs/{partner_id}")
+async def get_usage_logs(
+    partner_id: int,
+    limit: int = 50,
+    hours: int = 24,
+    db: AsyncSession = Depends(get_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """파트너의 에너지 사용 로그 조회"""
+    # 권한 확인
+    if str(current_partner.id) != str(partner_id):
+        raise HTTPException(
+            status_code=403, detail="자신의 사용 로그만 조회할 수 있습니다"
+        )
+
+    from datetime import timedelta
+
+    from sqlalchemy import and_, desc, select
+
+    from app.models.energy_pool import PartnerEnergyPool, PartnerEnergyUsageLog
+
+    # 시간 제한
+    since = datetime.utcnow() - timedelta(hours=hours)
+
+    result = await db.execute(
+        select(PartnerEnergyUsageLog)
+        .join(PartnerEnergyPool)
+        .where(
+            and_(
+                PartnerEnergyPool.partner_id == partner_id,
+                PartnerEnergyUsageLog.created_at >= since,
+            )
+        )
+        .order_by(desc(PartnerEnergyUsageLog.created_at))
+        .limit(limit)
+    )
+    usage_logs = result.scalars().all()
+
+    return {
+        "success": True,
+        "usage_logs": [
+            {
+                "id": log.id,
+                "transaction_type": log.transaction_type,
+                "transaction_hash": log.transaction_hash,
+                "energy_consumed": int(getattr(log, "energy_consumed", 0) or 0),
+                "bandwidth_consumed": int(getattr(log, "bandwidth_consumed", 0) or 0),
+                "energy_unit_price": (
+                    float(getattr(log, "energy_unit_price", 0) or 0)
+                    if getattr(log, "energy_unit_price", None) is not None
+                    else None
+                ),
+                "total_cost": (
+                    float(getattr(log, "total_cost", 0) or 0)
+                    if getattr(log, "total_cost", None) is not None
+                    else None
+                ),
+                "created_at": log.created_at,
+            }
+            for log in usage_logs
+        ],
+        "total_count": len(usage_logs),
+        "period_hours": hours,
+    }
+
+
+# 슈퍼 어드민 전용 엔드포인트
+@router.get("/admin/monitor-all", dependencies=[Depends(get_current_partner)])
+async def admin_monitor_all_partners(
+    background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
+):
+    """모든 파트너의 에너지 상태 모니터링 (슈퍼 어드민 전용)"""
+    # TODO: 슈퍼 어드민 권한 확인 로직 추가
+
+    monitoring_service = EnergyMonitoringService(db)
+
+    # 백그라운드에서 모니터링 실행
+    background_tasks.add_task(monitoring_service.monitor_all_partners)
+
+    result = await monitoring_service.monitor_all_partners()
+
+    return {
+        "success": True,
+        "message": "전체 파트너 모니터링이 시작되었습니다",
+        "result": result,
+    }
+
+
+@router.get("/admin/overview")
+async def admin_energy_overview(db: AsyncSession = Depends(get_db)):
+    """전체 에너지 풀 현황 개요 (슈퍼 어드민 전용)"""
+    # TODO: 슈퍼 어드민 권한 확인 로직 추가
+
+    from sqlalchemy import func, select
+
+    from app.models.energy_pool import EnergyStatus, PartnerEnergyPool
+
+    # 전체 통계 조회
+    result = await db.execute(
+        select(
+            func.count(PartnerEnergyPool.id).label("total_pools"),
+            func.count(PartnerEnergyPool.id)
+            .filter(PartnerEnergyPool.status == "sufficient")
+            .label("sufficient"),
+            func.count(PartnerEnergyPool.id)
+            .filter(PartnerEnergyPool.status == "warning")
+            .label("warning"),
+            func.count(PartnerEnergyPool.id)
+            .filter(PartnerEnergyPool.status == "critical")
+            .label("critical"),
+            func.count(PartnerEnergyPool.id)
+            .filter(PartnerEnergyPool.status == "depleted")
+            .label("depleted"),
+            func.sum(PartnerEnergyPool.total_energy).label("total_energy_sum"),
+            func.sum(PartnerEnergyPool.available_energy).label("available_energy_sum"),
+            func.sum(PartnerEnergyPool.frozen_trx_amount).label("frozen_trx_sum"),
+        )
+    )
+    stats = result.first()
+
+    return {
+        "success": True,
+        "overview": {
+            "total_partners": getattr(stats, "total_pools", 0) or 0,
+            "status_distribution": {
+                "sufficient": getattr(stats, "sufficient", 0) or 0,
+                "warning": getattr(stats, "warning", 0) or 0,
+                "critical": getattr(stats, "critical", 0) or 0,
+                "depleted": getattr(stats, "depleted", 0) or 0,
+            },
+            "energy_totals": {
+                "total_energy": int(getattr(stats, "total_energy_sum", 0) or 0),
+                "available_energy": int(getattr(stats, "available_energy_sum", 0) or 0),
+                "utilization_rate": round(
+                    (
+                        (
+                            1
+                            - (
+                                getattr(stats, "available_energy_sum", 0)
+                                / getattr(stats, "total_energy_sum", 1)
+                            )
+                        )
+                        * 100
+                        if getattr(stats, "total_energy_sum", 0)
+                        and getattr(stats, "total_energy_sum", 0) > 0
+                        else 0
+                    ),
+                    2,
+                ),
+            },
+            "frozen_trx_total": float(getattr(stats, "frozen_trx_sum", 0) or 0),
+        },
+    }

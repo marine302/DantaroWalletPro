@@ -11,15 +11,15 @@ api_router = APIRouter()
 # 엔드포인트 모듈 임포트
 from app.api import energy_rental  # 에너지 렌탈 시스템
 from app.api.v1 import admin
-from app.api.v1.endpoints.admin import audit_compliance  # Doc #30: 트랜잭션 감사 및 컴플라이언스
-from app.api.v1.endpoints.common import auth
-from app.api.v1.endpoints.common import balance
-from app.api.v1.endpoints.common import deposit
+from app.api.v1.endpoints import audit_compliance  # Doc #30: 트랜잭션 감사 및 컴플라이언스
+from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import balance
+from app.api.v1.endpoints import deposit
 from app.api.v1.endpoints import energy  # Doc #25: 에너지 풀 고급 관리 시스템 - 오류 수정 완료
 from app.api.v1.endpoints import energy_management  # Doc #25: 파트너용 에너지 풀 CRUD 관리
-from app.api.v1.endpoints.admin import external_energy  # Doc #35(38): 외부 에너지 공급자 연동
+from app.api.v1.endpoints import external_energy  # Doc #35(38): 외부 에너지 공급자 연동
 from app.api.v1.endpoints import fee_policy  # Doc #26: 파트너사 수수료 및 정책 관리
-from app.api.v1.endpoints.admin import optimization  # 백엔드 최적화 관리
+from app.api.v1.endpoints import optimization  # 백엔드 최적화 관리
 from app.api.v1.endpoints import partner_energy  # 파트너 에너지 렌탈 시스템
 from app.api.v1.endpoints import partner_onboarding  # Doc #29: 파트너사 온보딩 자동화
 from app.api.v1.endpoints import partners_simple  # 간단한 파트너 관리 API
@@ -30,10 +30,10 @@ from app.api.v1.endpoints import transactions  # 거래 관리 API 엔드포인�
 from app.api.v1.endpoints import tronlink  # TronLink 연동 (메인 엔드포인트)
 from app.api.v1.endpoints import users  # 사용자 관리 API 엔드포인트
 from app.api.v1.endpoints import wallet
-from app.api.v1.endpoints.common import websocket  # WebSocket 실시간 데이터 스트리밍
+from app.api.v1.endpoints import websocket  # WebSocket 실시간 데이터 스트리밍
 from app.api.v1.endpoints import withdrawal
 from app.api.v1.endpoints import withdrawal_management  # Doc #28: 파트너사 출금 관리 고도화
-from app.api.v1.endpoints.common import simple_energy  # Simple Energy Service - 개인/소규모 프로젝트용
+from app.api.v1.endpoints import simple_energy  # Simple Energy Service - 개인/소규모 프로젝트용
 
 # admin 폴더의 실제 구현된 라우터들 임포트
 from app.api.v1.endpoints.admin import dashboard as admin_dashboard_real
@@ -90,10 +90,15 @@ api_router.include_router(
 
 # 역할별 에너지 렌탈 API 추가
 from app.api.v1.endpoints.admin import energy_rental as admin_energy_rental
+from app.api.v1.endpoints import partner_energy_rental
 
 api_router.include_router(
     admin_energy_rental.router, tags=["admin_energy_rental"]
 )  # 수퍼어드민 전용 에너지 렌탈 관리
+
+api_router.include_router(
+    partner_energy_rental.router, tags=["partner_energy_rental"]
+)  # 파트너어드민 전용 에너지 렌탈
 
 # System Administration
 api_router.include_router(

@@ -1,613 +1,747 @@
 """
-슈퍼어드민용 에너지 관리 API
-Doc #17: 본사 슈퍼 어드민 시스템 구현 기반
+파트너용 에너지 풀 관리 API
+Doc #25: 에너지 풀 고급 관리 시스템 구현
 
-전체 에너지 풀 상태 모니터링, 파트너별 에너지 할당,
-에너지 충전/소진 관리, 알림 및 통계 제공
+파트너사별 에너지 풀 CRUD 관리, 에너지 할당,
+임계값 설정, 자동 충전 설정 등 에너지 풀 관리 기능
 """
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, desc, func, or_
 from sqlalchemy.orm import Session
 
-from app.core.auth import get_current_super_admin
 from app.core.database import get_sync_db
+
+
+# 임시로 더미 파트너 인증 사용
+def get_current_partner():
+    """임시 파트너 인증 - 실제 구현 필요"""
+    from app.models.partner import Partner
+
+    return Partner(id=1, name="Test Partner")
+
+
 from app.models.energy_pool import EnergyPoolModel, EnergyPriceHistory, EnergyUsageLog
 from app.models.partner import Partner
-from app.models.transaction import Transaction
 from app.models.user import User
 
-router = APIRouter(prefix="/admin/energy", tags=["Super Admin Energy"])
+router = APIRouter(prefix="/energy-management", tags=["energy_management"])
+
+# ============== Pydantic 스키마 ===============
 
 
-# Schema models for responses (inline definitions)
-from pydantic import BaseModel
+class EnergyPoolCreate(BaseModel):
+    """에너지 풀 생성 요청"""
+
+    pool_name: str
+    initial_energy: int
+    max_energy_limit: int
+    warning_threshold: int = 20  # 경고 임계값 (%)
+    critical_threshold: int = 10  # 위험 임계값 (%)
+    auto_recharge_enabled: bool = False
+    auto_recharge_amount: Optional[int] = None
+    priority: int = 1  # 우선순위 (1=높음, 5=낮음)
 
 
-class EnergyPoolStatus(BaseModel):
-    """전체 에너지 풀 상태"""
+class EnergyPoolUpdate(BaseModel):
+    """에너지 풀 수정 요청"""
 
-    total_energy: int
-    used_energy: int
-    available_energy: int
-    active_pools: int
-    total_partners: int
-    energy_utilization_rate: float
-    critical_pools: int
-    warning_pools: int
-
-
-class EnergyUsage(BaseModel):
-    """파트너별 에너지 사용량"""
-
-    partner_id: int
-    partner_name: str
-    total_allocated: int
-    used_energy: int
-    remaining_energy: int
-    usage_rate: float
-    last_usage: Optional[datetime]
-
-
-class EnergyAlert(BaseModel):
-    """에너지 알림"""
-
-    id: int
-    pool_id: int
-    partner_name: str
-    alert_type: str
-    message: str
-    severity: str
-    created_at: datetime
-    acknowledged: bool
-
-
-class EnergyHistory(BaseModel):
-    """에너지 사용 이력"""
-
-    date: datetime
-    partner_name: str
-    transaction_type: str
-    energy_used: int
-    remaining_energy: int
+    pool_name: Optional[str] = None
+    max_energy_limit: Optional[int] = None
+    warning_threshold: Optional[int] = None
+    critical_threshold: Optional[int] = None
+    auto_recharge_enabled: Optional[bool] = None
+    auto_recharge_amount: Optional[int] = None
+    priority: Optional[int] = None
+    is_active: Optional[bool] = None
 
 
 class EnergyAllocation(BaseModel):
-    """에너지 할당"""
+    """에너지 할당 요청"""
 
+    user_id: int
+    allocated_energy: int
+    valid_until: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class EnergyThresholdSettings(BaseModel):
+    """임계값 설정"""
+
+    warning_threshold: int  # 20% 등
+    critical_threshold: int  # 10% 등
+    emergency_threshold: int  # 5% 등
+    auto_recharge_threshold: int  # 15% 등
+    notification_enabled: bool = True
+
+
+class AutoRechargeSettings(BaseModel):
+    """자동 충전 설정"""
+
+    enabled: bool
+    trigger_threshold: int  # 임계값 (%)
+    recharge_amount: int  # 충전량
+    max_daily_recharge: int  # 일일 최대 충전량
+    recharge_interval_hours: int = 1  # 충전 간격 (시간)
+
+
+class EnergyPoolInfo(BaseModel):
+    """에너지 풀 정보 응답"""
+
+    id: int
+    pool_name: str
     partner_id: int
-    amount: int
-    reason: str
+    total_energy: int
+    available_energy: int
+    allocated_energy: int
+    reserved_energy: int
+    energy_usage_rate: float
+    warning_threshold: int
+    critical_threshold: int
+    status: str  # active, warning, critical, depleted
+    auto_recharge_enabled: bool
+    priority: int
+    created_at: datetime
+    last_charged_at: Optional[datetime]
+    estimated_depletion_time: Optional[datetime]
 
 
-@router.get("/status", response_model=EnergyPoolStatus)
-async def get_energy_pool_status(
-    db: Session = Depends(get_sync_db), current_admin=Depends(get_current_super_admin)
+class EnergyAllocationInfo(BaseModel):
+    """에너지 할당 정보"""
+
+    id: int
+    user_id: int
+    username: str
+    allocated_energy: int
+    used_energy: int
+    remaining_energy: int
+    allocation_date: datetime
+    valid_until: Optional[datetime]
+    status: str  # active, expired, revoked
+
+
+class EnergyUsageStats(BaseModel):
+    """에너지 사용 통계"""
+
+    total_pools: int
+    total_energy: int
+    available_energy: int
+    allocated_energy: int
+    daily_usage: int
+    weekly_usage: int
+    monthly_usage: int
+    peak_usage_hour: int
+    average_usage_rate: float
+    cost_per_energy: float
+
+
+# ============== API 엔드포인트 ===============
+
+
+@router.get("/pools", response_model=List[EnergyPoolInfo])
+async def get_energy_pools(
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+    status: Optional[str] = Query(
+        None, description="상태 필터 (active, warning, critical)"
+    ),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
 ):
-    """전체 에너지 풀 상태 조회"""
+    """파트너의 모든 에너지 풀 목록 조회"""
 
-    # 전체 에너지 풀 통계 계산
-    total_energy = (
-        db.query(EnergyPoolModel)
-        .with_entities(func.sum(EnergyPoolModel.total_energy))
-        .scalar()
-        or 0
+    query = db.query(EnergyPoolModel).filter(
+        EnergyPoolModel.partner_id == current_partner.id
     )
 
-    used_energy = (
-        db.query(EnergyPoolModel)
-        .with_entities(
-            func.sum(EnergyPoolModel.total_energy - EnergyPoolModel.available_energy)
+    # 상태 필터링
+    if status:
+        if status == "warning":
+            query = query.filter(
+                (EnergyPoolModel.available_energy / EnergyPoolModel.total_energy * 100)
+                <= EnergyPoolModel.warning_threshold
+            )
+        elif status == "critical":
+            query = query.filter(
+                (EnergyPoolModel.available_energy / EnergyPoolModel.total_energy * 100)
+                <= EnergyPoolModel.critical_threshold
+            )
+        elif status == "active":
+            query = query.filter(EnergyPoolModel.is_active == True)
+
+    # 페이징
+    offset = (page - 1) * limit
+    pools = (
+        query.order_by(EnergyPoolModel.priority, desc(EnergyPoolModel.created_at))
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    result = []
+    for pool in pools:
+        total_energy = float(getattr(pool, "total_energy", 0))
+        available_energy = float(getattr(pool, "available_energy", 0))
+        allocated_energy = float(getattr(pool, "allocated_energy", 0))
+
+        # 상태 계산
+        if total_energy > 0:
+            usage_rate = ((total_energy - available_energy) / total_energy) * 100
+            available_percentage = (available_energy / total_energy) * 100
+
+            if available_percentage <= getattr(pool, "critical_threshold", 10):
+                status_str = "critical"
+            elif available_percentage <= getattr(pool, "warning_threshold", 20):
+                status_str = "warning"
+            elif getattr(pool, "is_active", True):
+                status_str = "active"
+            else:
+                status_str = "inactive"
+        else:
+            usage_rate = 0
+            status_str = "depleted"
+
+        # 예상 고갈 시간 계산
+        estimated_depletion = None
+        if available_energy > 0 and usage_rate > 0:
+            hours_remaining = available_energy / (usage_rate / 24)  # 시간당 사용량 기준
+            estimated_depletion = datetime.now() + timedelta(hours=hours_remaining)
+
+        result.append(
+            EnergyPoolInfo(
+                id=getattr(pool, "id", 0),
+                pool_name=getattr(pool, "pool_name", ""),
+                partner_id=getattr(pool, "partner_id", 0),
+                total_energy=int(total_energy),
+                available_energy=int(available_energy),
+                allocated_energy=int(allocated_energy),
+                reserved_energy=int(getattr(pool, "reserved_energy", 0)),
+                energy_usage_rate=round(usage_rate, 2),
+                warning_threshold=getattr(pool, "warning_threshold", 20),
+                critical_threshold=getattr(pool, "critical_threshold", 10),
+                status=status_str,
+                auto_recharge_enabled=getattr(pool, "auto_recharge_enabled", False),
+                priority=getattr(pool, "priority", 1),
+                created_at=getattr(pool, "created_at", datetime.now()),
+                last_charged_at=getattr(pool, "last_charged_at", None),
+                estimated_depletion_time=estimated_depletion,
+            )
         )
-        .scalar()
-        or 0
-    )
 
-    available_energy = total_energy - used_energy
+    return result
 
-    active_pools = (
-        db.query(EnergyPoolModel).filter(EnergyPoolModel.status == "active").count()
-    )
 
-    total_partners = db.query(Partner).count()
+@router.post("/pools", response_model=EnergyPoolInfo)
+async def create_energy_pool(
+    pool_data: EnergyPoolCreate,
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """새 에너지 풀 생성"""
 
-    # 임계값별 풀 개수
-    critical_pools = (
-        db.query(EnergyPoolModel)
-        .filter(EnergyPoolModel.available_energy < (EnergyPoolModel.total_energy * 0.1))
-        .count()
-    )
-
-    warning_pools = (
+    # 풀 이름 중복 확인
+    existing_pool = (
         db.query(EnergyPoolModel)
         .filter(
-            EnergyPoolModel.available_energy < (EnergyPoolModel.total_energy * 0.2),
-            EnergyPoolModel.available_energy >= (EnergyPoolModel.total_energy * 0.1),
+            EnergyPoolModel.partner_id == current_partner.id,
+            EnergyPoolModel.pool_name == pool_data.pool_name,
         )
-        .count()
+        .first()
     )
 
-    energy_utilization_rate = (
-        (used_energy / total_energy * 100) if total_energy > 0 else 0
+    if existing_pool:
+        raise HTTPException(status_code=400, detail="Pool name already exists")
+
+    # 새 에너지 풀 생성
+    new_pool = EnergyPoolModel(
+        partner_id=current_partner.id,
+        pool_name=pool_data.pool_name,
+        total_energy=pool_data.initial_energy,
+        available_energy=pool_data.initial_energy,
+        allocated_energy=0,
+        max_energy_limit=pool_data.max_energy_limit,
+        warning_threshold=pool_data.warning_threshold,
+        critical_threshold=pool_data.critical_threshold,
+        auto_recharge_enabled=pool_data.auto_recharge_enabled,
+        auto_recharge_amount=pool_data.auto_recharge_amount,
+        priority=pool_data.priority,
+        is_active=True,
+        created_at=datetime.now(),
     )
 
-    return EnergyPoolStatus(
-        total_energy=int(total_energy),
-        used_energy=int(used_energy),
-        available_energy=int(available_energy),
-        active_pools=active_pools,
-        total_partners=total_partners,
-        energy_utilization_rate=round(energy_utilization_rate, 2),
-        critical_pools=critical_pools,
-        warning_pools=warning_pools,
-    )
-
-
-@router.post("/recharge")
-async def recharge_energy_pool(
-    pool_id: int,
-    amount: int,
-    db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
-):
-    """에너지 풀 충전"""
-
-    pool = db.query(EnergyPoolModel).filter(EnergyPoolModel.id == pool_id).first()
-    if not pool:
-        raise HTTPException(status_code=404, detail="Energy pool not found")
-
-    # 에너지 충전 로직
-    old_total = float(getattr(pool, "total_energy", 0))
-    old_available = float(getattr(pool, "available_energy", 0))
-
-    new_total = old_total + amount
-    new_available = old_available + amount
-
-    # 업데이트
-    if hasattr(pool, "total_energy"):
-        setattr(pool, "total_energy", new_total)
-    if hasattr(pool, "available_energy"):
-        setattr(pool, "available_energy", new_available)
+    db.add(new_pool)
+    db.commit()
+    db.refresh(new_pool)
 
     # 사용 로그 기록
     usage_log = EnergyUsageLog(
-        pool_id=pool_id,
-        energy_amount=amount,
-        transaction_type="recharge",
+        pool_id=new_pool.id,
+        partner_id=current_partner.id,
+        transaction_type="pool_created",
+        energy_amount=pool_data.initial_energy,
+        description=f"Energy pool '{pool_data.pool_name}' created",
+        created_at=datetime.now(),
+    )
+    db.add(usage_log)
+    db.commit()
+
+    return EnergyPoolInfo(
+        id=getattr(new_pool, "id", 0),
+        pool_name=getattr(new_pool, "pool_name", ""),
+        partner_id=getattr(new_pool, "partner_id", 0),
+        total_energy=int(getattr(new_pool, "total_energy", 0)),
+        available_energy=int(getattr(new_pool, "available_energy", 0)),
+        allocated_energy=int(getattr(new_pool, "allocated_energy", 0)),
+        reserved_energy=0,
+        energy_usage_rate=0.0,
+        warning_threshold=getattr(new_pool, "warning_threshold", 20),
+        critical_threshold=getattr(new_pool, "critical_threshold", 10),
+        status="active",
+        auto_recharge_enabled=getattr(new_pool, "auto_recharge_enabled", False),
+        priority=getattr(new_pool, "priority", 1),
+        created_at=getattr(new_pool, "created_at", datetime.now()),
+        last_charged_at=None,
+        estimated_depletion_time=None,
+    )
+
+
+@router.get("/pools/{pool_id}", response_model=EnergyPoolInfo)
+async def get_energy_pool(
+    pool_id: int,
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """특정 에너지 풀 상세 정보 조회"""
+
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    # 상세 정보 계산
+    total_energy = float(getattr(pool, "total_energy", 0))
+    available_energy = float(getattr(pool, "available_energy", 0))
+    allocated_energy = float(getattr(pool, "allocated_energy", 0))
+
+    usage_rate = (
+        ((total_energy - available_energy) / total_energy * 100)
+        if total_energy > 0
+        else 0
+    )
+    available_percentage = (
+        (available_energy / total_energy * 100) if total_energy > 0 else 0
+    )
+
+    # 상태 결정
+    if available_percentage <= getattr(pool, "critical_threshold", 10):
+        status_str = "critical"
+    elif available_percentage <= getattr(pool, "warning_threshold", 20):
+        status_str = "warning"
+    elif getattr(pool, "is_active", True):
+        status_str = "active"
+    else:
+        status_str = "inactive"
+
+    return EnergyPoolInfo(
+        id=getattr(pool, "id", 0),
+        pool_name=getattr(pool, "pool_name", ""),
+        partner_id=getattr(pool, "partner_id", 0),
+        total_energy=int(total_energy),
+        available_energy=int(available_energy),
+        allocated_energy=int(allocated_energy),
+        reserved_energy=int(getattr(pool, "reserved_energy", 0)),
+        energy_usage_rate=round(usage_rate, 2),
+        warning_threshold=getattr(pool, "warning_threshold", 20),
+        critical_threshold=getattr(pool, "critical_threshold", 10),
+        status=status_str,
+        auto_recharge_enabled=getattr(pool, "auto_recharge_enabled", False),
+        priority=getattr(pool, "priority", 1),
+        created_at=getattr(pool, "created_at", datetime.now()),
+        last_charged_at=getattr(pool, "last_charged_at", None),
+        estimated_depletion_time=None,
+    )
+
+
+@router.put("/pools/{pool_id}", response_model=EnergyPoolInfo)
+async def update_energy_pool(
+    pool_id: int,
+    pool_data: EnergyPoolUpdate,
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 풀 설정 업데이트"""
+
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    # 업데이트할 필드들 적용
+    update_data = pool_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        if hasattr(pool, field):
+            setattr(pool, field, value)
+
+    pool.updated_at = datetime.now()
+    db.commit()
+    db.refresh(pool)
+
+    # 변경 로그 기록
+    usage_log = EnergyUsageLog(
+        pool_id=pool.id,
+        partner_id=current_partner.id,
+        transaction_type="pool_updated",
+        energy_amount=0,
+        description=f"Energy pool settings updated: {', '.join(update_data.keys())}",
+        created_at=datetime.now(),
+    )
+    db.add(usage_log)
+    db.commit()
+
+    return await get_energy_pool(pool_id, db, current_partner)
+
+
+@router.delete("/pools/{pool_id}")
+async def delete_energy_pool(
+    pool_id: int,
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 풀 삭제"""
+
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    # 할당된 에너지가 있는지 확인
+    if getattr(pool, "allocated_energy", 0) > 0:
+        raise HTTPException(
+            status_code=400, detail="Cannot delete pool with allocated energy"
+        )
+
+    # 삭제 로그 기록
+    usage_log = EnergyUsageLog(
+        pool_id=pool.id,
+        partner_id=current_partner.id,
+        transaction_type="pool_deleted",
+        energy_amount=0,
+        description=f"Energy pool '{getattr(pool, 'pool_name', '')}' deleted",
         created_at=datetime.now(),
     )
     db.add(usage_log)
 
+    # 풀 삭제
+    db.delete(pool)
+    db.commit()
+
+    return {"message": "Energy pool deleted successfully"}
+
+
+@router.post("/pools/{pool_id}/recharge")
+async def recharge_energy_pool(
+    pool_id: int,
+    recharge_amount: int = Body(..., embed=True),
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """에너지 풀 수동 충전"""
+
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    if recharge_amount <= 0:
+        raise HTTPException(status_code=400, detail="Recharge amount must be positive")
+
+    # 최대 한도 확인
+    max_limit = getattr(pool, "max_energy_limit", 0)
+    current_total = getattr(pool, "total_energy", 0)
+
+    if current_total + recharge_amount > max_limit:
+        raise HTTPException(
+            status_code=400, detail=f"Recharge would exceed maximum limit ({max_limit})"
+        )
+
+    # 에너지 충전
+    setattr(pool, "total_energy", current_total + recharge_amount)
+    setattr(
+        pool, "available_energy", getattr(pool, "available_energy", 0) + recharge_amount
+    )
+    setattr(pool, "last_charged_at", datetime.now())
+
+    db.commit()
+
+    # 충전 로그 기록
+    usage_log = EnergyUsageLog(
+        pool_id=pool.id,
+        partner_id=current_partner.id,
+        transaction_type="manual_recharge",
+        energy_amount=recharge_amount,
+        description=f"Manual recharge of {recharge_amount} energy",
+        created_at=datetime.now(),
+    )
+    db.add(usage_log)
     db.commit()
 
     return {
-        "success": True,
-        "message": f"Energy pool recharged with {amount} energy",
+        "message": "Energy pool recharged successfully",
         "pool_id": pool_id,
-        "new_total": new_total,
-        "new_available": new_available,
+        "recharged_amount": recharge_amount,
+        "new_total": int(getattr(pool, "total_energy", 0)),
+        "new_available": int(getattr(pool, "available_energy", 0)),
     }
 
 
-@router.get("/alerts", response_model=List[EnergyAlert])
-async def get_energy_alerts(
-    acknowledged: Optional[bool] = Query(None, description="확인 여부 필터"),
-    limit: int = Query(50, le=100, description="최대 결과 수"),
+@router.get("/pools/{pool_id}/allocations", response_model=List[EnergyAllocationInfo])
+async def get_energy_allocations(
+    pool_id: int,
     db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 관련 알림 조회"""
+    """에너지 풀의 사용자별 할당 현황 조회"""
 
-    # Mock 알림 데이터 (실제로는 EnergyAlert 모델에서 조회)
-    alerts = []
-
-    # 임계값 이하 풀들 조회
-    critical_pools = (
+    pool = (
         db.query(EnergyPoolModel)
-        .join(Partner)
-        .filter(EnergyPoolModel.available_energy < (EnergyPoolModel.total_energy * 0.1))
-        .all()
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
     )
 
-    for pool in critical_pools:
-        partner = db.query(Partner).filter(Partner.id == pool.partner_id).first()
-        alert = EnergyAlert(
-            id=getattr(pool, "id", 0),
-            pool_id=getattr(pool, "id", 0),
-            partner_name=getattr(partner, "name", "Unknown") if partner else "Unknown",
-            alert_type="critical_energy",
-            message=f"Critical energy level: {getattr(pool, 'available_energy', 0)} remaining",
-            severity="critical",
-            created_at=datetime.now(),
-            acknowledged=False,
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    # 할당 정보 조회 (실제 구현에서는 별도 allocation 테이블 필요)
+    # 여기서는 샘플 데이터로 대체
+    return [
+        EnergyAllocationInfo(
+            id=1,
+            user_id=1,
+            username="user1",
+            allocated_energy=1000,
+            used_energy=200,
+            remaining_energy=800,
+            allocation_date=datetime.now() - timedelta(days=1),
+            valid_until=datetime.now() + timedelta(days=30),
+            status="active",
         )
-        alerts.append(alert)
-
-    return alerts[:limit]
+    ]
 
 
-@router.get("/history", response_model=List[EnergyHistory])
-async def get_energy_usage_history(
-    partner_id: Optional[int] = Query(None, description="파트너 ID 필터"),
-    days: int = Query(7, ge=1, le=90, description="조회 기간 (일)"),
+@router.post("/pools/{pool_id}/allocate")
+async def allocate_energy(
+    pool_id: int,
+    allocation_data: EnergyAllocation,
     db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 사용 이력 조회"""
+    """사용자에게 에너지 할당"""
 
-    start_date = datetime.now() - timedelta(days=days)
-
-    query = db.query(EnergyUsageLog).filter(EnergyUsageLog.created_at >= start_date)
-
-    if partner_id:
-        query = query.join(EnergyPoolModel).filter(
-            EnergyPoolModel.partner_id == partner_id
-        )
-
-    usage_logs = query.order_by(EnergyUsageLog.created_at.desc()).limit(100).all()
-
-    history = []
-    for log in usage_logs:
-        pool = (
-            db.query(EnergyPoolModel).filter(EnergyPoolModel.id == log.pool_id).first()
-        )
-        partner = (
-            db.query(Partner).filter(Partner.id == pool.partner_id).first()
-            if pool
-            else None
-        )
-
-        history.append(
-            EnergyHistory(
-                date=log.created_at,
-                partner_name=(
-                    getattr(partner, "name", "Unknown") if partner else "Unknown"
-                ),
-                transaction_type=getattr(log, "transaction_type", "unknown")
-                or "unknown",
-                energy_used=log.energy_amount or 0,
-                remaining_energy=(
-                    int(float(getattr(pool, "available_energy", 0))) if pool else 0
-                ),
-            )
-        )
-
-    return history
-
-
-@router.get("/statistics")
-async def get_energy_statistics(
-    db: Session = Depends(get_sync_db), current_admin=Depends(get_current_super_admin)
-):
-    """에너지 통계 정보"""
-
-    # 파트너별 에너지 사용량
-    partner_usage = (
-        db.query(
-            Partner.id,
-            Partner.name,
-            EnergyPoolModel.total_energy,
-            EnergyPoolModel.available_energy,
-        )
-        .join(EnergyPoolModel)
-        .all()
-    )
-
-    usage_stats = []
-    for partner_id, partner_name, total, available in partner_usage:
-        used = float(total or 0) - float(available or 0)
-        usage_rate = (used / float(total or 1)) * 100
-
-        usage_stats.append(
-            {
-                "partner_id": partner_id,
-                "partner_name": partner_name,
-                "total_allocated": float(total or 0),
-                "used_energy": used,
-                "remaining_energy": float(available or 0),
-                "usage_rate": round(usage_rate, 2),
-            }
-        )
-
-    # 전체 통계
-    total_pools = db.query(EnergyPoolModel).count()
-    active_pools = (
-        db.query(EnergyPoolModel).filter(EnergyPoolModel.status == "active").count()
-    )
-
-    return {
-        "partner_usage": usage_stats,
-        "summary": {
-            "total_pools": total_pools,
-            "active_pools": active_pools,
-            "inactive_pools": total_pools - active_pools,
-        },
-    }
-
-
-@router.post("/emergency-rebalance")
-async def emergency_rebalance(
-    db: Session = Depends(get_sync_db), current_admin=Depends(get_current_super_admin)
-):
-    """긴급 에너지 재분배"""
-
-    # 에너지가 부족한 풀들 조회
-    low_energy_pools = (
+    pool = (
         db.query(EnergyPoolModel)
-        .filter(EnergyPoolModel.available_energy < (EnergyPoolModel.total_energy * 0.1))
-        .all()
-    )
-
-    # 에너지가 충분한 풀들 조회
-    high_energy_pools = (
-        db.query(EnergyPoolModel)
-        .filter(EnergyPoolModel.available_energy > (EnergyPoolModel.total_energy * 0.8))
-        .all()
-    )
-
-    rebalanced_pools = []
-
-    for low_pool in low_energy_pools:
-        if not high_energy_pools:
-            break
-
-        high_pool = high_energy_pools[0]
-        transfer_amount = min(
-            float(getattr(high_pool, "available_energy", 0)) * 0.1,  # 10%만 이전
-            float(getattr(low_pool, "total_energy", 0)) * 0.2,  # 필요한 만큼
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
         )
+        .first()
+    )
 
-        if transfer_amount > 0:
-            # 에너지 이전
-            setattr(
-                high_pool,
-                "available_energy",
-                float(getattr(high_pool, "available_energy", 0)) - transfer_amount,
-            )
-            setattr(
-                low_pool,
-                "available_energy",
-                float(getattr(low_pool, "available_energy", 0)) + transfer_amount,
-            )
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
 
-            rebalanced_pools.append(
-                {
-                    "from_pool": high_pool.id,
-                    "to_pool": low_pool.id,
-                    "amount": transfer_amount,
-                }
-            )
+    # 사용자 존재 확인
+    user = db.query(User).filter(User.id == allocation_data.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 사용 가능 에너지 확인
+    available_energy = getattr(pool, "available_energy", 0)
+    if allocation_data.allocated_energy > available_energy:
+        raise HTTPException(status_code=400, detail="Insufficient available energy")
+
+    # 에너지 할당 (실제 구현에서는 별도 테이블 필요)
+    setattr(
+        pool, "available_energy", available_energy - allocation_data.allocated_energy
+    )
+    setattr(
+        pool,
+        "allocated_energy",
+        getattr(pool, "allocated_energy", 0) + allocation_data.allocated_energy,
+    )
 
     db.commit()
-
-    return {
-        "success": True,
-        "message": f"Rebalanced {len(rebalanced_pools)} pools",
-        "transfers": rebalanced_pools,
-    }
-
-
-@router.get("/partners/{partner_id}/usage", response_model=EnergyUsage)
-async def get_partner_energy_usage(
-    partner_id: int,
-    db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
-):
-    """특정 파트너의 에너지 사용량 조회"""
-
-    partner = db.query(Partner).filter(Partner.id == partner_id).first()
-    if not partner:
-        raise HTTPException(status_code=404, detail="Partner not found")
-
-    pool = (
-        db.query(EnergyPoolModel)
-        .filter(EnergyPoolModel.partner_id == partner_id)
-        .first()
-    )
-    if not pool:
-        raise HTTPException(status_code=404, detail="Energy pool not found")
-
-    total_allocated = float(getattr(pool, "total_energy", 0))
-    remaining_energy = float(getattr(pool, "available_energy", 0))
-    used_energy = total_allocated - remaining_energy
-    usage_rate = (used_energy / total_allocated * 100) if total_allocated > 0 else 0
-
-    # 마지막 사용 시간 조회
-    last_usage_log = (
-        db.query(EnergyUsageLog)
-        .filter(EnergyUsageLog.pool_id == pool.id)
-        .order_by(EnergyUsageLog.created_at.desc())
-        .first()
-    )
-
-    return EnergyUsage(
-        partner_id=partner_id,
-        partner_name=getattr(partner, "name", "Unknown"),
-        total_allocated=int(total_allocated),
-        used_energy=int(used_energy),
-        remaining_energy=int(remaining_energy),
-        usage_rate=round(usage_rate, 2),
-        last_usage=last_usage_log.created_at if last_usage_log else None,
-    )
-
-
-@router.post("/partners/{partner_id}/allocate")
-async def allocate_energy_to_partner(
-    partner_id: int,
-    allocation: EnergyAllocation,
-    db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
-):
-    """파트너에게 에너지 할당"""
-
-    partner = db.query(Partner).filter(Partner.id == partner_id).first()
-    if not partner:
-        raise HTTPException(status_code=404, detail="Partner not found")
-
-    pool = (
-        db.query(EnergyPoolModel)
-        .filter(EnergyPoolModel.partner_id == partner_id)
-        .first()
-    )
-    if not pool:
-        raise HTTPException(status_code=404, detail="Energy pool not found")
-
-    # 에너지 할당
-    old_total = float(getattr(pool, "total_energy", 0))
-    old_available = float(getattr(pool, "available_energy", 0))
-
-    new_total = old_total + allocation.amount
-    new_available = old_available + allocation.amount
-
-    setattr(pool, "total_energy", new_total)
-    setattr(pool, "available_energy", new_available)
 
     # 할당 로그 기록
     usage_log = EnergyUsageLog(
         pool_id=pool.id,
-        energy_amount=allocation.amount,
-        transaction_type="allocation",
+        partner_id=current_partner.id,
+        user_id=allocation_data.user_id,
+        transaction_type="energy_allocated",
+        energy_amount=allocation_data.allocated_energy,
+        description=f"Energy allocated to user {allocation_data.user_id}",
         created_at=datetime.now(),
     )
     db.add(usage_log)
-
     db.commit()
 
     return {
-        "success": True,
-        "message": f"Allocated {allocation.amount} energy to {partner.name}",
-        "partner_id": partner_id,
-        "amount": allocation.amount,
-        "reason": allocation.reason,
-        "new_total": new_total,
-        "new_available": new_available,
+        "message": "Energy allocated successfully",
+        "pool_id": pool_id,
+        "user_id": allocation_data.user_id,
+        "allocated_amount": allocation_data.allocated_energy,
+        "remaining_available": int(getattr(pool, "available_energy", 0)),
     }
 
 
-@router.get("/efficiency-report")
-async def get_energy_efficiency_report(
-    db: Session = Depends(get_sync_db), current_admin=Depends(get_current_super_admin)
-):
-    """에너지 효율성 보고서"""
-
-    # 파트너별 효율성 계산
-    partners_efficiency = []
-
-    partners = db.query(Partner).all()
-    for partner in partners:
-        pool = (
-            db.query(EnergyPoolModel)
-            .filter(EnergyPoolModel.partner_id == partner.id)
-            .first()
-        )
-        if not pool:
-            continue
-
-        total_energy = float(getattr(pool, "total_energy", 0))
-        available_energy = float(getattr(pool, "available_energy", 0))
-        used_energy = total_energy - available_energy
-
-        # 최근 30일 거래 수
-        recent_transactions = (
-            db.query(Transaction)
-            .filter(
-                Transaction.partner_id == partner.id,
-                Transaction.created_at >= datetime.now() - timedelta(days=30),
-            )
-            .count()
-        )
-
-        # 에너지 효율성 = 거래당 평균 에너지 사용량
-        efficiency = (
-            (used_energy / recent_transactions) if recent_transactions > 0 else 0
-        )
-
-        partners_efficiency.append(
-            {
-                "partner_id": partner.id,
-                "partner_name": partner.name,
-                "total_energy": total_energy,
-                "used_energy": used_energy,
-                "available_energy": available_energy,
-                "recent_transactions": recent_transactions,
-                "energy_per_transaction": round(efficiency, 2),
-                "utilization_rate": round(
-                    (used_energy / total_energy * 100) if total_energy > 0 else 0, 2
-                ),
-            }
-        )
-
-    # 전체 시스템 효율성
-    total_system_energy = sum(p["total_energy"] for p in partners_efficiency)
-    total_used_energy = sum(p["used_energy"] for p in partners_efficiency)
-    total_transactions = sum(p["recent_transactions"] for p in partners_efficiency)
-
-    system_efficiency = {
-        "total_energy": total_system_energy,
-        "total_used": total_used_energy,
-        "total_available": total_system_energy - total_used_energy,
-        "total_transactions": total_transactions,
-        "average_energy_per_transaction": round(
-            (total_used_energy / total_transactions) if total_transactions > 0 else 0, 2
-        ),
-        "system_utilization_rate": round(
-            (
-                (total_used_energy / total_system_energy * 100)
-                if total_system_energy > 0
-                else 0
-            ),
-            2,
-        ),
-    }
-
-    return {
-        "partners": partners_efficiency,
-        "system": system_efficiency,
-        "generated_at": datetime.now().isoformat(),
-    }
-
-
-@router.post("/threshold/update")
+@router.put("/pools/{pool_id}/thresholds")
 async def update_energy_thresholds(
     pool_id: int,
-    warning_threshold: float,
-    critical_threshold: float,
+    threshold_settings: EnergyThresholdSettings,
     db: Session = Depends(get_sync_db),
-    current_admin=Depends(get_current_super_admin),
+    current_partner: Partner = Depends(get_current_partner),
 ):
-    """에너지 풀 임계값 업데이트"""
+    """에너지 풀 임계값 설정 업데이트"""
 
-    pool = db.query(EnergyPoolModel).filter(EnergyPoolModel.id == pool_id).first()
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
     if not pool:
         raise HTTPException(status_code=404, detail="Energy pool not found")
 
-    # 임계값 유효성 검증
-    if warning_threshold <= critical_threshold:
+    # 임계값 검증
+    if threshold_settings.critical_threshold >= threshold_settings.warning_threshold:
         raise HTTPException(
             status_code=400,
-            detail="Warning threshold must be higher than critical threshold",
-        )
-
-    if critical_threshold < 0 or warning_threshold > 100:
-        raise HTTPException(
-            status_code=400, detail="Thresholds must be between 0 and 100"
+            detail="Critical threshold must be lower than warning threshold",
         )
 
     # 임계값 업데이트
-    if hasattr(pool, "low_threshold"):
-        setattr(pool, "low_threshold", warning_threshold)
-    if hasattr(pool, "critical_threshold"):
-        setattr(pool, "critical_threshold", critical_threshold)
+    setattr(pool, "warning_threshold", threshold_settings.warning_threshold)
+    setattr(pool, "critical_threshold", threshold_settings.critical_threshold)
+    # 추가 임계값 필드들도 모델에 있다면 업데이트
 
     db.commit()
 
-    return {
-        "success": True,
-        "message": "Energy thresholds updated successfully",
-        "pool_id": pool_id,
-        "warning_threshold": warning_threshold,
-        "critical_threshold": critical_threshold,
-    }
+    return {"message": "Threshold settings updated successfully"}
+
+
+@router.put("/pools/{pool_id}/auto-recharge")
+async def update_auto_recharge_settings(
+    pool_id: int,
+    auto_recharge_settings: AutoRechargeSettings,
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+):
+    """자동 충전 설정 업데이트"""
+
+    pool = (
+        db.query(EnergyPoolModel)
+        .filter(
+            EnergyPoolModel.id == pool_id,
+            EnergyPoolModel.partner_id == current_partner.id,
+        )
+        .first()
+    )
+
+    if not pool:
+        raise HTTPException(status_code=404, detail="Energy pool not found")
+
+    # 자동 충전 설정 업데이트
+    setattr(pool, "auto_recharge_enabled", auto_recharge_settings.enabled)
+    setattr(pool, "auto_recharge_amount", auto_recharge_settings.recharge_amount)
+    # 추가 자동 충전 필드들도 모델에 있다면 업데이트
+
+    db.commit()
+
+    return {"message": "Auto-recharge settings updated successfully"}
+
+
+@router.get("/statistics", response_model=EnergyUsageStats)
+async def get_energy_usage_statistics(
+    db: Session = Depends(get_sync_db),
+    current_partner: Partner = Depends(get_current_partner),
+    days: int = Query(30, ge=1, le=365, description="통계 기간 (일)"),
+):
+    """파트너의 에너지 사용 통계"""
+
+    # 기본 통계 계산
+    pools = (
+        db.query(EnergyPoolModel)
+        .filter(EnergyPoolModel.partner_id == current_partner.id)
+        .all()
+    )
+
+    total_pools = len(pools)
+    total_energy = sum(float(getattr(pool, "total_energy", 0)) for pool in pools)
+    available_energy = sum(
+        float(getattr(pool, "available_energy", 0)) for pool in pools
+    )
+    allocated_energy = sum(
+        float(getattr(pool, "allocated_energy", 0)) for pool in pools
+    )
+
+    # 사용량 통계 (간단한 계산)
+    daily_usage = int((total_energy - available_energy) / max(days, 1))
+    weekly_usage = daily_usage * 7
+    monthly_usage = daily_usage * 30
+
+    # 평균 사용률
+    average_usage_rate = (
+        ((total_energy - available_energy) / total_energy * 100)
+        if total_energy > 0
+        else 0
+    )
+
+    return EnergyUsageStats(
+        total_pools=total_pools,
+        total_energy=int(total_energy),
+        available_energy=int(available_energy),
+        allocated_energy=int(allocated_energy),
+        daily_usage=daily_usage,
+        weekly_usage=weekly_usage,
+        monthly_usage=monthly_usage,
+        peak_usage_hour=14,  # 임시값
+        average_usage_rate=round(average_usage_rate, 2),
+        cost_per_energy=0.001,  # 임시값
+    )

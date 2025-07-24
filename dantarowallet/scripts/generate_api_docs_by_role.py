@@ -6,6 +6,7 @@ OpenAPI JSON에서 tags 기반으로 API를 역할별로 분류하여 문서 생
 
 import json
 import requests
+import shutil
 from typing import Dict, List, Set
 from pathlib import Path
 
@@ -206,31 +207,88 @@ export const API_CLASSIFICATION = {
     return ts_code
 
 def save_documentation(content: str, filename: str = "API_REFERENCE_BY_ROLE.md"):
-    """문서 파일 저장"""
+    """문서 파일 저장 (빈 내용 방지 강화)"""
+    # 빈 내용 체크 강화
+    if not content or len(content.strip()) < 500:
+        print(f"⚠️ 문서 내용이 충분하지 않습니다 (길이: {len(content.strip()) if content else 0}). 파일을 생성하지 않습니다.")
+        return False
+    
+    # 필수 섹션 체크
+    required_sections = ["Super Admin", "Partner Admin", "API"]
+    if not any(section in content for section in required_sections):
+        print("⚠️ 필수 섹션이 없습니다. 파일을 생성하지 않습니다.")
+        return False
+    
     docs_dir = Path(__file__).parent.parent / "docs"
     docs_dir.mkdir(exist_ok=True)
     
     file_path = docs_dir / filename
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(content)
     
-    print(f"✅ 문서 저장: {file_path}")
+    # 기존 파일 백업 (내용이 있는 경우)
+    if file_path.exists() and file_path.stat().st_size > 100:
+        backup_path = file_path.with_suffix(f"{file_path.suffix}.backup")
+        try:
+            shutil.copy2(file_path, backup_path)
+            print(f"📄 기존 파일 백업: {backup_path}")
+        except Exception as e:
+            print(f"⚠️ 백업 실패: {e}")
+    
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        print(f"✅ 문서 저장: {file_path}")
+        return True
+    except Exception as e:
+        print(f"❌ 문서 저장 실패: {e}")
+        return False
 
 def save_typescript_types(content: str, filename: str = "api-classification.ts"):
-    """TypeScript 타입 파일 저장"""
+    """TypeScript 타입 파일 저장 (빈 내용 방지 강화)"""
+    # 빈 내용 체크 강화
+    if not content or len(content.strip()) < 200:
+        print(f"⚠️ TypeScript 타입 내용이 충분하지 않습니다 (길이: {len(content.strip()) if content else 0}). 파일을 생성하지 않습니다.")
+        return False
+    
+    # 필수 TypeScript 요소 체크
+    required_elements = ["SUPER_ADMIN_APIS", "PARTNER_ADMIN_APIS", "export"]
+    if not all(element in content for element in required_elements):
+        print("⚠️ 필수 TypeScript 요소가 없습니다. 파일을 생성하지 않습니다.")
+        return False
+    
     frontend_dirs = [
         Path(__file__).parent.parent / "frontend" / "super-admin-dashboard" / "src" / "lib",
         Path(__file__).parent.parent / "frontend" / "partner-admin-template" / "src" / "lib"
     ]
     
+    success_count = 0
+    
     for frontend_dir in frontend_dirs:
         if frontend_dir.exists():
             file_path = frontend_dir / filename
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-            print(f"✅ TypeScript 타입 저장: {file_path}")
+            
+            # 기존 파일 백업 (내용이 있는 경우)
+            if file_path.exists() and file_path.stat().st_size > 50:
+                backup_path = file_path.with_suffix(f"{file_path.suffix}.backup")
+                try:
+                    shutil.copy2(file_path, backup_path)
+                    print(f"📄 기존 파일 백업: {backup_path}")
+                except Exception as e:
+                    print(f"⚠️ 백업 실패: {e}")
+            
+            try:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f"✅ TypeScript 타입 저장: {file_path}")
+                success_count += 1
+            except Exception as e:
+                print(f"❌ TypeScript 타입 저장 실패: {e}")
+        else:
+            print(f"⚠️ 프론트엔드 디렉토리가 존재하지 않습니다: {frontend_dir}")
+    
+    return success_count > 0
 
 def main():
+    """메인 실행 함수"""
     """메인 실행 함수"""
     print("🚀 API 역할별 분류 시작...")
     
