@@ -1,13 +1,13 @@
 'use client';
 
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
-// import { useI18n } from '@/contexts/I18nContext';
 
 export default function FeesPage() {
   const { t } = useI18n();
 
-  const _headerActions = (
+  const headerActions = (
     <Button variant="primary">
       {t.fees.updateRates}
     </Button>

@@ -88,7 +88,7 @@ interface ComplianceMetrics {
 }
 
 function AuditCompliancePage() {
-  const _t = mockI18n; // mockI18n 사용
+  const t = _mockI18n; // _mockI18n 사용
 
   const [metrics] = useState<ComplianceMetrics>({
     totalAudits: 156,
@@ -186,7 +186,7 @@ function AuditCompliancePage() {
     <BasePage
       title={t.auditCompliance.title}
       description={t.auditCompliance.description}
-      headerActions={headerActions}
+      headerActions={_headerActions}
     >
       {/* 컴플라이언스 통계 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-6">
@@ -303,7 +303,7 @@ function AuditCompliancePage() {
                 </tr>
               </thead>
               <tbody className="bg-gray-900 divide-y divide-gray-700">
-                {filteredLogs.map((log) => (
+                {_filteredLogs.map((log) => (
                   <tr key={log.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 min-w-[150px]">
                       {new Date(log.timestamp).toLocaleString()}
@@ -318,12 +318,12 @@ function AuditCompliancePage() {
                       {log.resource}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(log.status)}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${_getStatusColor(log.status)}`}>
                         {log.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap min-w-[100px]">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRiskColor(log.riskLevel)}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${_getRiskColor(log.riskLevel)}`}>
                         {log.riskLevel}
                       </span>
                     </td>

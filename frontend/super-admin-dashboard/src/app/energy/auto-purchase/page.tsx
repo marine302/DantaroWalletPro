@@ -46,7 +46,7 @@ export default function AutoPurchaseSettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const _handleSave = async () => {
+  const handleSave = async () => {
     setIsSaving(true);
     // 모의 저장 프로세스
     await new Promise(resolve => setTimeout(resolve, 1500));

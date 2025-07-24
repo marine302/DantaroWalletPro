@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-// import { useI18n } from '@/contexts/I18nContext';
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from '@/components/ui/BasePage';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -58,6 +58,7 @@ interface EnergyMarginConfig {
 }
 
 export default function PartnerEnergyManagementPage() {
+  const { locale: _language } = useI18n();
   const [loading, setLoading] = useState(true);
   const [allocations] = useState<PartnerEnergyAllocation[]>([]);
   const [analytics, setAnalytics] = useState<RevenueAnalytics | null>(null);
@@ -93,16 +94,16 @@ export default function PartnerEnergyManagementPage() {
   };
 
   // 상태 뱃지 렌더링
-  const _renderStatusBadge = (_s_tatus: string) => {
-    const s_tatusConfig: Record<string, { color: string; text: string }> = {
+  const _renderStatusBadge = (_status: string) => {
+    const _statusConfig: Record<string, { color: string; text: string }> = {
       ACTIVE: { color: 'green', text: '활성' },
       SUSPENDED: { color: 'yellow', text: '중단' },
       EXPIRED: { color: 'red', text: '만료' },
       CANCELLED: { color: 'gray', text: '취소' }
     };
 
-    const _config = statusConfig[status];
-    return <Badge variant={config?.color as 'green' | 'yellow' | 'red' | 'gray'}>{config?.text || status}</Badge>;
+    const _config = _statusConfig[_status];
+    return <Badge variant={_config?.color as 'green' | 'yellow' | 'red' | 'gray'}>{_config?.text || _status}</Badge>;
   };
 
   // 파트너 등급 뱃지 렌더링

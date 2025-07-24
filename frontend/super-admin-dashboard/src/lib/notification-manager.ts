@@ -487,7 +487,7 @@ class NotificationManager {
   }
 }
 
-export const notificationManager = NotificationManager.getInstance();
+export const _notificationManager = NotificationManager.getInstance();
 
 // Helper functions for convenience
 export function addNotification(notification: Omit<INotification, 'id' | 'timestamp' | 'read'>): INotification {

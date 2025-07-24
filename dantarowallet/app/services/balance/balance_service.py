@@ -220,3 +220,32 @@ class BalanceService:
     def update_balance(self, user_id: str, amount: float) -> Dict[str, Any]:
         """잔액 업데이트 (동기 버전)"""
         return {"success": True, "user_id": user_id, "amount": amount}
+
+    async def lock_amount(self, user_id: int, asset: str, amount: Decimal) -> bool:
+        """지정된 금액을 잠금 처리"""
+        try:
+            balance = await self.get_or_create_balance(user_id, asset)
+            available_amount = Decimal(str(balance.get("available_amount", 0)))
+
+            if available_amount < amount:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Insufficient balance: available={available_amount}, required={amount}",
+                )
+
+            # 실제 구현에서는 DB에서 원자적으로 잠금 처리
+            # 현재는 임시 구현
+            return True
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to lock amount: {str(e)}")
+
+    async def unlock_amount(self, user_id: int, asset: str, amount: Decimal) -> bool:
+        """잠긴 금액을 해제"""
+        try:
+            # 실제 구현에서는 DB에서 잠긴 금액을 해제
+            # 현재는 임시 구현
+            return True
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to unlock amount: {str(e)}")

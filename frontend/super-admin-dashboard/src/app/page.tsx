@@ -1,5 +1,6 @@
 'use client';
 
+import { useI18n } from '@/contexts/I18nContext';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
@@ -12,7 +13,6 @@ import {
 import { gridLayouts } from '@/styles/dark-theme';
 import { apiClient } from '@/lib/api';
 import { getStatusColor, safeFormatNumber, safeCurrency } from '@/lib/utils';
-// import { useI18n } from '@/contexts/I18nContext';
 import BasePage from '@/components/ui/BasePage';
 import { RealtimeStatus } from '@/components/realtime/RealtimeStatus';
 import { RealtimeStats } from '@/components/realtime/RealtimeStats';

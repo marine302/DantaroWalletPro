@@ -47,6 +47,7 @@ class UsageStatus(enum.Enum):
     """사용량 상태"""
 
     PENDING = "pending"
+    ALLOCATED = "allocated"
     CONFIRMED = "confirmed"
     BILLED = "billed"
     DISPUTED = "disputed"

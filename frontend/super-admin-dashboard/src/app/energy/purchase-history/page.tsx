@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from "@/components/ui/BasePage";
 import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { Download, RefreshCw } from 'lucide-react';
@@ -21,6 +22,7 @@ interface PurchaseHistory {
 }
 
 export default function PurchaseHistoryPage() {
+  const { locale: _language } = useI18n();
   const [filteredPurchases, setFilteredPurchases] = useState<PurchaseHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

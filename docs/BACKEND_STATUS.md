@@ -29,6 +29,27 @@
   - EnergyTRON API 연동 (`energytron_service.py`)
   - 19개 외부 에너지 API 엔드포인트 등록 완료
 
+### 🆕 **Simple Energy Service (2025.07.24 신규 추가)**
+- ✅ **개인/소규모 프로젝트용 쉬운 에너지 API**: 복잡한 기업 계약 없이 5분 내 시작
+- ✅ **무료 API 통합**: TronGrid (월 10K), TronScan (무제한) 공식 API 연동
+- ✅ **실시간 데이터**: 에너지 가격, 계정 정보, 시장 데이터 실시간 조회
+- ✅ **구매 시뮬레이션**: 실제 비용 계산 및 다음 단계 가이드 제공
+- ✅ **인증 불필요**: 모든 API 엔드포인트 공개 접근 가능
+- ✅ **업그레이드 경로**: 개발 → 테스트 → 소규모 → 대규모 단계별 가이드
+
+### **Simple Energy API 엔드포인트**
+```
+/api/v1/simple-energy/
+├── providers                # 쉬운 공급업체 목록 (5개)
+├── price                   # 실시간 에너지 가격 (TronGrid/TronScan)
+├── account/{address}       # 계정 에너지 정보
+├── simulate-purchase       # 구매 시뮬레이션
+├── quick-start            # 5분 시작 가이드
+├── pricing-comparison     # 가격 비교
+├── config                 # 서비스 설정 정보
+└── health                 # 상태 체크
+```
+
 ### 🔄 **진행 중인 작업**
 - 🔧 **외부 업체 API 키 설정** (현재 데모 키 사용 중)
 - 🔧 **프론트엔드 API 연동** (API 경로 업데이트 필요)
@@ -57,7 +78,9 @@ app/api/v1/endpoints/
 ├── external_energy.py        # 외부 에너지 공급업체 연동
 ├── tronlink.py              # TronLink 연동
 ├── withdrawal.py            # 출금 시스템 (에너지 자동 할당 포함)
-└── ...기타 공통 API들
+├── simple_energy.py        # Simple Energy Service (인증 불필요)
+└── app/services/external_energy/
+    └── simple_service.py   # 무료 API 통합 서비스
 ```
 
 ### **공통/기존 API**
@@ -68,6 +91,7 @@ app/api/
 
 ### ❌ **남은 작업**
 - ❌ **에너지 관련 DB 마이그레이션**: EnergyProvider, EnergyMarginConfig 모델 추가
+- ❌ **실제 API 키 설정**: 프로덕션 환경용 TronNRG, EnergyTRON API 키 적용
 - ❌ **실시간 모니터링 시스템**: 에너지 사용량 추적, 성능 메트릭
 - ❌ **고급 분석 시스템**: 사용 패턴 분석, 예측 모델
 - ❌ **보안 강화**: API 속도 제한, 에러 처리 개선
@@ -179,3 +203,39 @@ pytest --cov=app --cov-report=html
 **개발팀 연락처**: GitHub Issues 또는 팀 Slack  
 **긴급 문의**: 프로덕션 이슈 시 즉시 연락  
 **문서 업데이트**: 새로운 기능 개발 시 반드시 문서 업데이트 필수
+
+### 🎯 **개인 개발자 추천 시작 방법**
+```bash
+# 1. TronGrid API 키 발급 (3분)
+https://www.trongrid.io/register
+
+# 2. 환경 설정 (1분)  
+TRONGRID_API_KEY=발급받은키
+USE_SIMPLE_ENERGY_SERVICE=true
+
+# 3. API 테스트 (1분)
+curl "http://localhost:8000/api/v1/simple-energy/providers"
+curl "http://localhost:8000/api/v1/simple-energy/price"
+```
+
+**비용**: 완전 무료 (월 10,000 요청)  
+**상세 가이드**: `/docs/SIMPLE_ENERGY_SERVICE.md`
+
+### ✅ **실제 API 키 테스트 완료** (2025-01-24 23:20 KST)
+```bash
+# 설정된 실제 API 키
+TRONGRID_API_KEY=8ceb26a3-d8ec-4f60-be4c-a11844572f69 ✅
+TRONSCAN_API_KEY=52a6a649-d0dc-4316-b9fb-a87ecfc6c82d ✅
+
+# 모든 Simple Energy Service 엔드포인트 테스트 성공 ✅
+- /providers: 5개 공급업체 목록 반환
+- /price: 실시간 에너지 가격 (20 SUN/에너지)
+- /quick-start: 5분 시작 가이드
+- /simulate-purchase: 구매 시뮬레이션 ($1.53/10K 에너지)
+- /config: 서비스 설정 상태
+- /account/{address}: 계정별 에너지 정보
+```
+
+### 📚 **주요 문서**
+- 📄 **[SIMPLE_ENERGY_SERVICE.md](./SIMPLE_ENERGY_SERVICE.md)**: 개인/소규모 프로젝트용 5분 시작 가이드
+- 📄 **[easy-energy-providers-guide.md](./easy-energy-providers-guide.md)**: 쉬운 에너지 공급업체 가이드

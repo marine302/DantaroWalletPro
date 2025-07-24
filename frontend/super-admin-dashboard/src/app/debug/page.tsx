@@ -9,7 +9,12 @@ import { apiClient } from '@/lib/api';
 export default function DebugPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
-  const [apiTestResults, setApiTestResults] = useState<Record<string, unknown>[]>([]);
+  const [apiTestResults, setApiTestResults] = useState<Array<{
+    api: string;
+    status: string;
+    data?: unknown;
+    error?: string;
+  }>>([]);
 
   useEffect(() => {
     // 기존 console.error 래핑
@@ -19,17 +24,17 @@ export default function DebugPage() {
 
     console.error = (...args) => {
       setErrors(prev => [...prev, args.map(arg => String(arg)).join(' ')]);
-      originalError(...args);
+      _originalError(...args);
     };
 
     console.log = (...args) => {
       setLogs(prev => [...prev, `LOG: ${args.map(arg => String(arg)).join(' ')}`]);
-      originalLog(...args);
+      _originalLog(...args);
     };
 
     console.warn = (...args) => {
       setLogs(prev => [...prev, `WARN: ${args.map(arg => String(arg)).join(' ')}`]);
-      originalWarn(...args);
+      _originalWarn(...args);
     };
 
     // 글로벌 에러 핸들러
@@ -41,8 +46,8 @@ export default function DebugPage() {
       setErrors(prev => [...prev, `Unhandled Promise Rejection: ${event.reason}`]);
     };
 
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', _handleError);
+    window.addEventListener('unhandledrejection', _handleUnhandledRejection);
 
     // 환경 변수 로그
     console.log('Environment Variables:');
@@ -53,19 +58,19 @@ export default function DebugPage() {
     // WebSocket 테스트
     try {
       const _wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
-      console.log('Testing WebSocket connection to:', wsUrl);
-      const _ws = new WebSocket(wsUrl);
+      console.log('Testing WebSocket connection to:', _wsUrl);
+      const _ws = new WebSocket(_wsUrl);
 
-      ws.onopen = () => {
+      _ws.onopen = () => {
         console.log('✅ WebSocket connected successfully');
-        ws.close();
+        _ws.close();
       };
 
-      ws.onerror = (error) => {
+      _ws.onerror = (error) => {
         console.error('❌ WebSocket connection failed:', error);
       };
 
-      ws.onclose = (event) => {
+      _ws.onclose = (event) => {
         console.log('🔌 WebSocket closed:', event.code, event.reason);
       };
     } catch (error) {
@@ -73,11 +78,11 @@ export default function DebugPage() {
     }
 
     return () => {
-      console.error = originalError;
-      console.log = originalLog;
-      console.warn = originalWarn;
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      console.error = _originalError;
+      console.log = _originalLog;
+      console.warn = _originalWarn;
+      window.removeEventListener('error', _handleError);
+      window.removeEventListener('unhandledrejection', _handleUnhandledRejection);
     };
   }, []);
 
@@ -91,13 +96,13 @@ export default function DebugPage() {
       // 1. 백엔드 헬스 체크
       try {
         const _healthResult = await apiClient.checkBackendHealth();
-        testResults.push({
+        _testResults.push({
           api: 'Backend Health Check',
-          status: healthResult ? 'Success' : 'Failed',
-          data: healthResult
+          status: _healthResult ? 'Success' : 'Failed',
+          data: _healthResult
         });
       } catch (error) {
-        testResults.push({
+        _testResults.push({
           api: 'Backend Health Check',
           status: 'Error',
           error: (error as Error).message || String(error)
@@ -107,13 +112,13 @@ export default function DebugPage() {
       // 2. 대시보드 통계 API 테스트
       try {
         const _dashboardStats = await apiClient.getDashboardStats();
-        testResults.push({
+        _testResults.push({
           api: 'Dashboard Stats',
           status: 'Success',
-          data: dashboardStats
+          data: _dashboardStats
         });
       } catch (error) {
-        testResults.push({
+        _testResults.push({
           api: 'Dashboard Stats',
           status: 'Error',
           error: (error as Error).message || String(error)
@@ -123,13 +128,13 @@ export default function DebugPage() {
       // 3. 시스템 헬스 API 테스트
       try {
         const _systemHealth = await apiClient.getSystemHealth();
-        testResults.push({
+        _testResults.push({
           api: 'System Health',
           status: 'Success',
-          data: systemHealth
+          data: _systemHealth
         });
       } catch (error) {
-        testResults.push({
+        _testResults.push({
           api: 'System Health',
           status: 'Error',
           error: (error as Error).message || String(error)
@@ -139,21 +144,21 @@ export default function DebugPage() {
       // 4. 파트너 목록 API 테스트
       try {
         const _partners = await apiClient.getPartners(1, 5);
-        testResults.push({
+        _testResults.push({
           api: 'Partners List',
           status: 'Success',
-          data: partners
+          data: _partners
         });
       } catch (error) {
-        testResults.push({
+        _testResults.push({
           api: 'Partners List',
           status: 'Error',
           error: (error as Error).message || String(error)
         });
       }
 
-      setApiTestResults(testResults);
-      console.log('✅ API Test Results:', testResults);
+      setApiTestResults(_testResults);
+      console.log('✅ API Test Results:', _testResults);
 
     } catch (error) {
       console.error('❌ API Test Failed:', error);
@@ -323,7 +328,7 @@ export default function DebugPage() {
               onClick={() => {
                 setErrors([]);
                 setLogs([]);
-                clearApiTestResults();
+                setApiTestResults([]);
               }}
               variant="primary"
             >
@@ -340,7 +345,7 @@ export default function DebugPage() {
             </Button>
 
             <Button
-              onClick={testBackendAPIs}
+              onClick={_testBackendAPIs}
               variant="secondary"
             >
               Test Backend APIs

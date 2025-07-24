@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     // 백엔드 API 호출
-    const _response = await fetch('http://localhost:8000/api/v1/integrated-dashboard/summary', {
+    const response = await fetch('http://localhost:8000/api/v1/integrated-dashboard/summary', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ export async function GET() {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const _data = await response.json()
+    const data = await response.json()
 
     return NextResponse.json(data)
   } catch (error) {

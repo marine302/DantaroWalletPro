@@ -140,7 +140,7 @@ class TronLinkAutoSigningService:
 
             # 지갑 업데이트 (자동 서명 활성화)
             await self._update_wallet_auto_signing(
-                wallet.id,
+                getattr(wallet, 'id', 0),
                 {  # type: ignore
                     "auto_signing_enabled": True,
                     "session_token": session_token,
@@ -307,7 +307,7 @@ class TronLinkAutoSigningService:
             )
             if wallet:
                 await self._update_wallet_auto_signing(
-                    wallet.id,
+                    getattr(wallet, 'id', 0),
                     {  # type: ignore
                         "auto_signing_enabled": False,
                         "session_token": None,
@@ -431,7 +431,7 @@ class TronLinkAutoSigningService:
                                 "parameter": {
                                     "value": {
                                         "amount": int(
-                                            float(withdrawal.amount) * 1_000_000
+                                            float(Decimal(str(getattr(withdrawal, 'amount', 0)))) * 1_000_000
                                         ),  # TRX to SUN  # type: ignore
                                         "owner_address": withdrawal.from_address,
                                         "to_address": withdrawal.to_address,

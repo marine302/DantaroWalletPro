@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from '@/components/ui/BasePage';
 import { Section, StatCard, Button, FormField } from '@/components/ui/DarkThemeComponents';
 import { TrendingUp, TrendingDown, Zap, DollarSign } from 'lucide-react';
@@ -24,6 +25,7 @@ interface MarketStats {
 }
 
 export default function EnergyMarketPage() {
+  const { locale: _language } = useI18n();
   const [providers, setProviders] = useState<EnergyProvider[]>([]);
   const [marketStats, setMarketStats] = useState<MarketStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export default function EnergyMarketPage() {
   const [purchaseAmount, setPurchaseAmount] = useState(0);
 
   useEffect(() => {
-    loadData();
+    _loadData();
   }, []);
 
   const _loadData = async () => {
@@ -101,7 +103,7 @@ export default function EnergyMarketPage() {
       inactive: 'bg-red-900 text-red-200',
       maintenance: 'bg-yellow-900 text-yellow-200'
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-900 text-gray-200';
+    return _colors[status as keyof typeof _colors] || 'bg-gray-900 text-gray-200';
   };
 
   const _handlePurchase = () => {

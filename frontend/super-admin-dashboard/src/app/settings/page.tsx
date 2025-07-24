@@ -1,13 +1,13 @@
 'use client';
 
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from '@/components/ui/BasePage';
 import { Button, Section, FormField } from '@/components/ui/DarkThemeComponents';
-// import { useI18n } from '@/contexts/I18nContext';
 
 export default function SettingsPage() {
   const { t } = useI18n();
 
-  const _headerActions = (
+  const headerActions = (
     <Button variant="secondary">
       {t.settings.updateSettings}
     </Button>

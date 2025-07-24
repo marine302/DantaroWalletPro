@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, desc, func
+from sqlalchemy import and_, desc, func, update
 from sqlalchemy.orm import Session
 
 from app.exceptions.energy_rental import (
@@ -191,9 +191,15 @@ class EnergyRentalService:
             )
             
             if existing_allocation:
-                # 기존 할당에 추가
-                existing_allocation.allocated_energy += energy_amount
-                existing_allocation.remaining_energy += energy_amount
+                # 기존 할당에 추가 - DB에서 직접 업데이트
+                self.db.execute(
+                    update(EnergyAllocation)
+                    .where(EnergyAllocation.id == existing_allocation.id)
+                    .values(
+                        allocated_energy=EnergyAllocation.allocated_energy + energy_amount,
+                        remaining_energy=EnergyAllocation.remaining_energy + energy_amount
+                    )
+                )
             else:
                 # 새로운 할당 생성
                 new_allocation = EnergyAllocation(
@@ -244,8 +250,12 @@ class EnergyRentalService:
                     f"파트너 {partner_id}의 잔여 에너지가 부족합니다"
                 )
             
-            # 에너지 차감
-            allocation.remaining_energy -= energy_amount
+            # 에너지 차감 - DB에서 직접 업데이트
+            self.db.execute(
+                update(EnergyAllocation)
+                .where(EnergyAllocation.id == allocation.id)
+                .values(remaining_energy=EnergyAllocation.remaining_energy - energy_amount)
+            )
             
             # 사용 기록 생성
             usage_record = EnergyUsageRecord(
@@ -295,8 +305,9 @@ class EnergyRentalService:
                     "expires_at": None,
                 }
             
-            used_energy = allocation.allocated_energy - allocation.remaining_energy
-            utilization_rate = used_energy / allocation.allocated_energy if allocation.allocated_energy > 0 else 0
+            used_energy = getattr(allocation, 'allocated_energy', 0) - getattr(allocation, 'remaining_energy', 0)
+            allocated_amount = getattr(allocation, 'allocated_energy', 0)
+            utilization_rate = used_energy / allocated_amount if allocated_amount > 0 else 0
             
             return {
                 "allocated_energy": allocation.allocated_energy,
@@ -392,7 +403,7 @@ class EnergyRentalService:
                 "billing_period": f"{year}-{month:02d}",
                 "total_energy_used": total_energy_used,
                 "price_per_energy": float(price_per_energy),
-                "total_cost": float(total_cost),
+                "total_cost": float(Decimal(str(total_cost))),
                 "transaction_count": len(usage_records),
                 "daily_breakdown": [],  # 일별 사용량 세부 정보
             }
@@ -1563,3 +1574,31 @@ class EnergyRentalService:
         except Exception as e:
             logger.error(f"에너지 렌탈 실행 실패: {e}")
             raise EnergyRentalException(f"에너지 렌탈 실행 실패: {e}")
+
+    def get_available_plans(self) -> List[Any]:
+        """사용 가능한 에너지 렌탈 플랜 목록 조회"""
+        try:
+            # 실제 구현에서는 DB에서 활성 플랜을 조회
+            return [
+                {
+                    "id": "standard",
+                    "plan_name": "Standard Plan",
+                    "description": "기본 에너지 렌탈 플랜",
+                    "price_per_energy": 0.000021,
+                    "min_duration_hours": 1,
+                    "max_duration_hours": 720,
+                    "is_active": True
+                },
+                {
+                    "id": "premium", 
+                    "plan_name": "Premium Plan",
+                    "description": "프리미엄 에너지 렌탈 플랜",
+                    "price_per_energy": 0.000018,
+                    "min_duration_hours": 24,
+                    "max_duration_hours": 2160,
+                    "is_active": True
+                }
+            ]
+        except Exception as e:
+            logger.error(f"Error getting available plans: {e}")
+            return []

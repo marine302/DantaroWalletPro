@@ -1,5 +1,5 @@
 // 다크 테마 전용 스타일 시스템
-export const _darkTheme = {
+export const darkTheme = {
   // 텍스트 색상
   text: {
     primary: 'text-white',           // 메인 제목
@@ -41,7 +41,7 @@ export const _darkTheme = {
 }
 
 // 공통 클래스 조합 함수
-export const _createDarkClasses = {
+export const createDarkClasses = {
   pageTitle: () => `${darkTheme.text.primary} text-3xl font-bold mb-4`,
   sectionTitle: () => `${darkTheme.text.primary} text-lg font-semibold mb-4`,
   label: () => `${darkTheme.text.secondary} text-sm font-medium`,
@@ -56,7 +56,7 @@ export const _createDarkClasses = {
 }
 
 // 반응형 그리드 레이아웃
-export const _gridLayouts = {
+export const gridLayouts = {
   statsGrid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8',
   contentGrid: 'grid grid-cols-1 lg:grid-cols-2 gap-8',
   fullGrid: 'grid grid-cols-1 gap-6',

@@ -33,6 +33,7 @@ from app.api.v1.endpoints import wallet
 from app.api.v1.endpoints import websocket  # WebSocket 실시간 데이터 스트리밍
 from app.api.v1.endpoints import withdrawal
 from app.api.v1.endpoints import withdrawal_management  # Doc #28: 파트너사 출금 관리 고도화
+from app.api.v1.endpoints import simple_energy  # Simple Energy Service - 개인/소규모 프로젝트용
 
 # admin 폴더의 실제 구현된 라우터들 임포트
 from app.api.v1.endpoints.admin import dashboard as admin_dashboard_real
@@ -159,23 +160,11 @@ api_router.include_router(
     energy_management.router, tags=["energy_management"]
 )  # Energy pool management UI
 
-# === SHARED APIS (DIFFERENT CONTEXTS) ===
-# Used by both frontends but serve different purposes
-
-# Dashboard - User-specific dashboard for regular users
-from app.api.v1.dashboard import router as user_dashboard_router
-
+# === SIMPLE ENERGY APIS === 
+# 개인/소규모 프로젝트용 쉬운 에너지 API (인증 불필요)
 api_router.include_router(
-    user_dashboard_router, prefix="/dashboard", tags=["dashboard"]
-)  # User dashboard
-
-# Energy APIs - Admin monitoring vs Partner management
-api_router.include_router(
-    energy.router, prefix="/energy", tags=["energy"]
-)  # Energy monitoring & analytics
-api_router.include_router(
-    external_energy.router, prefix="/external-energy", tags=["external_energy"]
-)  # External providers
+    simple_energy.router, prefix="/simple-energy", tags=["simple_energy"]
+)  # Simple Energy Service - 5분 내 시작 가능
 
 # === WEBSOCKET REAL-TIME APIS ===
 # Real-time data streaming for both frontends

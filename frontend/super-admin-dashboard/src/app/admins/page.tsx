@@ -46,19 +46,17 @@ function AdminsPage() {
     }
   ]);
 
-  const _handleUpdateUser = (updatedUser: User) => {
-    setUsers(users.map(user =>
-      user.id === updatedUser.id ? updatedUser : user
-    ));
-  };
-
-  const _handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = (userId: string) => {
     setUsers(users.filter(user => user.id !== userId));
   };
 
-  const _activeUsersCount = users.filter(user => user.isActive).length;
+  const handleUpdateUser = (updatedUser: any) => {
+    setUsers(users.map(user => user.id === updatedUser.id ? { ...user, ...updatedUser } : user));
+  };
+
+  const activeUsersCount = users.filter(user => user.isActive).length;
   const totalUsersCount = users.length;
-  const _adminUsersCount = users.filter(user => user.role === 'admin' || user.role === 'super_admin').length;
+  const adminUsersCount = users.filter(user => user.role === 'admin' || user.role === 'super_admin').length;
 
   return (
     <BasePage title="관리자 관리" description="시스템 관리자 계정을 관리합니다">

@@ -170,10 +170,19 @@ class Settings(BaseSettings):
     ENERGYTRON_PARTNER_ID: str = "partner_demo"
     ENERGYTRON_BASE_URL: str = "https://api.energytron.io/v1"
 
+    # Simple Energy Service Configuration (개인/소규모 프로젝트용)
+    USE_SIMPLE_ENERGY_SERVICE: bool = True
+    TRONGRID_API_KEY: str = ""  # TronGrid API 키 (무료 10K 요청/월)
+    TRONSCAN_API_KEY: str = ""  # TronScan API 키 (선택사항)
+    USE_TESTNET: bool = False  # Shasta 테스트넷 사용 여부
+
     # External Energy Service Configuration
     EXTERNAL_ENERGY_TIMEOUT: int = 30
     EXTERNAL_ENERGY_RETRY_COUNT: int = 3
     EXTERNAL_ENERGY_RETRY_DELAY: int = 1  # seconds
+
+    # Mock Service Configuration (개발용)
+    USE_MOCK_ENERGY_SERVICE: bool = True  # 개발 환경에서는 True, 프로덕션에서는 False
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod

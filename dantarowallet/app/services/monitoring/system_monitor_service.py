@@ -12,6 +12,7 @@ from sqlalchemy import and_, desc, func, or_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models import EnergyPool, PartnerApiLog
 from app.models.energy_pool import EnergyPoolModel
 from app.models.fee_config import FeeConfig
 from app.models.partner import Partner
@@ -49,12 +50,12 @@ class SystemMonitorService:
             energy_pool = (
                 self.db.query(EnergyPool).order_by(desc(EnergyPool.id)).first()
             )
-            total_energy = energy_pool.total_energy if energy_pool else 0
-            available_energy = energy_pool.available_energy if energy_pool else 0
-            energy_utilization = (
+            total_energy = getattr(energy_pool, 'total_energy', 0) if energy_pool else 0
+            available_energy = getattr(energy_pool, 'available_energy', 0) if energy_pool else 0
+            energy_utilization = float(
                 ((total_energy - available_energy) / total_energy * 100)
                 if total_energy > 0
-                else 0
+                else 0.0
             )
 
             # API 호출 통계 (최근 24시간)
@@ -163,7 +164,7 @@ class SystemMonitorService:
             )
 
             # 에너지 상태
-            energy_balance = partner.energy_balance or 0
+            energy_balance = getattr(partner, 'energy_balance', 0) or 0
             energy_status = (
                 "sufficient"
                 if energy_balance > 1000
@@ -411,7 +412,7 @@ class SystemMonitorService:
                             severity=severity_level,
                             title=f"High Error Rate - {partner.name}",
                             message=f"Partner {partner.name} has {error_rate:.1f}% error rate",
-                            partner_id=partner.id,
+                            partner_id=str(partner.id),
                             created_at=datetime.utcnow(),
                         )
                     )

@@ -31,13 +31,13 @@ export function I18nProvider({ children, defaultLocale = 'ko' }: I18nProviderPro
   useEffect(() => {
     // 브라우저 저장소에서 언어 설정 로드
     const _savedLocale = localStorage.getItem('locale') as Locale;
-    if (savedLocale && translations[savedLocale]) {
-      setLocale(savedLocale);
+    if (_savedLocale && translations[_savedLocale]) {
+      setLocale(_savedLocale);
     } else {
       // 브라우저 언어 감지
       const _browserLang = navigator.language.split('-')[0] as Locale;
-      if (translations[browserLang]) {
-        setLocale(browserLang);
+      if (translations[_browserLang]) {
+        setLocale(_browserLang);
       }
     }
     setIsLoading(false);
@@ -50,7 +50,7 @@ export function I18nProvider({ children, defaultLocale = 'ko' }: I18nProviderPro
 
   const contextValue: I18nContextType = {
     locale,
-    setLocale: handleSetLocale,
+    setLocale: _handleSetLocale,
     t: translations[locale],
     isLoading,
   };

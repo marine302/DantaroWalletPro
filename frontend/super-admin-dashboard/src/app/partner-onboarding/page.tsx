@@ -1,10 +1,10 @@
 'use client';
 
+import { useI18n } from '@/contexts/I18nContext';
 import React, { useState } from 'react';
 import BasePage from '@/components/ui/BasePage';
 import { Button, Section, StatCard } from '@/components/ui/DarkThemeComponents';
 import { Badge } from '@/components/ui/Badge';
-// import { useI18n } from '@/contexts/I18nContext';
 import { withRBAC } from '@/components/auth/withRBAC';
 
 // 타입 정의

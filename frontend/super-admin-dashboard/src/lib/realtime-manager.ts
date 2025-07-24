@@ -79,7 +79,7 @@ class RealtimeManager {
       this.ws.onmessage = (event) => {
         try {
           const _message = JSON.parse(event.data);
-          this.updateData(message.type, message.data);
+          this.updateData(_message.type, _message.data);
         } catch (error) {
           console.error('RealtimeManager: Failed to parse message:', error);
         }
@@ -136,8 +136,8 @@ class RealtimeManager {
 
     // Notify all listeners for this data type
     const _listeners = this.listeners.get(dataType);
-    if (listeners) {
-      listeners.forEach(callback => callback(data));
+    if (_listeners) {
+      _listeners.forEach(callback => callback(data));
     }
   }
 

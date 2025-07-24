@@ -14,6 +14,7 @@ from app.schemas.fee import TotalRevenueStats
 from app.schemas.monitoring import PartnerRanking, SystemHealth, SystemMetrics
 from app.services.energy.super_admin_energy_service import SuperAdminEnergyService
 from app.services.fee.super_admin_fee_service import SuperAdminFeeService
+from app.services.monitoring.system_monitor_service import SystemMonitorService
 from app.services.partner.partner_service import PartnerService
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Super Admin Dashboard"])
@@ -48,18 +49,18 @@ async def get_dashboard_overview(
 
         return {
             "energy": {
-                "total_energy": energy_status.total_energy,
-                "available_energy": energy_status.available_energy,
+                "total_energy": energy_status.get("total_energy", 0),
+                "available_energy": energy_status.get("available_energy", 0),
                 "utilization_rate": (
                     (
-                        (energy_status.total_energy - energy_status.available_energy)
-                        / energy_status.total_energy
+                        (energy_status.get("total_energy", 0) - energy_status.get("available_energy", 0))
+                        / energy_status.get("total_energy", 1)
                         * 100
                     )
-                    if energy_status.total_energy > 0
+                    if energy_status.get("total_energy", 0) > 0
                     else 0
                 ),
-                "is_sufficient": energy_status.is_sufficient,
+                "is_sufficient": energy_status.get("is_sufficient", True),
             },
             "revenue": {
                 "total_revenue": revenue_stats.get("total_revenue", 0),
@@ -153,9 +154,9 @@ async def get_system_health(
 
         # 에너지 풀 상태
         energy_status = await energy_service.get_total_energy_status()
-        if energy_status.is_sufficient:
+        if energy_status.get("is_sufficient", True):
             components["energy_pool"] = "healthy"
-        elif energy_status.available_energy > energy_status.critical_threshold:
+        elif energy_status.get("available_energy", 0) > energy_status.get("critical_threshold", 1000):
             components["energy_pool"] = "warning"
         else:
             components["energy_pool"] = "critical"

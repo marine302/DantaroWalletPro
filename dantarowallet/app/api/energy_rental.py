@@ -459,33 +459,6 @@ async def get_pools_status(db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/system/status", summary="에너지 렌탈 시스템 상태")
-async def get_system_status(db: Session = Depends(get_db)):
-    """에너지 렌탈 시스템의 전체 상태를 조회합니다."""
-    try:
-        service = EnergyRentalService(db)
-        status = service.get_system_status()
-
-        return {
-            "success": True,
-            "system_status": {
-                "status": "operational",
-                "uptime": "99.9%",
-                "active_partners": status.get("active_partners", 15),
-                "total_energy_rented": status.get("total_energy_rented", 1250000),
-                "revenue_today": status.get("revenue_today", 2150.75),
-                "alerts": status.get("alerts", []),
-                "performance_metrics": {
-                    "response_time": "45ms",
-                    "success_rate": "99.8%",
-                    "error_rate": "0.2%",
-                },
-            },
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
 @router.post("/rent", summary="에너지 렌탈 요청")
 async def rent_energy(
     request: AllocateEnergyRequest, db: Session = Depends(get_db)
@@ -577,9 +550,9 @@ async def create_energy_rental_pool(
     try:
         service = EnergyRentalService(db)
         pool = service.create_energy_rental_pool(
-            name=pool_data.get("name"),
-            stake_amount=pool_data.get("stake_amount"),
-            rental_rate=pool_data.get("rental_rate"),
+            name=pool_data.get("name", "Default Pool"),
+            stake_amount=pool_data.get("stake_amount", 1000),
+            rental_rate=pool_data.get("rental_rate", 0.000021),
         )
 
         return {

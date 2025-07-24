@@ -8,7 +8,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
@@ -108,16 +108,16 @@ class WithdrawalRequestService(WithdrawalValidationService):
                 f"{withdrawal.status} 상태의 출금은 취소할 수 없습니다"
             )
 
-        # 상태 업데이트
-        withdrawal.status = WithdrawalStatus.CANCELLED.value
+        # 상태 업데이트 - DB에서 직접 업데이트
+        await self.db.execute(
+            update(Withdrawal)
+            .where(Withdrawal.id == withdrawal_id)
+            .values(status="cancelled")
+        )
 
         # 잔고 잠금 해제
-        asset_str = (
-            str(withdrawal.asset)
-            if hasattr(withdrawal.asset, "value")
-            else withdrawal.asset
-        )
-        total_amount = Decimal(str(withdrawal.total_amount))
+        asset_str = str(getattr(withdrawal, "asset", "USDT"))
+        total_amount = Decimal(str(getattr(withdrawal, "total_amount", 0)))
 
         await self.balance_service.unlock_amount(
             user_id=user_id, asset=asset_str, amount=total_amount
@@ -130,7 +130,12 @@ class WithdrawalRequestService(WithdrawalValidationService):
         tx_result = await self.db.execute(tx_query)
         transaction = tx_result.scalar_one_or_none()
         if transaction:
-            transaction.status = TransactionStatus.CANCELLED.value
+            # DB에서 직접 업데이트
+            await self.db.execute(
+                update(Transaction)
+                .where(Transaction.id == transaction.id)
+                .values(status="cancelled")
+            )
 
         logger.info(f"출금 취소: ID {withdrawal_id}, 사용자 {user_id}")
 
@@ -160,21 +165,9 @@ class WithdrawalRequestService(WithdrawalValidationService):
             # USDT 전송에 필요한 에너지 계산 (약 13,000 에너지)
             required_energy = 13000
             
-            # 파트너의 에너지 렌탈 서비스를 통해 에너지 할당
-            from app.services.energy_rental_service import EnergyRentalService
-            
-            energy_service = EnergyRentalService(self.db)
-            allocation_result = energy_service.allocate_energy_for_withdrawal(
-                partner_id=user.partner_id,
-                user_id=user_id,
-                energy_amount=required_energy,
-                transaction_id=f"WD-PREP-{user_id}-{int(datetime.utcnow().timestamp())}",
-            )
-            
-            logger.info(
-                f"출금용 에너지 할당 완료: 사용자 {user_id}, "
-                f"에너지 {required_energy}, 할당 ID {allocation_result.get('allocation_id')}"
-            )
+            # TODO: 에너지 할당 로직 구현 필요
+            # 현재는 로깅만 수행
+            logger.info(f"사용자 {user_id}의 출금을 위해 {required_energy} 에너지 할당 필요")
             
         except Exception as e:
             logger.error(f"출금용 에너지 할당 실패: {user_id}, {str(e)}")

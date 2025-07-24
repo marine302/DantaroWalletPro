@@ -1,4 +1,4 @@
-import { apiClient } from './api-client';
+import { _apiClient as apiClient } from './api-client';
 
 // 감사 및 컴플라이언스 관련 타입
 export interface AuditLog {

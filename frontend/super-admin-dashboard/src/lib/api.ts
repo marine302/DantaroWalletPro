@@ -46,7 +46,7 @@ class ApiClient {
     this.useBackendAPI = process.env.NEXT_PUBLIC_USE_BACKEND_API === 'true';
 
     console.log('🔧 API Client Configuration:', {
-      baseURL,
+      baseURL: _baseURL,
       useBackendAPI: this.useBackendAPI,
       environment: process.env.NODE_ENV,
       mockURL: "http://localhost:3001",
@@ -54,7 +54,7 @@ class ApiClient {
     });
 
     this.client = axios.create({
-      baseURL,
+      baseURL: _baseURL,
       timeout: 10000,
     });
 

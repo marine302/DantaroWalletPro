@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { notificationManager } from '@/lib/notification-manager';
+import { _notificationManager as notificationManager } from '@/lib/notification-manager';
 import { NotificationPriority, NotificationChannel } from '@/types/notification';
 import { Button, Section } from '@/components/ui/DarkThemeComponents';
 import BasePage from '@/components/ui/BasePage';

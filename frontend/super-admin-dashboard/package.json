@@ -16,6 +16,8 @@
     "frontend-only": "next dev -p ${NEXT_PUBLIC_FRONTEND_PORT:-3020}",
     "mock-server": "node mock-server.js",
     "mock-realtime": "node mock-realtime-server.js",
+    "check-errors": "node check-runtime-errors.js",
+    "dev-safe": "./dev-with-error-check.sh",
     "quality-check": "npm run lint:fix && npm run type-check && npm run build",
     "pre-commit": "npm run quality-check",
     "fix-all": "./fix-eslint-auto.sh && npm run quality-check",
@@ -46,9 +48,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chalk": "^5.4.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "husky": "^8.0.3",
+    "puppeteer": "^24.15.0",
     "typescript": "^5"
   }
 }

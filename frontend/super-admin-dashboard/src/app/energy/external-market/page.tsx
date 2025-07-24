@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useI18n } from '@/contexts/I18nContext';
 import BasePage from "@/components/ui/BasePage";
 import { Section, StatCard, Button } from '@/components/ui/DarkThemeComponents';
 import { RefreshCw, TrendingUp, TrendingDown, Zap, AlertCircle, CheckCircle } from 'lucide-react';
@@ -38,6 +39,7 @@ interface MarketSummary {
 }
 
 export default function ExternalEnergyMarketPage() {
+  const { locale: _language } = useI18n();
   const [combinedProviders, setCombinedProviders] = useState<CombinedProvider[]>([]);
   const [marketSummary, setMarketSummary] = useState<MarketSummary | null>(null);
   const [providerComparison, setProviderComparison] = useState<ProviderComparison | null>(null);

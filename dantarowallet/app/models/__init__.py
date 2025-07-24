@@ -13,6 +13,7 @@ from app.models.balance import Balance
 from app.models.base import BaseModel
 from app.models.deposit import Deposit
 from app.models.energy_pool import EnergyPoolModel, EnergyPriceHistory, EnergyUsageLog
+from app.models.energy_rental import EnergyPool
 from app.models.energy_usage_history import EnergyUsageHistory
 from app.models.external_energy import (
     ExternalEnergyPriceHistory,
@@ -30,6 +31,7 @@ from app.models.fee_policy import (
     WithdrawalPolicy,
 )
 from app.models.partner import Partner
+from app.models.partner_api_log import PartnerApiLog
 from app.models.partner_history import (
     PartnerApiUsage,
     PartnerDailyStatistics,
@@ -101,10 +103,12 @@ __all__ = [
     "AlertLevel",
     "AlertType",
     "EnergyPoolModel",
-    "EnergyUsageLog",
+    "EnergyPool",
     "EnergyPriceHistory",
+    "EnergyUsageLog",
     "EnergyUsageHistory",
     "Partner",
+    "PartnerApiLog",
     # Partner History 모델
     "PartnerApiUsage",
     "PartnerDailyStatistics",

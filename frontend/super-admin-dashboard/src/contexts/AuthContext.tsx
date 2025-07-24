@@ -53,11 +53,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const _token = localStorage.getItem('authToken');
         const _userStr = localStorage.getItem('authUser');
 
-        if (token && userStr) {
-          const _user = JSON.parse(userStr);
+        if (_token && _userStr) {
+          const _user = JSON.parse(_userStr);
           setState({
-            user,
-            token,
+            user: _user,
+            token: _token,
             isAuthenticated: true,
             isLoading: false
           });
@@ -65,12 +65,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // For development, auto-login with mock user
           if (process.env.NODE_ENV === 'development') {
             const _mockToken = 'mock-jwt-token';
-            localStorage.setItem('authToken', mockToken);
+            localStorage.setItem('authToken', _mockToken);
             localStorage.setItem('authUser', JSON.stringify(mockUser));
 
             setState({
               user: mockUser,
-              token: mockToken,
+              token: _mockToken,
               isAuthenticated: true,
               isLoading: false
             });
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    initializeAuth();
+    _initializeAuth();
   }, []);
 
   const _login = async (credentials: LoginRequest): Promise<void> => {
@@ -101,19 +101,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email: credentials.email
       };
 
-      localStorage.setItem('authToken', response.access_token);
-      localStorage.setItem('authUser', JSON.stringify(user));
+      localStorage.setItem('authToken', _response.access_token);
+      localStorage.setItem('authUser', JSON.stringify(_user));
 
       setState({
-        user,
-        token: response.access_token,
+        user: _user,
+        token: _response.access_token,
         isAuthenticated: true,
         isLoading: false
       });
 
       // Log login activity
       logActivity({
-        user,
+        user: _user,
         action: 'login',
         resource: 'dashboard',
         details: { loginMethod: 'super-admin' }
@@ -148,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const _refreshToken = async (): Promise<void> => {
     try {
       const _currentToken = localStorage.getItem('authToken');
-      if (!currentToken) {
+      if (!_currentToken) {
         throw new Error('No token available');
       }
 
@@ -161,15 +161,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const _response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${currentToken}`
+          'Authorization': `Bearer ${_currentToken}`
         }
       });
 
-      if (!response.ok) {
+      if (!_response.ok) {
         throw new Error('Token refresh failed');
       }
 
-      const data: LoginResponse = await response.json();
+      const data: LoginResponse = await _response.json();
 
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('authUser', JSON.stringify(data.user));
@@ -181,17 +181,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }));
     } catch (error) {
       console.error('Token refresh error:', error);
-      logout();
+      _logout();
     }
   };
 
   const contextValue: AuthContextType = {
     ...state,
-    login,
-    logout,
+    login: _login,
+    logout: _logout,
     hasPermission: (permission: Permission) => hasPermission(state.user, permission),
     canAccessRoute: (route: string) => canAccessRoute(state.user, route),
-    refreshToken,
+    refreshToken: _refreshToken,
     getUserPermissions: () => getUserPermissions(state.user)
   };
 

@@ -1,5 +1,6 @@
-'use client'
+'use client';
 
+import { useI18n } from '@/contexts/I18nContext';
 import React, { useState, useEffect, useCallback } from 'react'
 import BasePage from "@/components/ui/BasePage"
 import {
@@ -9,7 +10,6 @@ import {
   Button
 } from '@/components/ui/DarkThemeComponents'
 import { gridLayouts } from '@/styles/dark-theme'
-// import { useI18n } from '@/contexts/I18nContext'
 import { withRBAC } from '@/components/auth/withRBAC'
 import {
   TransactionTrendChart,
