@@ -3,7 +3,7 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CreditCard, TrendingUp, AlertTriangle } from 'lucide-react'
+import { CreditCard, TrendingUp } from 'lucide-react'
 import { TransactionHistory } from '@/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -19,8 +19,6 @@ export function RecentTransactions({ transactions, onViewAll }: RecentTransactio
         return <CreditCard className="h-4 w-4 text-red-600" />
       case 'deposit':
         return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'energy':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
       default:
         return <CreditCard className="h-4 w-4 text-gray-600" />
     }
@@ -43,7 +41,6 @@ export function RecentTransactions({ transactions, onViewAll }: RecentTransactio
     switch (type) {
       case 'withdrawal': return '출금'
       case 'deposit': return '입금'
-      case 'energy': return '에너지'
       default: return type
     }
   }

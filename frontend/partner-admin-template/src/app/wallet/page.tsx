@@ -14,7 +14,7 @@ interface WalletBalance {
 
 interface WalletTransaction {
   id: string
-  type: 'send' | 'receive' | 'stake' | 'energy'
+  type: 'send' | 'receive' | 'stake'
   amount: number
   currency: string
   from: string
@@ -74,18 +74,6 @@ export default function WalletPage() {
       timestamp: '2024-07-20T09:15:00Z',
       tx_hash: '0xabcdef1234567890',
       fee: 1.05
-    },
-    {
-      id: '3',
-      type: 'energy',
-      amount: 50000,
-      currency: 'Energy',
-      from: 'System',
-      to: 'TLyqzVGLV1srkB7dToTAEqgDSfPtXRJZYH',
-      status: 'confirmed',
-      timestamp: '2024-07-19T16:45:00Z',
-      tx_hash: '0x567890abcdef1234',
-      fee: 0
     },
     {
       id: '4',

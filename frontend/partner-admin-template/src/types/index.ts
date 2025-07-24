@@ -15,19 +15,9 @@ export interface AssetBalance {
   change24h: number
 }
 
-export interface EnergyPool {
-  totalEnergy: number
-  availableEnergy: number
-  stakeAmount: number
-  freezeAmount: number
-  dailyConsumption: number
-  efficiency: number
-  status: 'active' | 'inactive' | 'warning'
-}
-
 export interface TransactionHistory {
   id: string
-  type: 'deposit' | 'withdrawal' | 'transfer' | 'energy'
+  type: 'deposit' | 'withdrawal' | 'transfer'
   amount: number
   currency: string
   from: string
@@ -49,10 +39,7 @@ export interface WithdrawalRequest {
   processed_time?: string
   transaction_hash?: string
   fee: number
-  fee_currency: 'USDT' | 'TRX'  // 수수료 통화
-  energy_consumed?: number      // 소모된 에너지
-  energy_cost?: number          // 에너지 비용 (TRX)
-  profit_margin?: number        // 수익 마진 (수수료 - 에너지 비용)
+  fee_currency: 'USDT' | 'TRX'
   approved_by?: string
   batch_id?: string
   // Legacy field aliases for backward compatibility
@@ -146,65 +133,15 @@ export interface AnalyticsData {
   profit: number
   userGrowth: number
   transactionVolume: number
-  energyUsage: number
 }
 
 export interface AlertSetting {
   id: string
-  type: 'balance' | 'energy' | 'transaction' | 'user'
+  type: 'balance' | 'transaction' | 'user'
   threshold: number
   enabled: boolean
   notifyEmail: boolean
   notifyApp: boolean
-}
-
-// 에너지 관리 타입
-export interface EnergyPoolInfo {
-  id: string
-  name: string
-  total_capacity: number
-  available_capacity: number
-  used_capacity: number
-  price_per_unit: number
-  status: 'active' | 'maintenance' | 'depleted'
-  created_at: string
-  last_updated: string
-  rental_count: number
-  revenue: number
-}
-
-export interface EnergyStats {
-  total_pools: number
-  total_capacity: number
-  total_used: number
-  total_available: number
-  utilization_rate: number
-  total_revenue: number
-  active_rentals: number
-  avg_price_per_unit: number
-}
-
-export interface EnergyTransaction {
-  id: string
-  user_id: string
-  user_name: string
-  pool_id: string
-  pool_name: string
-  amount: number
-  price: number
-  total_cost: number
-  duration_hours: number
-  status: 'active' | 'completed' | 'expired'
-  created_at: string
-  expires_at: string
-}
-
-export interface EnergySettings {
-  default_price_per_unit: number
-  max_rental_hours: number
-  auto_refill_enabled: boolean
-  dynamic_pricing_enabled: boolean
-  auto_maintenance_enabled: boolean
 }
 
 // 인증 관련 타입
@@ -292,111 +229,4 @@ export interface ChartData {
   value: number
   date?: string
   label?: string
-}
-
-// Energy Rental Types
-export interface EnergyRentalPlan {
-  id: string
-  name: string
-  description: string
-  type: 'basic' | 'premium' | 'enterprise'
-  energy_amount: number
-  duration_hours: number
-  cost_per_hour: number
-  total_cost: number
-  availability?: {
-    is_available: boolean
-    remaining_slots?: number
-  }
-  features?: string[]
-  created_at: string
-  updated_at: string
-}
-
-export interface EnergyRental {
-  id: string
-  partner_id: string
-  plan_id: string
-  energy_amount: number
-  duration_hours: number
-  remaining_hours: number
-  start_time: string
-  end_time: string
-  cost_per_hour: number
-  total_cost: number
-  status: 'active' | 'expired' | 'cancelled' | 'pending'
-  created_at: string
-  updated_at: string
-}
-
-export interface EnergyUsageStats {
-  partner_id: string
-  total_energy_used: number
-  daily_usage: number
-  daily_limit: number
-  monthly_usage: number
-  monthly_limit: number
-  cost_today: number
-  cost_month: number
-  efficiency_score: number
-  peak_usage_time?: string
-  average_daily_usage: number
-  usage_trend: number
-  last_updated: string
-}
-
-export interface EnergyBilling {
-  id: string
-  partner_id: string
-  rental_id: string
-  period_start: string
-  period_end: string
-  energy_consumed: number
-  base_cost: number
-  additional_fees: number
-  total_amount: number
-  currency: 'TRX' | 'USDT'
-  status: 'pending' | 'paid' | 'overdue' | 'cancelled'
-  payment_method?: string
-  paid_at?: string
-  due_date: string
-  created_at: string
-}
-
-export interface EnergySupplyStatus {
-  total_capacity: number
-  available_capacity: number
-  reserved_capacity: number
-  utilization_rate: number
-  current_price: number
-  price_trend?: number
-  estimated_refill_time?: string
-  maintenance_window?: {
-    start: string
-    end: string
-    description: string
-  }
-  last_updated: string
-}
-
-export interface EnergyUsagePrediction {
-  partner_id: string
-  forecast_period: string
-  predicted_usage: {
-    daily: number[]
-    weekly_total: number
-    monthly_total: number
-  }
-  cost_projection: {
-    daily: number[]
-    weekly_total: number
-    monthly_total: number
-  }
-  recommendations: {
-    optimal_plan?: string
-    cost_savings?: number
-    usage_optimization?: string[]
-  }
-  confidence_score: number
-  generated_at: string
 }

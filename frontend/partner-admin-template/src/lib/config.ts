@@ -28,24 +28,12 @@ export const AUTH_CONFIG = {
   TOKEN_EXPIRY_BUFFER: 5 * 60 * 1000, // 5분 전 갱신
 } as const;
 
-// 에너지 렌탈 관련 설정
-export const ENERGY_RENTAL_CONFIG = {
-  ENDPOINTS: {
-    PLANS: '/energy-rental/plans',
-    PARTNER_USAGE: '/energy-rental/partner/:partnerId/usage',
-    PARTNER_BILLING: '/energy-rental/partner/:partnerId/billing',
-    PARTNER_ALLOCATION: '/energy-rental/partner/:partnerId/allocation',
-    POOLS_STATUS: '/energy-rental/pools/status',
-    SYSTEM_STATUS: '/energy-rental/system/status',
-    RENT_ENERGY: '/energy-rental/rent',
-    EXTEND_RENTAL: '/energy-rental/extend',
-    CANCEL_RENTAL: '/energy-rental/cancel',
-    USAGE_PREDICTION: '/energy-rental/predict-usage'
-  },
+// 시스템 설정
+export const SYSTEM_CONFIG = {
   POLL_INTERVALS: {
-    USAGE_STATS: 30000, // 30초
-    BILLING_STATUS: 60000, // 1분
-    SYSTEM_STATUS: 10000, // 10초
+    STATS_UPDATE: 30000, // 30초
+    STATUS_CHECK: 60000, // 1분
+    REALTIME_DATA: 10000, // 10초
   }
 } as const;
 

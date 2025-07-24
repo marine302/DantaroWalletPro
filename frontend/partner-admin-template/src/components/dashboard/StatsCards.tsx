@@ -1,6 +1,6 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Users, CreditCard, BarChart3, Zap } from 'lucide-react'
+import { TrendingUp, TrendingDown, Users, CreditCard, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardStats } from '@/types'
 import { formatCurrency, formatNumber } from '@/lib/utils'
@@ -78,75 +78,5 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </Card>
       ))}
     </div>
-  )
-}
-
-interface EnergyPoolCardProps {
-  energyPool: {
-    totalEnergy: number
-    availableEnergy: number
-    stakeAmount: number
-    freezeAmount: number
-    dailyConsumption: number
-    efficiency: number
-    status: 'active' | 'inactive' | 'warning'
-  }
-}
-
-export function EnergyPoolCard({ energyPool }: EnergyPoolCardProps) {
-  const utilizationRate = ((energyPool.totalEnergy - energyPool.availableEnergy) / energyPool.totalEnergy) * 100
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'text-green-600'
-      case 'warning':
-        return 'text-yellow-600'
-      case 'inactive':
-        return 'text-red-600'
-      default:
-        return 'text-gray-600'
-    }
-  }
-
-  return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
-          에너지 풀 현황
-        </CardTitle>
-        <div className="h-8 w-8 rounded-full bg-yellow-50 flex items-center justify-center">
-          <Zap className="h-4 w-4 text-yellow-600" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">총 에너지</span>
-            <span className="font-semibold">{formatNumber(energyPool.totalEnergy)}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">사용 가능</span>
-            <span className="font-semibold">{formatNumber(energyPool.availableEnergy)}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">사용률</span>
-            <span className="font-semibold">{utilizationRate.toFixed(1)}%</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">상태</span>
-            <span className={`font-semibold ${getStatusColor(energyPool.status)}`}>
-              {energyPool.status.toUpperCase()}
-            </span>
-          </div>
-          <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-green-500 to-yellow-500 transition-all duration-300"
-              style={{ width: `${utilizationRate}%` }}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   )
 }

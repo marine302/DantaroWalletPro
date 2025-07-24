@@ -7,8 +7,6 @@
 import { withAuth } from '../../contexts/AuthContext';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { StatsCards } from '../../components/dashboard/StatsCards';
-import { RealtimeEnergyMonitor } from '../../components/dashboard/RealtimeEnergyMonitor';
-import { EnergyRentalWidget } from '../../components/dashboard/EnergyRentalWidget';
 import { MOCK_DASHBOARD_STATS } from '../../lib/services/mock.service';
 
 function DashboardPage() {
@@ -30,14 +28,12 @@ function DashboardPage() {
 
         {/* 메인 콘텐츠 그리드 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 실시간 에너지 모니터 */}
-          <div className="lg:col-span-1">
-            <RealtimeEnergyMonitor />
-          </div>
-
-          {/* 에너지 렌탈 위젯 */}
-          <div className="lg:col-span-1">
-            <EnergyRentalWidget />
+          {/* 추가 대시보드 위젯을 여기에 배치할 수 있습니다 */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Overview</h3>
+              <p className="text-gray-600">대시보드 개요 정보가 여기에 표시됩니다.</p>
+            </div>
           </div>
         </div>
 
@@ -57,7 +53,7 @@ function DashboardPage() {
                 Process Withdrawals
               </button>
               <button className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
-                Energy Settings
+                System Settings
               </button>
             </div>
           </div>
@@ -76,7 +72,7 @@ function DashboardPage() {
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span>Energy pool updated</span>
+                <span>System updated</span>
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>

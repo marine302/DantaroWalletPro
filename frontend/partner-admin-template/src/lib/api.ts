@@ -39,6 +39,10 @@ class HttpClient {
     this.headers['Authorization'] = `Bearer ${token}`;
   }
 
+  clearAuthToken() {
+    delete this.headers['Authorization'];
+  }
+
   removeAuthToken() {
     delete this.headers['Authorization'];
   }
@@ -100,6 +104,9 @@ class HttpClient {
 
 // HTTP 클라이언트 인스턴스
 const httpClient = new HttpClient(`${API_BASE_URL}${API_VERSION}`);
+
+// HTTP 클라이언트 export
+export { httpClient };
 
 // =============================================================================
 // 인증 API (Auth)
@@ -210,80 +217,6 @@ export const partnerApi = {
     role?: string;
   }) {
     return httpClient.post('/partners/users', userData);
-  }
-};
-
-// =============================================================================
-// 에너지 풀 관리 API (Doc-25, Doc-26) - 실제 백엔드 엔드포인트에 맞게 수정
-// =============================================================================
-export const energyApi = {
-  // 파트너 에너지 실시간 모니터링 (실제 엔드포인트: /api/v1/energy/monitor/{partner_id})
-  async getMonitoringData(partnerId: number) {
-    return httpClient.get(`/energy/monitor/${partnerId}`);
-  },
-
-  // 에너지 분석 (실제 엔드포인트: /api/v1/energy/analytics/{partner_id})
-  async getAnalytics(partnerId: number) {
-    return httpClient.get(`/energy/analytics/${partnerId}`);
-  },
-
-  // 에너지 대시보드 (실제 엔드포인트: /api/v1/energy/dashboard/{partner_id})
-  async getDashboard(partnerId: number) {
-    return httpClient.get(`/energy/dashboard/${partnerId}`);
-  },
-
-  // 에너지 패턴 분석 (실제 엔드포인트: /api/v1/energy/patterns/{partner_id})
-  async getPatterns(partnerId: number) {
-    return httpClient.get(`/energy/patterns/${partnerId}`);
-  },
-
-  // 에너지 알림 목록 (실제 엔드포인트: /api/v1/energy/alerts/{partner_id})
-  async getAlerts(partnerId: number) {
-    return httpClient.get(`/energy/alerts/${partnerId}`);
-  },
-
-  // 글로벌 에너지 분석 (실제 엔드포인트: /api/v1/energy/global/analytics)
-  async getGlobalAnalytics() {
-    return httpClient.get('/energy/global/analytics');
-  },
-
-  // 에너지 풀 상태 조회 (실제 엔드포인트: /api/v1/energy/pool/{partner_id})
-  async getPoolStatus(partnerId: number) {
-    return httpClient.get(`/energy/pool/${partnerId}`);
-  },
-
-  // 에너지 거래 내역 조회 (실제 엔드포인트: /api/v1/energy/transactions/{partner_id})
-  async getTransactions(partnerId: number, params: { page?: number; limit?: number } = {}) {
-    const queryParams = new URLSearchParams();
-    if (params.page) queryParams.append('page', params.page.toString());
-    if (params.limit) queryParams.append('limit', params.limit.toString());
-    
-    const query = queryParams.toString();
-    return httpClient.get(`/energy/transactions/${partnerId}${query ? '?' + query : ''}`);
-  },
-
-  // TRX 스테이킹으로 에너지 생성 (실제 엔드포인트: /api/v1/energy/stake)
-  async stakeForEnergy(partnerId: number, amount: number) {
-    return httpClient.post('/energy/stake', { partner_id: partnerId, amount });
-  },
-
-  // 에너지 언스테이킹 (실제 엔드포인트: /api/v1/energy/unstake) 
-  async unstake(partnerId: number, amount: number) {
-    return httpClient.post('/energy/unstake', { partner_id: partnerId, amount });
-  },
-
-  // 에너지 할당 (실제 엔드포인트: /api/v1/energy/allocate)
-  async allocateEnergy(partnerId: number, targetAddress: string, amount: number) {
-    return httpClient.post('/energy/allocate', { 
-      partner_id: partnerId, 
-      target_address: targetAddress, 
-      amount 
-    });
-  },
-
-  // 에너지 풀 최적화 (실제 엔드포인트: /api/v1/energy/optimize)
-  async optimizePool(partnerId: number) {
-    return httpClient.post(`/energy/optimize/${partnerId}`);
   }
 };
 
@@ -455,90 +388,6 @@ export const auditApi = {
   // AML/KYC 상태
   async getComplianceStatus() {
     return httpClient.get('/audit/compliance-status');
-  }
-};
-
-// =============================================================================
-// 에너지 렌탈 서비스 API (Doc-31) - 실제 백엔드 엔드포인트에 맞게 수정
-// =============================================================================
-export const energyRentalApi = {
-  // 활성 렌탈 플랜 조회 (실제 엔드포인트: /api/v1/energy-rental/rental-plans)
-  async getPlans() {
-    return httpClient.get('/energy-rental/rental-plans');
-  },
-
-  // 파트너 사용 통계 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/usage-statistics)
-  async getUsageStats(partnerId: number, period = '30d') {
-    return httpClient.get(`/energy-rental/partner/${partnerId}/usage-statistics?period=${period}`);
-  },
-
-  // 파트너 청구 이력 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/billing-history)
-  async getBillingHistory(partnerId: number) {
-    return httpClient.get(`/energy-rental/partner/${partnerId}/billing-history`);
-  },
-
-  // 파트너 에너지 할당 정보 (실제 엔드포인트: /api/v1/energy-rental/partner/{partner_id}/energy-allocation)
-  async getCurrentPlan(partnerId: number) {
-    return httpClient.get(`/energy-rental/partner/${partnerId}/energy-allocation`);
-  },
-
-  // 에너지 풀 상태 (실제 엔드포인트: /api/v1/energy-rental/energy-pools/status)
-  async getPoolStatus() {
-    return httpClient.get('/energy-rental/energy-pools/status');
-  },
-
-  // 시스템 상태 (실제 엔드포인트: /api/v1/energy-rental/system/status)
-  async getSystemStatus() {
-    return httpClient.get('/energy-rental/system/status');
-  },
-
-  // 비용 분석 (청구 이력에서 계산)
-  async getCostAnalysis(partnerId: number) {
-    return this.getBillingHistory(partnerId);
-  },
-
-  // 에너지 렌탈 서비스 개요
-  async getOverview() {
-    return httpClient.get('/energy/rental/overview');
-  },
-
-  // 에너지 풀 목록
-  async getPools() {
-    return httpClient.get('/energy/rental/pools');
-  },
-
-  // 에너지 풀 생성
-  async createPool(poolData: { name: string; stake_amount: number; rental_rate: number }) {
-    return httpClient.post('/energy/rental/pools', poolData);
-  },
-
-  // 에너지 풀 업데이트
-  async updatePool(poolId: string, updates: Record<string, unknown>) {
-    return httpClient.put(`/energy/rental/pools/${poolId}`, updates);
-  },
-
-  // 에너지 풀 삭제
-  async deletePool(poolId: string) {
-    return httpClient.delete(`/energy/rental/pools/${poolId}`);
-  },
-
-  // 렌탈 거래 목록
-  async getTransactions(page = 1, limit = 20) {
-    const params = new URLSearchParams({ 
-      page: page.toString(), 
-      limit: limit.toString()
-    });
-    return httpClient.get(`/energy/rental/transactions?${params}`);
-  },
-
-  // 렌탈 분석 데이터
-  async getAnalytics(period = '30d') {
-    return httpClient.get(`/energy/rental/analytics?period=${period}`);
-  },
-
-  // 수익성 최적화 제안
-  async getOptimizationSuggestions() {
-    return httpClient.get('/energy/rental/optimization');
   }
 };
 
@@ -783,12 +632,10 @@ const api = {
   users: usersApi,
   tronlink: tronlinkApi,
   partner: partnerApi,
-  energy: energyApi,
   fee: feeApi,
   withdrawal: withdrawalApi,
   onboarding: onboardingApi,
   audit: auditApi,
-  energyRental: energyRentalApi,
   analytics: analyticsApi,
   ws: wsManager,
   utils: apiUtils

@@ -7,9 +7,7 @@ import {
   CheckCircle, 
   Clock, 
   XCircle,
-  Loader2,
-  Zap,
-  TrendingUp
+  Loader2
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { WithdrawalRequest } from '@/types'
@@ -160,30 +158,9 @@ export function WithdrawalTable({
                 </td>
                 <td className="py-3 px-4 text-gray-900">
                   <div className="space-y-1">
-                    {withdrawal.energy_consumed !== undefined && (
-                      <div className="flex items-center gap-1 text-sm">
-                        <Zap className="w-3 h-3 text-yellow-500" />
-                        <span className="text-gray-600">{withdrawal.energy_consumed.toLocaleString()} Energy</span>
-                      </div>
-                    )}
-                    {withdrawal.energy_cost !== undefined && (
-                      <div className="text-xs text-gray-500">
-                        비용: {formatCurrency(withdrawal.energy_cost)} TRX
-                      </div>
-                    )}
-                    {withdrawal.profit_margin !== undefined && (
-                      <div className="flex items-center gap-1 text-sm">
-                        <TrendingUp className="w-3 h-3 text-green-500" />
-                        <span className={`font-medium ${withdrawal.profit_margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {withdrawal.profit_margin >= 0 ? '+' : ''}{formatCurrency(withdrawal.profit_margin)} {withdrawal.fee_currency || 'USDT'}
-                        </span>
-                      </div>
-                    )}
-                    {(withdrawal.energy_consumed === undefined && withdrawal.energy_cost === undefined && withdrawal.profit_margin === undefined) && (
-                      <div className="text-xs text-gray-400">
-                        에너지 정보 없음
-                      </div>
-                    )}
+                    <div className="text-xs text-gray-400">
+                      정보 없음
+                    </div>
                   </div>
                 </td>
                 <td className="py-3 px-4">

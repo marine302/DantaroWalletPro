@@ -22,9 +22,6 @@ interface WithdrawalRequest {
   transaction_hash?: string
   fee: number
   fee_currency: 'USDT' | 'TRX'  // 수수료 통화
-  energy_consumed?: number      // 소모된 에너지
-  energy_cost?: number          // 에너지 비용 (TRX)
-  profit_margin?: number        // 수익 마진 (수수료 - 에너지 비용)
 }
 
 export default function WithdrawalsPage() {
@@ -45,10 +42,7 @@ export default function WithdrawalsPage() {
       status: 'pending',
       request_time: '2025-01-15T10:30:00Z',
       fee: 10.0,
-      fee_currency: 'USDT',
-      energy_consumed: 268000,
-      energy_cost: 3.5,
-      profit_margin: 6.5
+      fee_currency: 'USDT'
     },
     {
       id: 'wd_002', 
@@ -62,10 +56,7 @@ export default function WithdrawalsPage() {
       processed_time: '2025-01-15T09:30:00Z',
       transaction_hash: '0x123abc456def...',
       fee: 5.0,
-      fee_currency: 'USDT',
-      energy_consumed: 134000,
-      energy_cost: 1.8,
-      profit_margin: 3.2
+      fee_currency: 'USDT'
     },
     {
       id: 'wd_003',
@@ -78,10 +69,7 @@ export default function WithdrawalsPage() {
       request_time: '2025-01-15T08:45:00Z',
       processed_time: '2025-01-15T09:00:00Z',
       fee: 25.0,
-      fee_currency: 'USDT',
-      energy_consumed: 670000,
-      energy_cost: 8.7,
-      profit_margin: 16.3
+      fee_currency: 'USDT'
     }
   ], []);
 

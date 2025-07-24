@@ -11,8 +11,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Eye,
-  Shield,
-  Zap
+  Shield
 } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { WalletConnection, MultiWalletManager } from './WalletConnection'
@@ -28,7 +27,7 @@ interface WalletBalance {
 
 interface WalletTransaction {
   id: string
-  type: 'send' | 'receive' | 'stake' | 'energy'
+  type: 'send' | 'receive' | 'stake'
   amount: number
   currency: string
   from: string
@@ -68,8 +67,7 @@ export function WalletManagementSection({
     const icons = {
       send: ArrowUpRight,
       receive: ArrowDownLeft,
-      stake: Shield,
-      energy: Zap
+      stake: Shield
     }
     return icons[type as keyof typeof icons] || ArrowUpRight
   }

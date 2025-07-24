@@ -6,7 +6,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService, TokenManager } from '../lib/services/auth.service';
-import { apiClient } from '../lib/api-client';
+import { httpClient } from '../lib/api';
 import type { AuthUser, LoginCredentials, RegisterData } from '../types';
 
 interface AuthContextType {
@@ -41,9 +41,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const token = TokenManager.getAccessToken();
     if (token) {
-      apiClient.setAuthToken(token);
+      httpClient.setAuthToken(token);
     } else {
-      apiClient.clearAuthToken();
+      httpClient.clearAuthToken();
     }
   }, [user]);
 
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setUser(null);
       TokenManager.clearTokens();
-      apiClient.clearAuthToken();
+      httpClient.clearAuthToken();
     }
   };
 

@@ -88,20 +88,6 @@ export const useDashboardStats = () => {
   return { data: null, isLoading: false, error: null, isError: false };
 };
 
-export const useEnergyTransactions = () => {
-  return { data: [], isLoading: false, error: null, isError: false };
-};
-
-export const useEnergyPools = () => {
-  return { data: [], isLoading: false, error: null, isError: false };
-};
-
-export const useEnergyPoolStatus = (partnerId?: number) => {
-  // partnerId 사용 예시 (실제 구현 시 사용)
-  const queryKey = partnerId ? ['energyPoolStatus', partnerId] : ['energyPoolStatus'];
-  return { data: null, isLoading: false, error: null, isError: false, queryKey };
-};
-
 export const useAnalyticsOverview = () => {
   return { data: null, isLoading: false, error: null, isError: false };
 };

@@ -64,7 +64,6 @@ export async function testApiEndpoints() {
   const endpoints = [
     { name: 'Authentication', path: '/auth/me' },
     { name: 'Partners', path: '/partners' },
-    { name: 'Energy', path: '/energy/stats' },
     { name: 'Wallets', path: '/tronlink/wallets' },
     { name: 'Withdrawals', path: '/withdrawals' },
   ];

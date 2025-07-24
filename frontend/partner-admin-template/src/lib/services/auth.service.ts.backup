@@ -103,7 +103,7 @@ export const authService = {
     }
 
     // 실제 API 호출
-    const response = await httpClient.post<any>('/auth/register', data as unknown as Record<string, unknown>);
+    const response = await httpClient.post<AuthResponse>('/auth/register', data as unknown as Record<string, unknown>);
     
     if (response.data.success) {
       TokenManager.setTokens(
@@ -135,7 +135,7 @@ export const authService = {
       throw new Error('Refresh token not found');
     }
 
-    const response = await httpClient.post<any>('/auth/refresh', {
+    const response = await httpClient.post<AuthResponse>('/auth/refresh', {
       refresh_token: refreshToken
     });
 
@@ -160,8 +160,8 @@ export const authService = {
     }
 
     // 실제 API 호출
-    const response = await httpClient.get<User>('/auth/me');
-    return response;
+    const response = await httpClient.get<{ data: User }>('/auth/me');
+    return response.data.data;
   },
 
   /**
