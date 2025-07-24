@@ -9,7 +9,6 @@ from fastapi import APIRouter
 api_router = APIRouter()
 
 # 엔드포인트 모듈 임포트
-from app.api import energy_rental  # 에너지 렌탈 시스템
 from app.api.v1 import admin
 from app.api.v1.endpoints import audit_compliance  # Doc #30: 트랜잭션 감사 및 컴플라이언스
 from app.api.v1.endpoints import auth
