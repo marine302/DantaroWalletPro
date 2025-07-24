@@ -13,13 +13,11 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.core.logging import get_logger
-from app.models.energy_pool import EnergyPoolModel
 from app.models.partner import Partner
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.wallet import Wallet
 from app.services.balance.balance_service import BalanceService
-from app.services.external_energy_service import safe_get_value
 from app.services.wallet.wallet_service import WalletService
 
 logger = get_logger(__name__)
@@ -57,7 +55,6 @@ class IntegratedDashboard:
             tasks = [
                 self.get_wallet_overview(),
                 self.get_transaction_flow(),
-                self.get_energy_status(),
                 self.get_user_analytics(),
                 self.get_revenue_metrics(),
                 self.get_risk_alerts(),
@@ -74,7 +71,6 @@ class IntegratedDashboard:
                 "transaction_flow": (
                     results[1] if not isinstance(results[1], Exception) else {}
                 ),
-                "energy_status": (
                     results[2] if not isinstance(results[2], Exception) else {}
                 ),
                 "user_analytics": (
@@ -206,52 +202,23 @@ class IntegratedDashboard:
             logger.error(f"거래 흐름 분석 실패: {str(e)}")
             return {}
 
-    async def get_energy_status(self) -> Dict[str, Any]:
-        """에너지 풀 현황"""
-        try:
-            stmt = select(EnergyPoolModel).where(
-                EnergyPoolModel.partner_id == self.partner_id
-            )
-            result = await self.db.execute(stmt)
-            energy_pools = result.scalars().all()
 
-            total_energy = Decimal("0")
-            available_energy = Decimal("0")
-            frozen_energy = Decimal("0")
-
-            for pool in energy_pools:
                 # safe_get_value 사용으로 안전한 값 처리
-                pool_total = Decimal(str(safe_get_value(pool, "total_energy", 0)))
                 pool_available = Decimal(
-                    str(safe_get_value(pool, "available_energy", 0))
                 )
-                pool_frozen = Decimal(str(safe_get_value(pool, "frozen_energy", 0)))
 
-                total_energy += pool_total
-                available_energy += pool_available
-                frozen_energy += pool_frozen
 
             # 에너지 사용률
             usage_rate = 0
-            if total_energy > 0:
                 usage_rate = float(
-                    (total_energy - available_energy) / total_energy * 100
                 )
 
             # 에너지 트랜잭션 통계
-            energy_tx_stats = await self.get_energy_transaction_stats()
 
             return {
-                "total_energy": float(total_energy),
-                "available_energy": float(available_energy),
-                "frozen_energy": float(frozen_energy),
                 "usage_rate": usage_rate,
-                "pool_count": len(energy_pools),
-                "energy_efficiency": self.calculate_energy_efficiency(energy_tx_stats),
                 "cost_per_transaction": self.calculate_cost_per_transaction(
-                    energy_tx_stats
                 ),
-                "burn_rate": self.calculate_energy_burn_rate(energy_tx_stats),
             }
 
         except Exception as e:
@@ -313,17 +280,14 @@ class IntegratedDashboard:
             fee_revenue = await self.calculate_fee_revenue(last_30d)
 
             # 에너지 수익 계산
-            energy_revenue = await self.calculate_energy_revenue(last_30d)
 
             # 기타 수익원
             other_revenue = await self.calculate_other_revenue(last_30d)
 
-            total_revenue = fee_revenue + energy_revenue + other_revenue
 
             return {
                 "total_revenue": float(total_revenue),
                 "fee_revenue": float(fee_revenue),
-                "energy_revenue": float(energy_revenue),
                 "other_revenue": float(other_revenue),
                 "revenue_growth": await self.calculate_revenue_growth(),
                 "arpu": await self.calculate_arpu(),  # Average Revenue Per User
@@ -345,8 +309,6 @@ class IntegratedDashboard:
             alerts.extend(low_balance_alerts)
 
             # 에너지 부족 알림
-            low_energy_alerts = await self.check_low_energy_alerts()
-            alerts.extend(low_energy_alerts)
 
             # 이상 거래 알림
             anomaly_alerts = await self.check_anomaly_alerts()
@@ -372,14 +334,12 @@ class IntegratedDashboard:
             volume_prediction = await self.predict_transaction_volume()
 
             # 에너지 소비 예측
-            energy_prediction = await self.predict_energy_consumption()
 
             # 수익 예측
             revenue_prediction = await self.predict_revenue()
 
             return {
                 "volume_prediction": volume_prediction,
-                "energy_prediction": energy_prediction,
                 "revenue_prediction": revenue_prediction,
                 "confidence_score": self.calculate_prediction_confidence(),
                 "forecast_horizon": "7d",
@@ -473,7 +433,6 @@ class IntegratedDashboard:
         return {
             "wallet_overview": {},
             "transaction_flow": {},
-            "energy_status": {},
             "user_analytics": {},
             "revenue_metrics": {},
             "risk_alerts": [],
@@ -504,23 +463,8 @@ class IntegratedDashboard:
         # 구현 예정
         return []
 
-    async def get_energy_transaction_stats(self) -> Dict:
-        """에너지 거래 통계"""
-        # 구현 예정
-        return {}
-
-    def calculate_energy_efficiency(self, stats: Dict) -> float:
-        """에너지 효율성 계산"""
-        # 구현 예정
-        return 0.0
-
     def calculate_cost_per_transaction(self, stats: Dict) -> float:
         """거래당 비용 계산"""
-        # 구현 예정
-        return 0.0
-
-    def calculate_energy_burn_rate(self, stats: Dict) -> float:
-        """에너지 소모율 계산"""
         # 구현 예정
         return 0.0
 
@@ -546,11 +490,6 @@ class IntegratedDashboard:
 
     async def calculate_fee_revenue(self, since: datetime) -> Decimal:
         """수수료 수익 계산"""
-        # 구현 예정
-        return Decimal("0")
-
-    async def calculate_energy_revenue(self, since: datetime) -> Decimal:
-        """에너지 수익 계산"""
         # 구현 예정
         return Decimal("0")
 
@@ -584,11 +523,6 @@ class IntegratedDashboard:
         # 구현 예정
         return []
 
-    async def check_low_energy_alerts(self) -> List[Dict]:
-        """에너지 부족 알림 확인"""
-        # 구현 예정
-        return []
-
     async def check_anomaly_alerts(self) -> List[Dict]:
         """이상 거래 알림 확인"""
         # 구현 예정
@@ -601,11 +535,6 @@ class IntegratedDashboard:
 
     async def predict_transaction_volume(self) -> Dict:
         """거래량 예측"""
-        # 구현 예정
-        return {}
-
-    async def predict_energy_consumption(self) -> Dict:
-        """에너지 소비 예측"""
         # 구현 예정
         return {}
 
@@ -691,17 +620,6 @@ async def get_transaction_flow(partner_id: int, db: AsyncSession = Depends(get_d
         logger.error(f"Transaction flow error for partner {partner_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.get("/energy-status/{partner_id}")
-async def get_energy_status(partner_id: int, db: AsyncSession = Depends(get_db)):
-    """에너지 상태 조회"""
-    try:
-        dashboard = IntegratedDashboard(db, partner_id)
-        data = await dashboard.get_energy_status()
-        return {"success": True, "data": data}
-    except Exception as e:
-        logger.error(f"Energy status error for partner {partner_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/system-health/{partner_id}")

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageSelector';
 import BackendStatusMonitor from '@/components/ui/BackendStatusMonitor';
 // import { useI18n } from '@/contexts/I18nContext';
+import { useI18n } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -21,13 +22,13 @@ export function Header({ setSidebarOpen }: HeaderProps) {
 
   const _handleLogout = () => {
     logout();
-    router.push('/login');
+    _router.push('/login');
   };
 
   const _userNavigation = [
     { name: t.common.profile, href: '#' },
     { name: t.settings.title, href: '/settings' },
-    { name: t.nav.logout, href: '#', onClick: handleLogout },
+    { name: t.nav.logout, href: '#', onClick: _handleLogout },
   ];
 
   return (
@@ -78,7 +79,7 @@ export function Header({ setSidebarOpen }: HeaderProps) {
               leaveTo="transform opacity-0 scale-95"
             >
               <Menu.Items className="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-gray-800 py-2 shadow-lg ring-1 ring-gray-700 focus:outline-none">
-                {userNavigation.map((item) => (
+                {_userNavigation.map((item) => (
                   <Menu.Item key={item.name}>
                     {({ active }) => (
                       <button

@@ -190,12 +190,12 @@ export function generateTransactionTrendData(): ChartData[] {
   const _days = 7;
   const data: ChartData[] = [];
 
-  for (let _i = 0; i < days; i++) {
+  for (let _i = 0; _i < _days; _i++) {
     const _date = new Date();
-    date.setDate(date.getDate() - (days - 1 - i));
+    _date.setDate(_date.getDate() - (_days - 1 - _i));
 
     data.push({
-      date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+      date: _date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
       transactions: Math.floor(Math.random() * 500) + 300,
       volume: Math.floor(Math.random() * 1000000) + 500000,
       revenue: Math.floor(Math.random() * 50000) + 25000

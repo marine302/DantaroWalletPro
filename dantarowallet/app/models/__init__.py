@@ -12,10 +12,15 @@ from app.models.audit import (
 from app.models.balance import Balance
 from app.models.base import BaseModel
 from app.models.deposit import Deposit
+    ExternalEnergyPriceHistory,
+    ExternalEnergyProvider,
+)
 from app.models.fee_config import FeeCalculationLog
 from app.models.fee_policy import (
+    EnergyPolicy,
     FeeTier,
     FeeType,
+    PartnerEnergyPolicy,
     PartnerFeePolicy,
     PartnerPolicyCalculationLog,
     UserTier,
@@ -27,6 +32,8 @@ from app.models.partner_history import (
     PartnerApiUsage,
     PartnerDailyStatistics,
     PartnerDeployment,
+    PartnerEnergyAllocation,
+    PartnerEnergyUsageHistory,
     PartnerFeeConfigHistory,
     PartnerFeeRevenue,
     PartnerOnboardingStep,
@@ -91,11 +98,18 @@ __all__ = [
     "TransactionSummary",
     "AlertLevel",
     "AlertType",
+    "EnergyPoolModel",
+    "EnergyPool",
+    "EnergyPriceHistory",
+    "EnergyUsageLog",
+    "EnergyUsageHistory",
     "Partner",
     "PartnerApiLog",
     # Partner History 모델
     "PartnerApiUsage",
     "PartnerDailyStatistics",
+    "PartnerEnergyAllocation",
+    "PartnerEnergyUsageHistory",
     "PartnerFeeRevenue",
     "PartnerFeeConfigHistory",
     "PartnerOnboardingStep",
@@ -104,10 +118,12 @@ __all__ = [
     "PartnerFeePolicy",
     "FeeTier",
     "PartnerWithdrawalPolicy",
+    "PartnerEnergyPolicy",
     "UserTier",
     "PartnerPolicyCalculationLog",
     "FeeType",
     "WithdrawalPolicy",
+    "EnergyPolicy",
     "FeeCalculationLog",
     # Partner Wallet 모델
     "PartnerWallet",

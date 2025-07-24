@@ -52,7 +52,7 @@ export function RoleGuard({
 
   const _hasRole = user && roles.includes(user.role);
 
-  if (!hasRole) {
+  if (!_hasRole) {
     if (hideIfNoAccess) {
       return null;
     }

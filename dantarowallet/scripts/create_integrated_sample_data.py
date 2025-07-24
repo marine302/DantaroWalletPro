@@ -15,7 +15,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.energy_pool import EnergyPoolModel
 from app.models.partner import Partner
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -50,7 +49,6 @@ async def create_integrated_sample_data():
                     api_key="test_api_key_123",
                     api_secret_hash="hashed_secret_123",
                     monthly_limit=30000000.0,
-                    energy_balance=1000000.0,
                 )
                 db.add(partner)
                 await db.commit()
@@ -137,35 +135,21 @@ async def create_integrated_sample_data():
             print(f"✅ 거래 데이터 생성: {transaction_count}개")
 
             # 5. 에너지 풀 데이터 생성
-            energy_pools = [
                 {
                     "name": "Main Energy Pool",
-                    "total_energy": 1000000,
-                    "available_energy": 750000,
-                    "frozen_energy": 250000,
                 },
                 {
                     "name": "Reserve Energy Pool",
-                    "total_energy": 500000,
-                    "available_energy": 400000,
-                    "frozen_energy": 100000,
                 },
             ]
 
-            for pool_data in energy_pools:
-                energy_pool = EnergyPoolModel(
                     name=pool_data["name"],
                     partner_id=partner_id,
-                    total_energy=pool_data["total_energy"],
-                    available_energy=pool_data["available_energy"],
-                    frozen_energy=pool_data["frozen_energy"],
                     created_at=datetime.utcnow()
                     - timedelta(days=random.randint(1, 10)),
                 )
-                db.add(energy_pool)
 
             await db.commit()
-            print(f"✅ 에너지 풀 생성: {len(energy_pools)}개")
 
             print("\n🎉 통합 대시보드용 샘플 데이터 생성 완료!")
             print(f"📊 생성된 데이터:")
@@ -173,7 +157,6 @@ async def create_integrated_sample_data():
             print(f"   - 지갑: {len(created_wallets)}개")
             print(f"   - 사용자: {len(created_users)}개")
             print(f"   - 거래: {transaction_count}개")
-            print(f"   - 에너지 풀: {len(energy_pools)}개")
 
         except Exception as e:
             print(f"❌ 오류 발생: {str(e)}")

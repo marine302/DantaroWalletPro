@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { notificationManager } from '@/lib/notification-manager';
+import { _notificationManager } from '@/lib/notification-manager';
 import { useNotifications } from '@/hooks/useNotifications';
 import {
   Notification,
@@ -29,18 +29,18 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
   const [itemsPerPage] = useState(20);
 
   useEffect(() => {
-    const _unsubscribe = notificationManager.subscribeToHistory((newHistory) => {
+    const _unsubscribe = _notificationManager.subscribeToHistory((newHistory) => {
       setHistory(newHistory);
     });
 
     // 초기 히스토리 로드
-    setHistory(notificationManager.getNotificationHistory());
+    setHistory(_notificationManager.getNotificationHistory());
 
-    return unsubscribe;
+    return _unsubscribe;
   }, []);
 
   useEffect(() => {
-    notificationManager.updateFilters(filters);
+    _notificationManager.updateFilters(filters);
   }, [filters]);
 
   const _handleFilterChange = (key: keyof NotificationFilter, value: any) => {
@@ -51,15 +51,15 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
   const _handleDateRangeChange = (type: 'start' | 'end', date: string) => {
     const _newDateRange = filters.dateRange || { start: new Date(), end: new Date() };
     if (type === 'start') {
-      newDateRange.start = new Date(date);
+      _newDateRange.start = new Date(date);
     } else {
-      newDateRange.end = new Date(date);
+      _newDateRange.end = new Date(date);
     }
-    handleFilterChange('dateRange', newDateRange);
+    _handleFilterChange('dateRange', _newDateRange);
   };
 
   const _clearDateFilter = () => {
-    handleFilterChange('dateRange', null);
+    _handleFilterChange('dateRange', null);
   };
 
   const _getPriorityColor = (priority: NotificationPriority) => {
@@ -106,10 +106,10 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
 
   // 페이지네이션 계산
   const _totalItems = history.length;
-  const _totalPages = Math.ceil(totalItems / itemsPerPage);
+  const _totalPages = Math.ceil(_totalItems / itemsPerPage);
   const _startIndex = (currentPage - 1) * itemsPerPage;
-  const _endIndex = startIndex + itemsPerPage;
-  const _currentItems = history.slice(startIndex, endIndex);
+  const _endIndex = _startIndex + itemsPerPage;
+  const _currentItems = history.slice(_startIndex, _endIndex);
 
   const _exportToCSV = () => {
     const _csvData = history.map(notification => ({
@@ -118,23 +118,23 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
       Message: notification.message,
       Priority: notification.priority,
       Channel: notification.channel,
-      Timestamp: formatDate(notification.timestamp),
+      Timestamp: _formatDate(notification.timestamp),
       Read: notification.read ? 'Yes' : 'No'
     }));
 
-    const _headers = Object.keys(csvData[0] || {});
+    const _headers = Object.keys(_csvData[0] || {});
     const _csvContent = [
-      headers.join(','),
-      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
+      _headers.join(','),
+      ..._csvData.map(row => _headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
     ].join('\n');
 
-    const _blob = new Blob([csvContent], { type: 'text/csv' });
-    const _url = window.URL.createObjectURL(blob);
+    const _blob = new Blob([_csvContent], { type: 'text/csv' });
+    const _url = window.URL.createObjectURL(_blob);
     const _a = document.createElement('a');
-    a.href = url;
-    a.download = `notification-history-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    _a.href = _url;
+    _a.download = `notification-history-${new Date().toISOString().split('T')[0]}.csv`;
+    _a.click();
+    window.URL.revokeObjectURL(_url);
   };
 
   return (
@@ -146,7 +146,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
-            onClick={exportToCSV}
+            onClick={_exportToCSV}
             disabled={history.length === 0}
           >
             📊 CSV 내보내기
@@ -179,7 +179,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               type="text"
               placeholder="제목 또는 메시지 검색..."
               value={filters.searchQuery}
-              onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+              onChange={(e) => _handleFilterChange('searchQuery', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -191,7 +191,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             </label>
             <select
               value={filters.readStatus}
-              onChange={(e) => handleFilterChange('readStatus', e.target.value)}
+              onChange={(e) => _handleFilterChange('readStatus', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">전체</option>
@@ -210,7 +210,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               value={filters.priorities}
               onChange={(e) => {
                 const _selected = Array.from(e.target.selectedOptions, option => option.value as NotificationPriority);
-                handleFilterChange('priorities', selected);
+                _handleFilterChange('priorities', _selected);
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               size={4}
@@ -233,14 +233,14 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
               value={filters.channels}
               onChange={(e) => {
                 const _selected = Array.from(e.target.selectedOptions, option => option.value as NotificationChannel);
-                handleFilterChange('channels', selected);
+                _handleFilterChange('channels', _selected);
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               size={5}
             >
               {Object.values(NotificationChannel).map(channel => (
                 <option key={channel} value={channel} className="capitalize">
-                  {getChannelIcon(channel)} {channel.replace('_', ' ')}
+                  {_getChannelIcon(channel)} {channel.replace('_', ' ')}
                 </option>
               ))}
             </select>
@@ -256,7 +256,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             <input
               type="date"
               value={filters.dateRange?.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
-              onChange={(e) => handleDateRangeChange('start', e.target.value)}
+              onChange={(e) => _handleDateRangeChange('start', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -268,7 +268,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             <input
               type="date"
               value={filters.dateRange?.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
-              onChange={(e) => handleDateRangeChange('end', e.target.value)}
+              onChange={(e) => _handleDateRangeChange('end', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -276,7 +276,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
           <div>
             <Button
               variant="outline"
-              onClick={clearDateFilter}
+              onClick={_clearDateFilter}
               disabled={!filters.dateRange}
               className="w-full"
             >
@@ -290,22 +290,22 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            알림 히스토리 ({totalItems}개)
+            알림 히스토리 ({_totalItems}개)
           </h3>
 
           {/* 페이지네이션 정보 */}
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {startIndex + 1}-{Math.min(endIndex, totalItems)} / {totalItems}
+            {_startIndex + 1}-{Math.min(_endIndex, _totalItems)} / {_totalItems}
           </div>
         </div>
 
-        {currentItems.length === 0 ? (
+        {_currentItems.length === 0 ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             조건에 맞는 알림이 없습니다.
           </div>
         ) : (
           <div className="space-y-4">
-            {currentItems.map((notification) => (
+            {_currentItems.map((notification) => (
               <div
                 key={notification.id}
                 className={`border rounded-lg p-4 transition-colors ${
@@ -317,12 +317,12 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-lg">{getChannelIcon(notification.channel)}</span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(notification.priority)}`}>
+                      <span className="text-lg">{_getChannelIcon(notification.channel)}</span>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${_getPriorityColor(notification.priority)}`}>
                         {notification.priority.toUpperCase()}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(notification.timestamp)}
+                        {_formatDate(notification.timestamp)}
                       </span>
                       {!notification.read && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -343,7 +343,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => notificationManager.markAsRead(notification.id)}
+                        onClick={() => _notificationManager.markAsRead(notification.id)}
                         className="text-xs"
                       >
                         읽음 처리
@@ -357,7 +357,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
         )}
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
+        {_totalPages > 1 && (
           <div className="flex items-center justify-center space-x-2 mt-6">
             <Button
               variant="outline"
@@ -368,27 +368,27 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
             </Button>
 
             <div className="flex space-x-1">
-              {[...Array(totalPages)].map((_, index) => {
+              {[...Array(_totalPages)].map((_, index) => {
                 const _page = index + 1;
-                const _isCurrentPage = page === currentPage;
-                const _showPage = page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2);
+                const _isCurrentPage = _page === currentPage;
+                const _showPage = _page === 1 || _page === _totalPages || (_page >= currentPage - 2 && _page <= currentPage + 2);
 
-                if (!showPage) {
-                  if (page === currentPage - 3 || page === currentPage + 3) {
-                    return <span key={page} className="px-2 text-gray-400">...</span>;
+                if (!_showPage) {
+                  if (_page === currentPage - 3 || _page === currentPage + 3) {
+                    return <span key={_page} className="px-2 text-gray-400">...</span>;
                   }
                   return null;
                 }
 
                 return (
                   <Button
-                    key={page}
-                    variant={isCurrentPage ? "default" : "outline"}
+                    key={_page}
+                    variant={_isCurrentPage ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={isCurrentPage ? "bg-blue-600 text-white" : ""}
+                    onClick={() => setCurrentPage(_page)}
+                    className={_isCurrentPage ? "bg-blue-600 text-white" : ""}
                   >
-                    {page}
+                    {_page}
                   </Button>
                 );
               })}
@@ -396,7 +396,7 @@ export const NotificationHistory: React.FC<NotificationHistoryProps> = ({ onClos
 
             <Button
               variant="outline"
-              disabled={currentPage === totalPages}
+              disabled={currentPage === _totalPages}
               onClick={() => setCurrentPage(prev => prev + 1)}
             >
               다음

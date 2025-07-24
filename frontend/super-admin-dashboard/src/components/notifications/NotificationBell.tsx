@@ -47,14 +47,14 @@ export function NotificationBell() {
   const _formatTimestamp = (timestamp: string) => {
     const _date = new Date(timestamp);
     const _now = new Date();
-    const _diffMs = now.getTime() - date.getTime();
-    const _diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const _diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const _diffMs = _now.getTime() - _date.getTime();
+    const _diffHours = Math.floor(_diffMs / (1000 * 60 * 60));
+    const _diffMinutes = Math.floor(_diffMs / (1000 * 60));
 
-    if (diffMinutes < 1) return '방금 전';
-    if (diffMinutes < 60) return `${diffMinutes}분 전`;
-    if (diffHours < 24) return `${diffHours}시간 전`;
-    return date.toLocaleDateString('ko-KR');
+    if (_diffMinutes < 1) return '방금 전';
+    if (_diffMinutes < 60) return `${_diffMinutes}분 전`;
+    if (_diffHours < 24) return `${_diffHours}시간 전`;
+    return _date.toLocaleDateString('ko-KR');
   };
 
   const _handleMarkAsRead = (e: React.MouseEvent, notificationId: string) => {
@@ -109,13 +109,13 @@ export function NotificationBell() {
 
             {/* Notifications */}
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {recentNotifications.length === 0 ? (
+              {_recentNotifications.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
                   <BellIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">새로운 알림이 없습니다</p>
                 </div>
               ) : (
-                recentNotifications.map((notification) => (
+                _recentNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={cn(
@@ -129,7 +129,7 @@ export function NotificationBell() {
                     {/* Priority indicator */}
                     <div className={cn(
                       'absolute top-2 left-2 w-2 h-2 rounded-full',
-                      getPriorityColor(notification.priority)
+                      _getPriorityColor(notification.priority)
                     )} />
 
                     {/* Content */}
@@ -138,7 +138,7 @@ export function NotificationBell() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2">
                             <span className="text-sm">
-                              {getTypeIcon(notification.type)}
+                              {_getTypeIcon(notification.type)}
                             </span>
                             <p className={cn(
                               'text-sm font-medium truncate',
@@ -162,7 +162,7 @@ export function NotificationBell() {
                         <div className="flex space-x-1 ml-2">
                           {!notification.read && (
                             <button
-                              onClick={(e) => handleMarkAsRead(e, notification.id)}
+                              onClick={(e) => _handleMarkAsRead(e, notification.id)}
                               className="p-1 text-gray-400 hover:text-green-400"
                               title="읽음으로 표시"
                             >
@@ -170,7 +170,7 @@ export function NotificationBell() {
                             </button>
                           )}
                           <button
-                            onClick={(e) => handleDelete(e, notification.id)}
+                            onClick={(e) => _handleDelete(e, notification.id)}
                             className="p-1 text-gray-400 hover:text-red-400"
                             title="삭제"
                           >

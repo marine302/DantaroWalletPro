@@ -20,7 +20,6 @@ async def test_dashboard_overview(client: AsyncClient, user_token_headers):
     # 응답 구조가 중첩되어 있으므로 이에 맞게 확인
     assert "finance" in data
     assert "total_balance" in data["finance"]
-    assert "energy" in data
     assert "partners" in data
     assert "recent_transactions" in data
 

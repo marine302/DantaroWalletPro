@@ -95,7 +95,6 @@ tags_metadata = [
         },
     },
     {
-        "name": "admin_energy",
         "description": "**🔐 SUPER ADMIN ONLY** - Energy pool administration and monitoring",
         "externalDocs": {
             "description": "API Docs: /api/v1/admin/docs",
@@ -156,7 +155,6 @@ tags_metadata = [
         },
     },
     {
-        "name": "energy_management",
         "description": "**🔗 PARTNER ADMIN ONLY** - Energy pool CRUD operations for partners",
         "externalDocs": {
             "description": "API Docs: /api/v1/partner/docs",
@@ -180,8 +178,6 @@ tags_metadata = [
         },
     },
     {
-        "name": "partner_energy_rental",
-        "description": "**🔗 PARTNER ADMIN ONLY** - Partner energy rental from super admin",
         "externalDocs": {
             "description": "API Docs: /api/v1/partner/docs",
             "url": "http://localhost:3030",
@@ -254,7 +250,6 @@ tags_metadata = [
     },
     # === 🌟 DEVELOPMENT & TESTING APIs ===
     {
-        "name": "simple-energy",
         "description": "**🌟 DEVELOPMENT** - Simple Energy Service for easy development and testing",
         "externalDocs": {
             "description": "Development API | API Docs: /api/v1/dev/docs",
@@ -601,7 +596,6 @@ async def get_public_providers():
                 max_order_size,
                 trading_fee,
                 withdrawal_fee
-            FROM energy_providers 
             WHERE status = 'ONLINE'
             ORDER BY reliability_score DESC
         """
@@ -613,8 +607,6 @@ async def get_public_providers():
         for provider in providers:
             cursor.execute(
                 """
-                SELECT price, available_energy 
-                FROM energy_prices 
                 WHERE provider_id = ? 
                 ORDER BY timestamp DESC 
                 LIMIT 1
@@ -638,7 +630,6 @@ async def get_public_providers():
                 provider_info.update(
                     {
                         "current_price": float(price_info[0]) if price_info[0] else 0.0,
-                        "available_energy": price_info[1],
                     }
                 )
 
@@ -666,21 +657,17 @@ async def get_providers_summary():
         cursor = conn.cursor()
 
         # 활성 공급업체 수
-        cursor.execute("SELECT COUNT(*) FROM energy_providers WHERE status = 'ONLINE'")
         active_count = cursor.fetchone()[0]
 
         # 평균 신뢰성
         cursor.execute(
-            "SELECT AVG(reliability_score) FROM energy_providers WHERE status = 'ONLINE'"
         )
         avg_reliability = cursor.fetchone()[0] or 0.0
 
         # 최저 가격
         cursor.execute(
             """
-            SELECT MIN(price) FROM energy_prices 
             WHERE provider_id IN (
-                SELECT id FROM energy_providers WHERE status = 'ONLINE'
             )
         """
         )
@@ -689,9 +676,7 @@ async def get_providers_summary():
         # 총 가용 에너지
         cursor.execute(
             """
-            SELECT SUM(available_energy) FROM energy_prices 
             WHERE provider_id IN (
-                SELECT id FROM energy_providers WHERE status = 'ONLINE'
             )
         """
         )
@@ -705,7 +690,6 @@ async def get_providers_summary():
                 "active_providers": active_count,
                 "average_reliability": round(float(avg_reliability), 2),
                 "best_price": float(min_price),
-                "total_available_energy": total_available,
             },
             "timestamp": time.time(),
         }

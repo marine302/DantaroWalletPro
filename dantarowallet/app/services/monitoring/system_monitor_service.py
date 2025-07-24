@@ -13,7 +13,6 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models import EnergyPool, PartnerApiLog
-from app.models.energy_pool import EnergyPoolModel
 from app.models.fee_config import FeeConfig
 from app.models.partner import Partner
 from app.schemas.monitoring import (
@@ -47,14 +46,8 @@ class SystemMonitorService:
             )
 
             # 에너지 통계
-            energy_pool = (
                 self.db.query(EnergyPool).order_by(desc(EnergyPool.id)).first()
             )
-            total_energy = getattr(energy_pool, 'total_energy', 0) if energy_pool else 0
-            available_energy = getattr(energy_pool, 'available_energy', 0) if energy_pool else 0
-            energy_utilization = float(
-                ((total_energy - available_energy) / total_energy * 100)
-                if total_energy > 0
                 else 0.0
             )
 
@@ -97,9 +90,6 @@ class SystemMonitorService:
                 active_partners=active_partners,
                 pending_partners=pending_partners,
                 suspended_partners=suspended_partners,
-                total_energy=total_energy,
-                available_energy=available_energy,
-                energy_utilization=energy_utilization,
                 total_api_calls=total_api_calls,
                 successful_api_calls=successful_calls,
                 api_error_rate=error_rate,
@@ -164,11 +154,7 @@ class SystemMonitorService:
             )
 
             # 에너지 상태
-            energy_balance = getattr(partner, 'energy_balance', 0) or 0
-            energy_status = (
                 "sufficient"
-                if energy_balance > 1000
-                else "low" if energy_balance > 100 else "critical"
             )
 
             # 전체 헬스 점수 계산
@@ -187,9 +173,7 @@ class SystemMonitorService:
                 health_score -= 10
 
             # 에너지 상태 패널티
-            if energy_status == "critical":
                 health_score -= 25
-            elif energy_status == "low":
                 health_score -= 10
 
             # 상태 판정
@@ -214,7 +198,6 @@ class SystemMonitorService:
                     "error_rate": error_rate,
                     "avg_response_time": avg_response_time,
                 },
-                "energy_stats": {"balance": energy_balance, "status": energy_status},
                 "last_activity": partner.last_activity_at,
                 "checked_at": datetime.utcnow(),
             }
@@ -349,19 +332,14 @@ class SystemMonitorService:
             alerts = []
 
             # 에너지 부족 알림
-            energy_pool = (
                 self.db.query(EnergyPool).order_by(desc(EnergyPool.id)).first()
             )
             if (
-                energy_pool
-                and energy_pool.available_energy <= energy_pool.critical_threshold
             ):
                 alerts.append(
                     Alert(
-                        alert_type="energy_critical",
                         severity="critical",
                         title="Critical Energy Level",
-                        message=f"Energy pool critically low: {energy_pool.available_energy}",
                         partner_id=None,
                         created_at=datetime.utcnow(),
                     )

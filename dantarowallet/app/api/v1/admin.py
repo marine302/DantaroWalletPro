@@ -284,9 +284,12 @@ async def get_system_risk_summary(
 
 
 # 새로 추가된 관리자 기능들 import
-from app.api.v1.endpoints.admin import fees, partners
+from app.api.v1.endpoints.admin import energy, fees, partners
 
 # 하위 라우터 등록
+router.include_router(
+    energy.router, prefix="/energy"
+)  # Uses admin_energy tag from router
 router.include_router(fees.router, prefix="/fees")  # Uses admin_fees tag from router
 router.include_router(
     partners.router, prefix="/partners"

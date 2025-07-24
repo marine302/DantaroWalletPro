@@ -77,7 +77,7 @@ export function RealtimeTransactionMonitor() {
 
     // 사운드 알림 (옵션)
     const _audio = new Audio('/sounds/alert.mp3');
-    audio.play().catch(() => {
+    _audio.play().catch(() => {
       console.log('Alert sound playback failed');
     });
   }

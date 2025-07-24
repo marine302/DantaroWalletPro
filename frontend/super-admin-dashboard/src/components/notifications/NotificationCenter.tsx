@@ -86,12 +86,12 @@ export function NotificationCenter() {
                   !notification.read ? 'bg-gray-700/30' : ''
                 }`}
               >
-                <div className={`border-l-4 pl-4 ${getPriorityColor(notification.priority)}`}>
+                <div className={`border-l-4 pl-4 ${_getPriorityColor(notification.priority)}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className="text-lg">
-                          {getTypeIcon(notification.type)}
+                          {_getTypeIcon(notification.type)}
                         </span>
                         <h3 className="font-semibold text-white">
                           {notification.title}
@@ -110,7 +110,7 @@ export function NotificationCenter() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400">
-                          {formatTimestamp(notification.timestamp)}
+                          {_formatTimestamp(notification.timestamp)}
                         </span>
 
                         <div className="flex items-center space-x-2">

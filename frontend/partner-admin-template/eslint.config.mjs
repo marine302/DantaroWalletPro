@@ -19,12 +19,6 @@ const eslintConfig = [
     ]
   },
   {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "warn"
-    }
-  },
-  {
     files: ["*.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off"  // JS 파일에서는 require 허용

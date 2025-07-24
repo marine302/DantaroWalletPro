@@ -2,9 +2,34 @@ import { lazy, Suspense } from 'react';
 import { Loading } from '@/components/ui/Loading';
 
 // Lazy load heavy components
-export const LazyDashboardCharts = lazy(() =>
+// export const LazyDashboardCharts = lazy(() =>
+//   import('@/components/charts/DashboardCharts').then(module => ({
+//     default: module.DashboardCharts
+//   }))
+// );
+
+// Individual chart components
+export const LazyTransactionTrendChart = lazy(() =>
   import('@/components/charts/DashboardCharts').then(module => ({
-    default: module.DashboardCharts
+    default: module.TransactionTrendChart
+  }))
+);
+
+export const LazyVolumeAreaChart = lazy(() =>
+  import('@/components/charts/DashboardCharts').then(module => ({
+    default: module.VolumeAreaChart
+  }))
+);
+
+export const LazyWalletDistributionChart = lazy(() =>
+  import('@/components/charts/DashboardCharts').then(module => ({
+    default: module.WalletDistributionChart
+  }))
+);
+
+export const LazyRevenueBarChart = lazy(() =>
+  import('@/components/charts/DashboardCharts').then(module => ({
+    default: module.RevenueBarChart
   }))
 );
 
@@ -47,7 +72,7 @@ export function withLazyLoading<T extends object>(
 }
 
 // Pre-configured lazy components with loading states
-export const DashboardChartsLazy = withLazyLoading(LazyDashboardCharts);
+// export const DashboardChartsLazy = withLazyLoading(LazyDashboardCharts);
 export const RealtimeTransactionMonitorLazy = withLazyLoading(LazyRealtimeTransactionMonitor);
 export const EmergencyBlockingPanelLazy = withLazyLoading(LazyEmergencyBlockingPanel);
 export const AuditLogSearchLazy = withLazyLoading(LazyAuditLogSearch);

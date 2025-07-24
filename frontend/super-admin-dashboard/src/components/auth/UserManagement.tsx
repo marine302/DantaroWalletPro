@@ -60,14 +60,14 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
       onDeleteUser(userId);
 
       // Log the activity
-      if (currentUser && userToDelete) {
+      if (currentUser && _userToDelete) {
         logActivity({
           user: currentUser,
           action: 'delete',
           resource: 'user',
           details: {
-            targetUserId: userToDelete.id,
-            targetUserName: userToDelete.name
+            targetUserId: _userToDelete.id,
+            targetUserName: _userToDelete.name
           }
         });
       }
@@ -135,7 +135,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${_getRoleColor(user.role)}`}>
                     {roleLabels[user.role]}
                   </span>
                 </td>
@@ -158,7 +158,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
                   <div className="flex space-x-2">
                     <PermissionGuard permission="users.edit">
                       <button
-                        onClick={() => handleEditUser(user)}
+                        onClick={() => _handleEditUser(user)}
                         className="text-blue-400 hover:text-blue-300"
                       >
                         편집
@@ -167,7 +167,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
                     <PermissionGuard permission="users.delete">
                       {user.role !== 'super_admin' && (
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => _handleDeleteUser(user.id)}
                           className="text-red-400 hover:text-red-300"
                         >
                           삭제
@@ -186,7 +186,7 @@ export function UserManagement({ users, onUpdateUser, onDeleteUser }: UserManage
       {isEditModalOpen && selectedUser && (
         <UserEditModal
           user={selectedUser}
-          onSave={handleSaveUser}
+          onSave={_handleSaveUser}
           onCancel={() => {
             setIsEditModalOpen(false);
             setSelectedUser(null);
@@ -224,7 +224,7 @@ function UserEditModal({ user, onSave, onCancel }: UserEditModalProps) {
       <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
         <h3 className="text-lg font-semibold text-white mb-4">사용자 편집</h3>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={_handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               이름

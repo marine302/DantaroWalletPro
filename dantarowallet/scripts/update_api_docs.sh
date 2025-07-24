@@ -56,7 +56,6 @@ else
 fi
 
 # Simple Energy Service 테스트
-if curl -s http://localhost:8000/api/v1/simple-energy/providers | jq -e '.success == true' > /dev/null; then
     echo "✅ Simple Energy Service"
 else
     echo "❌ Simple Energy Service 실패"

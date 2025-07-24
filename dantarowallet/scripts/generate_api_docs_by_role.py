@@ -14,9 +14,7 @@ from pathlib import Path
 ROLE_MAPPINGS = {
     "super_admin": {
         "tags": [
-            "admin", "admin_dashboard", "admin_partners", "admin_energy", 
             "admin_fees", "partner_onboarding", "audit_compliance",
-            "withdrawal_management", "sweep", "admin_energy_rental"
         ],
         "title": "🔐 Super Admin Dashboard 전용 API",
         "description": "포트 3020: /frontend/super-admin-dashboard/",
@@ -24,8 +22,6 @@ ROLE_MAPPINGS = {
     },
     "partner_admin": {
         "tags": [
-            "tronlink", "energy_management", "fee_policy", "partner",
-            "partner_energy_rental", "energy_rental"
         ],
         "title": "🔗 Partner Admin Template 전용 API", 
         "description": "포트 3030: /frontend/partner-admin-template/",
@@ -42,7 +38,6 @@ ROLE_MAPPINGS = {
     },
     "development": {
         "tags": [
-            "simple-energy", "test", "optimization"
         ],
         "title": "🌟 개발/테스트용 API",
         "description": "개발 및 테스트 전용",
@@ -54,20 +49,15 @@ TAG_DESCRIPTIONS = {
     "admin": "👑 시스템 관리",
     "admin_dashboard": "📊 Super Admin Dashboard", 
     "admin_partners": "🤝 파트너사 관리",
-    "admin_energy": "⚡ 에너지 풀 관리",
     "admin_fees": "💰 수수료 관리",
     "partner_onboarding": "🚀 파트너 온보딩",
     "audit_compliance": "📋 감사 및 컴플라이언스",
     "withdrawal_management": "💸 출금 관리",
     "sweep": "🧹 자금 정리",
-    "admin_energy_rental": "⚡ 에너지 렌탈 관리",
     
     "tronlink": "🔗 TronLink 연동",
-    "energy_management": "⚡ 에너지 관리",
     "fee_policy": "💰 수수료 정책",
     "partner": "🏢 파트너 관리",
-    "partner_energy_rental": "⚡ 파트너 에너지 렌탈",
-    "energy_rental": "⚡ 에너지 렌탈",
     
     "authentication": "🔐 인증",
     "balance": "💳 잔액 관리",
@@ -78,7 +68,6 @@ TAG_DESCRIPTIONS = {
     "transactions": "💰 거래 내역",
     "analytics": "📊 분석",
     
-    "simple-energy": "⚡ Simple Energy Service",
     "test": "🧪 테스트",
     "optimization": "🔧 최적화"
 }

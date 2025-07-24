@@ -26,7 +26,7 @@ export function ActivityLogViewer({
   const { user } = useAuth();
 
   useEffect(() => {
-    loadLogs();
+    _loadLogs();
   }, [userId, limit, filters]);
 
   const _loadLogs = () => {
@@ -37,26 +37,26 @@ export function ActivityLogViewer({
         : getRecentActivities(limit);
 
       // Apply filters
-      const _filteredLogs = activities;
+      let _filteredLogs = _activities;
 
       if (filters.action) {
-        filteredLogs = filteredLogs.filter(log => log.action === filters.action);
+        _filteredLogs = _filteredLogs.filter(log => log.action === filters.action);
       }
 
       if (filters.resource) {
-        filteredLogs = filteredLogs.filter(log => log.resource === filters.resource);
+        _filteredLogs = _filteredLogs.filter(log => log.resource === filters.resource);
       }
 
       if (filters.dateRange) {
         const _now = new Date();
         const _daysAgo = parseInt(filters.dateRange);
-        const _cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
-        filteredLogs = filteredLogs.filter(log =>
-          new Date(log.timestamp) >= cutoffDate
+        const _cutoffDate = new Date(_now.getTime() - (_daysAgo * 24 * 60 * 60 * 1000));
+        _filteredLogs = _filteredLogs.filter(log =>
+          new Date(log.timestamp) >= _cutoffDate
         );
       }
 
-      setLogs(filteredLogs);
+      setLogs(_filteredLogs);
     } catch (error) {
       console.error('Failed to load activity logs:', error);
     } finally {
@@ -67,19 +67,19 @@ export function ActivityLogViewer({
   const _formatTimestamp = (timestamp: string) => {
     const _date = new Date(timestamp);
     const _now = new Date();
-    const _diffMs = now.getTime() - date.getTime();
-    const _diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const _diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const _diffMs = _now.getTime() - _date.getTime();
+    const _diffHours = Math.floor(_diffMs / (1000 * 60 * 60));
+    const _diffDays = Math.floor(_diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffHours < 1) {
-      const _diffMinutes = Math.floor(diffMs / (1000 * 60));
-      return `${diffMinutes}분 전`;
-    } else if (diffHours < 24) {
-      return `${diffHours}시간 전`;
-    } else if (diffDays < 7) {
-      return `${diffDays}일 전`;
+    if (_diffHours < 1) {
+      const _diffMinutes = Math.floor(_diffMs / (1000 * 60));
+      return `${_diffMinutes}분 전`;
+    } else if (_diffHours < 24) {
+      return `${_diffHours}시간 전`;
+    } else if (_diffDays < 7) {
+      return `${_diffDays}일 전`;
     } else {
-      return date.toLocaleDateString('ko-KR');
+      return _date.toLocaleDateString('ko-KR');
     }
   };
 
@@ -145,7 +145,7 @@ export function ActivityLogViewer({
     const _action = actionMap[log.action] || log.action;
     const _resource = resourceMap[log.resource] || log.resource;
 
-    return `${resource} ${action}`;
+    return `${_resource} ${_action}`;
   };
 
   if (loading) {
@@ -164,7 +164,7 @@ export function ActivityLogViewer({
             {userId ? '사용자 활동 로그' : '최근 활동'}
           </h3>
           <button
-            onClick={loadLogs}
+            onClick={_loadLogs}
             className="text-blue-400 hover:text-blue-300 text-sm"
           >
             새로고침
@@ -219,9 +219,9 @@ export function ActivityLogViewer({
           ) : (
             logs.map((log) => (
               <div key={log.id} className="flex items-start space-x-3 p-3 bg-gray-900 rounded-lg">
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getActivityColor(log.action)}`}>
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${_getActivityColor(log.action)}`}>
                   <span className="text-xs text-white">
-                    {getActivityIcon(log.action)}
+                    {_getActivityIcon(log.action)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -229,11 +229,11 @@ export function ActivityLogViewer({
                     <p className="text-sm text-white">
                       <span className="font-medium">{log.userName}</span>
                       <span className="text-gray-300 ml-1">
-                        {formatActivityMessage(log)}
+                        {_formatActivityMessage(log)}
                       </span>
                     </p>
                     <span className="text-xs text-gray-400">
-                      {formatTimestamp(log.timestamp)}
+                      {_formatTimestamp(log.timestamp)}
                     </span>
                   </div>
                   {log.details && typeof log.details === 'object' && (
