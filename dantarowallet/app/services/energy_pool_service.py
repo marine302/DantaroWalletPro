@@ -160,3 +160,88 @@ class EnergyPoolService:
             EnergySourceType.TRONNRG: Decimal("0.00015"),
         }
         return base_rates.get(source_type, Decimal("0.0002"))
+
+    async def get_energy_statistics(self, days: int = 30) -> Dict[str, Any]:
+        """에너지 풀 통계 조회"""
+        from datetime import datetime, timedelta
+        from sqlalchemy import func
+        
+        logger.info(f"에너지 통계 조회: 최근 {days}일")
+        
+        try:
+            # 날짜 범위 설정
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+            
+            # 기본 통계
+            total_pools = self.db.query(EnergyPool).count()
+            active_pools = self.db.query(EnergyPool).filter(
+                EnergyPool.status == EnergySourceStatus.ACTIVE
+            ).count()
+            
+            # 총 가용 에너지
+            total_available_energy = self.db.query(
+                func.sum(EnergyPool.available_energy)
+            ).filter(
+                EnergyPool.status == EnergySourceStatus.ACTIVE
+            ).scalar() or 0
+            
+            # 총 보유 에너지
+            total_capacity = self.db.query(
+                func.sum(EnergyPool.total_energy)
+            ).scalar() or 0
+            
+            # 에너지 공급원별 통계
+            source_stats = {}
+            for source_type in EnergySourceType:
+                pool = self.db.query(EnergyPool).filter(
+                    EnergyPool.source_type == source_type
+                ).first()
+                
+                if pool:
+                    source_stats[source_type.value] = {
+                        "available_energy": pool.available_energy,
+                        "total_energy": pool.total_energy,
+                        "cost_per_unit": float(pool.cost_per_unit),
+                        "status": pool.status.value
+                    }
+            
+            statistics = {
+                "summary": {
+                    "total_pools": total_pools,
+                    "active_pools": active_pools,
+                    "total_available_energy": total_available_energy,
+                    "total_capacity": total_capacity,
+                    "utilization_rate": round(
+                        (total_capacity - total_available_energy) / total_capacity * 100, 2
+                    ) if total_capacity > 0 else 0.0
+                },
+                "by_source": source_stats,
+                "period": {
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "days": days
+                }
+            }
+            
+            logger.info("에너지 통계 조회 완료")
+            return statistics
+            
+        except Exception as e:
+            logger.error(f"에너지 통계 조회 실패: {e}")
+            return {
+                "error": "통계 조회에 실패했습니다",
+                "summary": {
+                    "total_pools": 0,
+                    "active_pools": 0,
+                    "total_available_energy": 0,
+                    "total_capacity": 0,
+                    "utilization_rate": 0.0
+                },
+                "by_source": {},
+                "period": {
+                    "start_date": start_date.isoformat() if 'start_date' in locals() else "",
+                    "end_date": end_date.isoformat() if 'end_date' in locals() else "",
+                    "days": days
+                }
+            }

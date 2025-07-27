@@ -189,13 +189,13 @@ async def get_energy_suppliers(
     return [
         {
             "id": s.id,
-            "supplier_type": s.supplier_type.value,
+            "supplier_type": s.supplier_type.value,  # type: ignore
             "name": s.name,
             "priority": s.priority,
-            "status": s.status.value,
+            "status": s.status.value,  # type: ignore
             "available_energy": s.available_energy,
-            "cost_per_energy": float(s.cost_per_energy),
-            "success_rate": float(s.success_rate),
+            "cost_per_energy": float(s.cost_per_energy),  # type: ignore
+            "success_rate": float(s.success_rate),  # type: ignore
             "total_energy_supplied": s.total_energy_supplied
         }
         for s in suppliers
@@ -216,7 +216,10 @@ async def update_supplier_priority(
     if not supplier:
         raise HTTPException(status_code=404, detail="공급원을 찾을 수 없습니다")
     
-    supplier.priority = priority
+    # UPDATE 쿼리 사용
+    db.query(EnergySupplier).filter(EnergySupplier.id == supplier_id).update({
+        'priority': priority
+    })
     db.commit()
     
     return {"message": "우선순위가 업데이트되었습니다", "supplier_id": supplier_id, "new_priority": priority}
@@ -237,7 +240,10 @@ async def update_supplier_status(
         raise HTTPException(status_code=404, detail="공급원을 찾을 수 없습니다")
     
     try:
-        supplier.status = SupplierStatus(status)
+        # UPDATE 쿼리 사용
+        db.query(EnergySupplier).filter(EnergySupplier.id == supplier_id).update({
+            'status': SupplierStatus(status)
+        })
         db.commit()
         return {"message": "상태가 업데이트되었습니다", "supplier_id": supplier_id, "new_status": status}
     except ValueError:
@@ -265,11 +271,11 @@ async def get_allocation_history(
             "allocation_id": a.allocation_id,
             "partner_id": a.partner_id,
             "energy_amount": a.energy_amount,
-            "supplier_type": a.supplier_type,
-            "status": a.status.value,
-            "total_cost_trx": float(a.total_cost_trx) if a.total_cost_trx else None,
-            "created_at": a.created_at.isoformat(),
-            "completed_at": a.completed_at.isoformat() if a.completed_at else None
+            "supplier_type": a.supplier_type,  # type: ignore
+            "status": a.status.value,  # type: ignore
+            "total_cost_trx": float(a.total_cost_trx) if a.total_cost_trx else None,  # type: ignore
+            "created_at": a.created_at.isoformat(),  # type: ignore
+            "completed_at": a.completed_at.isoformat() if a.completed_at else None  # type: ignore
         }
         for a in allocations
     ]
