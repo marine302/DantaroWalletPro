@@ -11,6 +11,11 @@ from app.models.audit import (
 )
 from app.models.balance import Balance
 from app.models.base import BaseModel
+# 에너지 관련 모델 (Doc-40, Doc-41 구현)
+from app.models.company_wallet import CompanyWallet, CompanyWalletType
+from app.models.energy_allocation import AllocationStatus, EnergyAllocation
+from app.models.energy_pool import EnergyPool, EnergySourceStatus, EnergySourceType
+from app.models.energy_supplier import EnergySupplier, SupplierStatus, SupplierType
 from app.models.deposit import Deposit
 from app.models.fee_config import FeeCalculationLog
 from app.models.fee_policy import (
@@ -95,6 +100,17 @@ __all__ = [
     "AlertType",
     "Partner",
     "PartnerApiLog",
+    # 에너지 관련 모델 (Doc-40, Doc-41)
+    "CompanyWallet",
+    "CompanyWalletType",
+    "EnergyAllocation",
+    "AllocationStatus",
+    "EnergyPool",
+    "EnergySourceType",
+    "EnergySourceStatus",
+    "EnergySupplier",
+    "SupplierType",
+    "SupplierStatus",
     # Partner History 모델
     "PartnerApiUsage",
     "PartnerDailyStatistics",
