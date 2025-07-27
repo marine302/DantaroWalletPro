@@ -1,5 +1,5 @@
 """
-슈퍼 어드민용 시스템 관리 API
+Super Admin System Management API
 """
 
 from typing import Any, Dict, List, Optional
@@ -14,7 +14,7 @@ from app.models.user import User
 from app.services.system.system_monitor_service import SystemMonitorService
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["시스템 관리"])
+router = APIRouter(tags=["System Management"])
 
 
 @router.get("/health")
@@ -22,7 +22,7 @@ async def get_system_health(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 전반적인 헬스 상태 조회"""
+    """Get System Health"""
     try:
         monitor_service = SystemMonitorService(db)
         health = await monitor_service.check_system_health()
@@ -42,7 +42,7 @@ async def get_system_metrics(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 메트릭 조회"""
+    """Get System Metrics"""
     try:
         monitor_service = SystemMonitorService(db)
         metrics = await monitor_service.collect_system_metrics()
@@ -64,7 +64,7 @@ async def get_system_alerts(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 알림 조회"""
+    """Get System Alerts"""
     try:
         monitor_service = SystemMonitorService(db)
         alerts = monitor_service.get_system_alerts(severity=severity)
@@ -87,7 +87,7 @@ async def enable_maintenance_mode(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 점검 모드 활성화"""
+    """Enable Maintenance Mode"""
     try:
         monitor_service = SystemMonitorService(db)
         success = monitor_service.enable_maintenance_mode(
@@ -115,7 +115,7 @@ async def disable_maintenance_mode(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 점검 모드 비활성화"""
+    """Disable Maintenance Mode"""
     try:
         monitor_service = SystemMonitorService(db)
         success = await monitor_service.disable_maintenance_mode(str(current_admin.id))
@@ -143,7 +143,7 @@ async def get_system_logs(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 로그 조회"""
+    """Get System Logs"""
     try:
         monitor_service = SystemMonitorService(db)
         logs = await monitor_service.get_system_logs(level=level, limit=limit)
@@ -165,7 +165,7 @@ async def create_system_backup(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 백업 생성"""
+    """Create System Backup"""
     try:
         monitor_service = SystemMonitorService(db)
         backup_result = await monitor_service.create_system_backup(
@@ -188,7 +188,7 @@ async def get_performance_report(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """시스템 성능 리포트 조회"""
+    """Get Performance Report"""
     try:
         monitor_service = SystemMonitorService(db)
         report = await monitor_service.generate_performance_report(days=days)

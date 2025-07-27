@@ -8,9 +8,10 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from app.models.withdrawal_queue import WithdrawalQueue, WithdrawalStatus, WithdrawalType
+from app.models.withdrawal_queue import WithdrawalQueue, WithdrawalStatus, WithdrawalType  # type: ignore
 from app.models.partner_wallet import PartnerWallet, WalletType
 from app.models.partner import Partner
+from app.models.energy_allocation import AllocationStatus
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -61,7 +62,7 @@ class WithdrawalQueueManager:
 
             # 즉시 출금인 경우 자동 승인 처리
             if withdrawal_type == WithdrawalType.IMMEDIATE:
-                await self.approve_withdrawal(withdrawal.id)
+                await self.approve_withdrawal(withdrawal.id)  # type: ignore
 
             return withdrawal
 
@@ -80,7 +81,7 @@ class WithdrawalQueueManager:
             if not withdrawal:
                 raise ValueError("출금 요청을 찾을 수 없습니다")
 
-            if withdrawal.status != WithdrawalStatus.PENDING:
+            if withdrawal.status != WithdrawalStatus.PENDING:  # type: ignore
                 raise ValueError(f"승인할 수 없는 상태입니다: {withdrawal.status}")
 
             # UPDATE 쿼리 사용
@@ -96,7 +97,7 @@ class WithdrawalQueueManager:
             logger.info(f"출금 승인: {withdrawal.withdrawal_id}")
 
             # 자동으로 큐에 등록
-            await self.queue_for_processing(withdrawal.id)
+            await self.queue_for_processing(withdrawal.id)  # type: ignore
 
             return True
 
@@ -115,7 +116,7 @@ class WithdrawalQueueManager:
             if not withdrawal:
                 return False
 
-            if withdrawal.status != WithdrawalStatus.APPROVED:
+            if withdrawal.status != WithdrawalStatus.APPROVED:  # type: ignore
                 raise ValueError("승인된 출금만 큐에 등록할 수 있습니다")
 
             # UPDATE 쿼리 사용

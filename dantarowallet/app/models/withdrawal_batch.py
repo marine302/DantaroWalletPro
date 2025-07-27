@@ -20,9 +20,9 @@ class BatchStatus(enum.Enum):
 
 class WithdrawalBatch(BaseModel):
     """출금 배치"""
-    __tablename__ = "withdrawal_batches"
+    __tablename__ = "withdrawal_batches"  # type: ignore
 
-    batch_id = Column(String(32), unique=True, nullable=False)
+    batch_id = Column(String(32), unique=True, nullable=False)  # type: ignore
     partner_id = Column(Integer, ForeignKey("partners.id"), nullable=False)
 
     # 배치 정보
@@ -43,7 +43,7 @@ class WithdrawalBatch(BaseModel):
     status = Column(Enum(BatchStatus), default=BatchStatus.CREATED)
 
     # 메타데이터
-    metadata = Column(JSON)  # 추가 정보 저장
+    batch_metadata = Column(JSON)  # 추가 정보 저장
 
     # 타임스탬프
     processing_started_at = Column(DateTime)

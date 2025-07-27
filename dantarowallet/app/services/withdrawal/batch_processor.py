@@ -73,7 +73,7 @@ class WithdrawalBatchProcessor:
                     WithdrawalQueue.id == withdrawal.id
                 ).update({
                     'batch_id': batch.batch_id,
-                    'status': WithdrawalStatus.IN_BATCH
+                    'status': WithdrawalStatus.PROCESSING
                 })
 
             self.db.commit()
@@ -96,7 +96,7 @@ class WithdrawalBatchProcessor:
             if not batch:
                 raise ValueError("배치를 찾을 수 없습니다")
 
-            if batch.status != BatchStatus.CREATED:
+            if batch.status != BatchStatus.CREATED:  # type: ignore
                 raise ValueError(f"처리할 수 없는 배치 상태: {batch.status}")
 
             # 배치 처리 시작
@@ -112,7 +112,7 @@ class WithdrawalBatchProcessor:
             # 배치 내 출금들 조회
             withdrawals = self.db.query(WithdrawalQueue).filter(
                 WithdrawalQueue.batch_id == batch_id,
-                WithdrawalQueue.status == WithdrawalStatus.IN_BATCH
+                WithdrawalQueue.status == WithdrawalStatus.PROCESSING
             ).all()
 
             results = {
@@ -273,7 +273,7 @@ class WithdrawalBatchProcessor:
 
             results = []
             for batch in batches:
-                batch_info = await self.get_batch_status(batch.batch_id)
+                batch_info = await self.get_batch_status(batch.batch_id)  # type: ignore
                 if batch_info:
                     results.append(batch_info)
 

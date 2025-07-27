@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.models.energy_allocation import EnergyAllocation, AllocationStatus
 from app.models.energy_supplier import EnergySupplier, SupplierType
 from app.models.partner import Partner
-from app.models.withdrawal import WithdrawalRequest
+from app.models.withdrawal_queue import WithdrawalQueue
 from app.services.energy.supplier_manager import EnergySupplierManager
 from app.core.logging import get_logger
 from app.core.config import settings
@@ -68,8 +68,8 @@ class EnergyAllocationService:
         except Exception as e:
             logger.error(f"에너지 할당 실패: {e}")
             if 'allocation' in locals():
-                allocation.status = AllocationStatus.FAILED
-                allocation.error_message = str(e)
+                allocation.status = AllocationStatus.FAILED  # type: ignore
+                allocation.error_message = str(e)  # type: ignore
                 self.db.commit()
             raise
 
@@ -80,25 +80,25 @@ class EnergyAllocationService:
     ) -> Dict:
         """자체 스테이킹에서 에너지 할당"""
         try:
-            allocation.status = AllocationStatus.PROCESSING
+            allocation.status = AllocationStatus.PROCESSING  # type: ignore
             
             # 비용 계산
             allocation.energy_price = supplier.cost_per_energy
             allocation.base_cost_trx = Decimal(str(allocation.energy_amount)) * supplier.cost_per_energy  # type: ignore
-            allocation.margin_rate = Decimal("0.1")  # 기본 마진 10%
+            allocation.margin_rate = Decimal("0.1")  # type: ignore # 기본 마진 10%
             allocation.margin_amount_trx = allocation.base_cost_trx * allocation.margin_rate  # type: ignore
-            allocation.saas_fee_trx = Decimal("1.0")  # 기본 SaaS 수수료
-            allocation.total_cost_trx = (
+            allocation.saas_fee_trx = Decimal("1.0")  # type: ignore # 기본 SaaS 수수료
+            allocation.total_cost_trx = (  # type: ignore
                 allocation.base_cost_trx +  # type: ignore
                 allocation.margin_amount_trx +  # type: ignore
                 allocation.saas_fee_trx  # type: ignore
             )
             
             # 간단한 성공 처리 (실제로는 TRON 네트워크 호출)
-            allocation.status = AllocationStatus.COMPLETED
-            allocation.delegated_at = datetime.utcnow()
-            allocation.completed_at = datetime.utcnow()
-            allocation.expires_at = datetime.utcnow() + timedelta(days=1)
+            allocation.status = AllocationStatus.COMPLETED  # type: ignore
+            allocation.delegated_at = datetime.utcnow()  # type: ignore
+            allocation.completed_at = datetime.utcnow()  # type: ignore
+            allocation.expires_at = datetime.utcnow() + timedelta(days=1)  # type: ignore
             
             self.db.commit()
             
@@ -114,8 +114,8 @@ class EnergyAllocationService:
             
         except Exception as e:
             logger.error(f"자체 스테이킹 할당 실패: {e}")
-            allocation.status = AllocationStatus.FAILED
-            allocation.error_message = str(e)
+            allocation.status = AllocationStatus.FAILED  # type: ignore
+            allocation.error_message = str(e)  # type: ignore
             self.db.commit()
             raise
 
@@ -126,11 +126,11 @@ class EnergyAllocationService:
     ) -> Dict:
         """외부 공급사에서 에너지 할당"""
         try:
-            allocation.status = AllocationStatus.PROCESSING
+            allocation.status = AllocationStatus.PROCESSING  # type: ignore
             
             # 간단한 성공 처리 (실제로는 외부 API 호출)
-            allocation.status = AllocationStatus.COMPLETED
-            allocation.completed_at = datetime.utcnow()
+            allocation.status = AllocationStatus.COMPLETED  # type: ignore
+            allocation.completed_at = datetime.utcnow()  # type: ignore
             
             self.db.commit()
             
@@ -143,17 +143,17 @@ class EnergyAllocationService:
             
         except Exception as e:
             logger.error(f"외부 공급사 할당 실패: {e}")
-            allocation.status = AllocationStatus.FAILED
-            allocation.error_message = str(e)
+            allocation.status = AllocationStatus.FAILED  # type: ignore
+            allocation.error_message = str(e)  # type: ignore
             self.db.commit()
             raise
 
     async def _activate_fallback_mode(self, allocation: EnergyAllocation) -> Dict:
         """폴백 모드 활성화 (파트너사 직접 처리)"""
         try:
-            allocation.is_fallback = True
-            allocation.status = AllocationStatus.FALLBACK
-            allocation.estimated_burn_trx = Decimal(str(allocation.energy_amount)) * Decimal("0.000413")
+            allocation.is_fallback = True  # type: ignore
+            allocation.status = AllocationStatus.FALLBACK  # type: ignore
+            allocation.estimated_burn_trx = Decimal(str(allocation.energy_amount)) * Decimal("0.000413")  # type: ignore
             
             self.db.commit()
             

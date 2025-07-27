@@ -11,7 +11,7 @@ from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_sync_db
-from app.models.energy_pool import EnergyPoolModel
+from app.models.energy_pool import EnergyPool
 from app.models.partner import Partner
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -54,11 +54,11 @@ async def get_dashboard_stats(db: Session = Depends(get_sync_db)) -> Dict[str, A
         total_revenue = float(total_revenue_result) if total_revenue_result else 0.0
 
         # 에너지 풀 통계
-        total_energy_result = db.query(func.sum(EnergyPoolModel.total_energy)).scalar()
+        total_energy_result = db.query(func.sum(EnergyPool.total_energy)).scalar()
         total_energy = int(total_energy_result) if total_energy_result else 0
 
         available_energy_result = db.query(
-            func.sum(EnergyPoolModel.available_energy)
+            func.sum(EnergyPool.available_energy)
         ).scalar()
         available_energy = (
             int(available_energy_result) if available_energy_result else 0

@@ -80,7 +80,7 @@ tags_metadata = [
     },
     {
         "name": "admin_dashboard", 
-        "description": "**� SUPER ADMIN ONLY** - Dashboard statistics and system health monitoring",
+        "description": "**🔐 SUPER ADMIN ONLY** - Dashboard statistics and system health monitoring",
         "externalDocs": {
             "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
@@ -88,13 +88,14 @@ tags_metadata = [
     },
     {
         "name": "admin_fees",
-        "description": "**� SUPER ADMIN ONLY** - Fee configuration and revenue management",
+        "description": "**🔐 SUPER ADMIN ONLY** - Fee configuration and revenue management",
         "externalDocs": {
             "description": "API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
         },
     },
     {
+        "name": "admin_energy_pool",
         "description": "**🔐 SUPER ADMIN ONLY** - Energy pool administration and monitoring",
         "externalDocs": {
             "description": "API Docs: /api/v1/admin/docs",
@@ -111,7 +112,7 @@ tags_metadata = [
     },
     {
         "name": "audit-compliance",
-        "description": "**� SUPER ADMIN ONLY** - Transaction auditing and compliance monitoring",
+        "description": "**🔐 SUPER ADMIN ONLY** - Transaction auditing and compliance monitoring",
         "externalDocs": {
             "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020/audit-compliance",
@@ -119,7 +120,7 @@ tags_metadata = [
     },
     {
         "name": "integrated_dashboard",
-        "description": "**� SUPER ADMIN ONLY** - Comprehensive partner analytics dashboard",
+        "description": "**🔐 SUPER ADMIN ONLY** - Comprehensive partner analytics dashboard",
         "externalDocs": {
             "description": "Super Admin Dashboard | API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020/integrated-dashboard",
@@ -127,7 +128,7 @@ tags_metadata = [
     },
     {
         "name": "withdrawal_management",
-        "description": "**� SUPER ADMIN ONLY** - Advanced withdrawal policies and batch processing",
+        "description": "**🔐 SUPER ADMIN ONLY** - Advanced withdrawal policies and batch processing",
         "externalDocs": {
             "description": "API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
@@ -139,7 +140,7 @@ tags_metadata = [
     },
     {
         "name": "partner_onboarding",
-        "description": "**� SUPER ADMIN ONLY** - Partner onboarding automation and progress tracking",
+        "description": "**🔐 SUPER ADMIN ONLY** - Partner onboarding automation and progress tracking",
         "externalDocs": {
             "description": "API Docs: /api/v1/admin/docs",
             "url": "http://localhost:3020",
@@ -155,6 +156,7 @@ tags_metadata = [
         },
     },
     {
+        "name": "partner_energy",
         "description": "**🔗 PARTNER ADMIN ONLY** - Energy pool CRUD operations for partners",
         "externalDocs": {
             "description": "API Docs: /api/v1/partner/docs",
@@ -163,7 +165,7 @@ tags_metadata = [
     },
     {
         "name": "fee_policy",
-        "description": "**� PARTNER ADMIN ONLY** - Partner-specific fee policies and tier management",
+        "description": "**🔗 PARTNER ADMIN ONLY** - Partner-specific fee policies and tier management",
         "externalDocs": {
             "description": "API Docs: /api/v1/partner/docs", 
             "url": "http://localhost:3030",
@@ -178,6 +180,8 @@ tags_metadata = [
         },
     },
     {
+        "name": "partners_simple",
+        "description": "**🔗 PARTNER ADMIN ONLY** - Simple partner management operations",
         "externalDocs": {
             "description": "API Docs: /api/v1/partner/docs",
             "url": "http://localhost:3030",
@@ -186,7 +190,7 @@ tags_metadata = [
     # === 🔄 COMMON APIs (양쪽 프론트엔드 공통 사용) ===
     {
         "name": "authentication",
-        "description": "**� COMMON** - User authentication and authorization (both frontends)",
+        "description": "**🔄 COMMON** - User authentication and authorization (both frontends)",
         "externalDocs": {
             "description": "Super Admin: /api/v1/admin/docs | Partner Admin: /api/v1/partner/docs",
             "url": "http://localhost:8000",
@@ -194,7 +198,7 @@ tags_metadata = [
     },
     {
         "name": "balance",
-        "description": "**� COMMON** - Internal balance management (different from on-chain wallet balance)",
+        "description": "**🔄 COMMON** - Internal balance management (different from on-chain wallet balance)",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -202,7 +206,7 @@ tags_metadata = [
     },
     {
         "name": "wallet",
-        "description": "**� COMMON** - User wallet management and on-chain balance operations",
+        "description": "**🔄 COMMON** - User wallet management and on-chain balance operations",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -210,7 +214,7 @@ tags_metadata = [
     },
     {
         "name": "deposit",
-        "description": "**� COMMON** - Deposit monitoring and processing",
+        "description": "**🔄 COMMON** - Deposit monitoring and processing",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -218,7 +222,7 @@ tags_metadata = [
     },
     {
         "name": "withdrawal",
-        "description": "**� COMMON** - Basic withdrawal operations",
+        "description": "**🔄 COMMON** - Basic withdrawal operations",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -226,7 +230,7 @@ tags_metadata = [
     },
     {
         "name": "users",
-        "description": "**� COMMON** - User management and activity tracking",
+        "description": "**🔄 COMMON** - User management and activity tracking",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -234,7 +238,7 @@ tags_metadata = [
     },
     {
         "name": "transactions", 
-        "description": "**� COMMON** - Transaction management and monitoring",
+        "description": "**🔄 COMMON** - Transaction management and monitoring",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -242,7 +246,7 @@ tags_metadata = [
     },
     {
         "name": "analytics",
-        "description": "**� COMMON** - Transaction analytics and reports",
+        "description": "**🔄 COMMON** - Transaction analytics and reports",
         "externalDocs": {
             "description": "Used by both Super Admin and Partner Admin",
             "url": "http://localhost:8000",
@@ -250,6 +254,7 @@ tags_metadata = [
     },
     # === 🌟 DEVELOPMENT & TESTING APIs ===
     {
+        "name": "simple_energy_dev",
         "description": "**🌟 DEVELOPMENT** - Simple Energy Service for easy development and testing",
         "externalDocs": {
             "description": "Development API | API Docs: /api/v1/dev/docs",
@@ -258,7 +263,7 @@ tags_metadata = [
     },
     {
         "name": "test",
-        "description": "**� DEVELOPMENT** - Testing endpoints and utilities",
+        "description": "**🌟 DEVELOPMENT** - Testing endpoints and utilities",
         "externalDocs": {
             "description": "Development API | API Docs: /api/v1/dev/docs",
             "url": "http://localhost:8000/api/v1/dev/docs",
@@ -275,7 +280,7 @@ tags_metadata = [
     # === 🏥 SYSTEM APIs ===
     {
         "name": "health",
-        "description": "**� SYSTEM** - Health check endpoints",
+        "description": "**🏥 SYSTEM** - Health check endpoints",
     },
     {
         "name": "root", 
@@ -661,6 +666,7 @@ async def get_providers_summary():
 
         # 평균 신뢰성
         cursor.execute(
+            "SELECT AVG(reliability_score) FROM energy_suppliers WHERE is_active = 1"
         )
         avg_reliability = cursor.fetchone()[0] or 0.0
 

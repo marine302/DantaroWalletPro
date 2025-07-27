@@ -48,14 +48,14 @@ class WalletFundingService:
                 raise ValueError("본사 운영 지갑을 찾을 수 없습니다")
 
             # 본사 지갑 잔액 확인
-            company_balance = await self._get_wallet_balance(company_wallet.address)
+            company_balance = await self._get_wallet_balance(company_wallet.address)  # type: ignore
             if company_balance < amount_usdt:
                 raise ValueError("본사 지갑 잔액이 부족합니다")
 
             # 자금 이체 실행 (실제로는 TRON 네트워크 호출)
             transfer_result = await self._transfer_funds(
-                from_address=company_wallet.address,
-                to_address=partner_wallet.address,
+                from_address=company_wallet.address,  # type: ignore
+                to_address=partner_wallet.address,  # type: ignore
                 amount=amount_usdt
             )
 
@@ -235,7 +235,7 @@ class WalletFundingService:
             
             wallet_status = []
             for wallet in wallets:
-                balance = await self._get_wallet_balance(wallet.address)
+                balance = await self._get_wallet_balance(wallet.address)  # type: ignore
                 wallet_status.append({
                     "wallet_type": wallet.wallet_type.value,  # type: ignore
                     "address": wallet.address,

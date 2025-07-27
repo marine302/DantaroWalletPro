@@ -32,7 +32,7 @@ class EnergyReinvestmentService:
                 raise ValueError("수익금 지갑을 찾을 수 없습니다")
 
             # 현재 수익금 잔액 조회
-            current_balance = await self._get_wallet_balance(revenue_wallet.address)
+            current_balance = await self._get_wallet_balance(revenue_wallet.address)  # type: ignore
             
             # 재투자 정책 적용
             min_reserve = Decimal("50000")  # 최소 보유 금액
@@ -77,8 +77,8 @@ class EnergyReinvestmentService:
 
             # 자금 이체
             transfer_result = await self._transfer_funds(
-                from_address=revenue_wallet.address,
-                to_address=staking_wallet.address,
+                from_address=revenue_wallet.address,  # type: ignore
+                to_address=staking_wallet.address,  # type: ignore
                 amount=amount_trx
             )
 
@@ -87,7 +87,7 @@ class EnergyReinvestmentService:
 
             # 스테이킹 실행
             staking_result = await self._execute_staking(
-                wallet_address=staking_wallet.address,
+                wallet_address=staking_wallet.address,  # type: ignore
                 amount_trx=amount_trx
             )
 

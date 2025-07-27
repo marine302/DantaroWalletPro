@@ -1,5 +1,5 @@
 """
-슈퍼 어드민용 배포 관리 API
+Super Admin Deployment Management API
 """
 
 from typing import Any, Dict, List, Optional
@@ -14,7 +14,7 @@ from app.models.user import User
 from app.services.deployment.deployment_service import DeploymentService
 
 logger = get_logger(__name__)
-router = APIRouter(tags=["배포 관리"])
+router = APIRouter(tags=["Deployment Management"])
 
 
 @router.post("/partners/{partner_id}/deploy")
@@ -24,7 +24,7 @@ async def deploy_partner_instance(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 인스턴스 배포"""
+    """Deploy Partner Instance"""
     try:
         deployment_service = DeploymentService(db)
         result = await deployment_service.create_partner_instance(
@@ -48,7 +48,7 @@ async def configure_partner_environment(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 환경 설정"""
+    """Configure Partner Environment"""
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.configure_partner_environment(
@@ -77,7 +77,7 @@ async def setup_partner_database(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 데이터베이스 설정"""
+    """Setup Partner Database"""
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.setup_partner_database(partner_id)
@@ -107,7 +107,7 @@ async def deploy_partner_templates(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 템플릿 배포"""
+    """Deploy Partner Templates"""
     try:
         deployment_service = DeploymentService(db)
         status_result = await deployment_service.deploy_partner_templates(partner_id)
@@ -128,7 +128,7 @@ async def get_deployment_status(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 배포 상태 조회"""
+    """Get Deployment Status"""
     try:
         deployment_service = DeploymentService(db)
         status = await deployment_service.get_deployment_status(partner_id)
@@ -149,7 +149,7 @@ async def remove_partner_deployment(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """파트너 배포 제거"""
+    """Remove Partner Deployment"""
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.remove_partner_deployment(partner_id)
@@ -175,7 +175,7 @@ async def get_available_templates(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """사용 가능한 템플릿 목록 조회"""
+    """Get Available Templates"""
     try:
         deployment_service = DeploymentService(db)
         templates = await deployment_service.get_available_templates()
@@ -196,7 +196,7 @@ async def create_template(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """새 템플릿 생성"""
+    """Create Template"""
     try:
         deployment_service = DeploymentService(db)
         template = await deployment_service.create_template(
@@ -220,7 +220,7 @@ async def get_all_deployments(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """전체 배포 현황 조회"""
+    """Get All Deployments"""
     try:
         deployment_service = DeploymentService(db)
         deployments = await deployment_service.get_all_deployments(status_filter, limit)
@@ -241,7 +241,7 @@ async def rollback_deployment(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_sync_db),
 ):
-    """배포 롤백"""
+    """Rollback Deployment"""
     try:
         deployment_service = DeploymentService(db)
         success = await deployment_service.rollback_deployment(
