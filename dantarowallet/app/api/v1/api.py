@@ -29,6 +29,9 @@ from app.api.v1.endpoints.common import websocket  # WebSocket 실시간 데이�
 from app.api.v1.endpoints.common import withdrawal
 from app.api.v1.endpoints.admin import withdrawal_management  # Doc #28: 파트너사 출금 관리 고도화
 
+# 파트너 메인 라우터 임포트
+from app.api.v1.endpoints import partner
+
 # admin 폴더의 실제 구현된 라우터들 임포트
 from app.api.v1.endpoints.admin import dashboard as admin_dashboard_real
 
@@ -138,6 +141,11 @@ api_router.include_router(
 api_router.include_router(
     partners_simple.router, prefix="/partners-simple", tags=["🤝 Partner Admin - Management"]
 )  # Simple partner management
+
+# Partner Energy Management - New from Doc 41
+api_router.include_router(
+    partner.router, prefix="/partner", tags=["🤝 Partner Admin - Energy"]
+)  # Partner energy management APIs
 
 # === WEBSOCKET REAL-TIME APIS ===
 # Real-time data streaming for both frontends
