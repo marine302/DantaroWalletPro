@@ -3,6 +3,8 @@
 """
 
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, Enum, Boolean, BigInteger
+from decimal import Decimal
+from datetime import datetime
 from app.models.base import BaseModel
 import enum
 

@@ -2,10 +2,8 @@
 에너지 공급원 모델 - 문서 #40 기반
 """
 
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, Boolean, Enum, JSON, BigInteger, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, Boolean, Enum, JSON, BigInteger
 from decimal import Decimal
-from datetime import datetime
 from app.models.base import BaseModel
 import enum
 
@@ -24,8 +22,6 @@ class SupplierStatus(enum.Enum):
 
 class EnergySupplier(BaseModel):
     """에너지 공급원 정보"""
-    
-    __tablename__ = "energy_suppliers"
 
     supplier_type = Column(Enum(SupplierType), unique=True, nullable=False)
     name = Column(String(100), nullable=False)
@@ -63,4 +59,4 @@ class EnergySupplier(BaseModel):
     config = Column(JSON)  # 공급원별 추가 설정
 
     def __repr__(self):
-        return f"<EnergySupplier {self.supplier_type.value} {self.name} {self.available_energy}>"
+        return f"<EnergySupplier {self.supplier_type.value} priority={self.priority}>"

@@ -82,9 +82,6 @@ class Partner(Base):
         back_populates="partner",
         cascade="all, delete-orphan",
     )
-    energy_usage_history = relationship(
-        "EnergyUsageHistory", back_populates="partner", cascade="all, delete-orphan"
-    )
     fee_revenues = relationship(
         "PartnerFeeRevenue", back_populates="partner", cascade="all, delete-orphan"
     )

@@ -16,6 +16,7 @@ from app.models.company_wallet import CompanyWallet, CompanyWalletType
 from app.models.energy_allocation import AllocationStatus, EnergyAllocation
 from app.models.energy_pool import EnergyPool, EnergySourceStatus, EnergySourceType
 from app.models.energy_supplier import EnergySupplier, SupplierStatus, SupplierType
+from app.models.energy_supplier_price_history import EnergySupplierPriceHistory
 from app.models.deposit import Deposit
 from app.models.fee_config import FeeCalculationLog
 from app.models.fee_policy import (
@@ -80,6 +81,7 @@ from app.models.withdrawal_policy import (
     WithdrawalApprovalRule,
     WithdrawalWhitelist,
 )
+from app.models.withdrawal_queue import WithdrawalQueue
 
 __all__ = [
     "BaseModel",
@@ -111,6 +113,8 @@ __all__ = [
     "EnergySupplier",
     "SupplierType",
     "SupplierStatus",
+    "EnergySupplierPriceHistory",
+    "WithdrawalQueue",
     # Partner History 모델
     "PartnerApiUsage",
     "PartnerDailyStatistics",

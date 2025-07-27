@@ -175,3 +175,113 @@ async def energy_sources_health_check(
         "healthy_sources": len([s for s in health_status if s["status"] == "active"]),
         "sources": health_status
     }
+
+
+@router.get("/suppliers", response_model=List[Dict[str, Any]])
+async def get_energy_suppliers(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user),
+):
+    """모든 에너지 공급원 상태 조회"""
+    from app.models.energy_supplier import EnergySupplier
+    suppliers = db.query(EnergySupplier).order_by(EnergySupplier.priority).all()
+    
+    return [
+        {
+            "id": s.id,
+            "supplier_type": s.supplier_type.value,
+            "name": s.name,
+            "priority": s.priority,
+            "status": s.status.value,
+            "available_energy": s.available_energy,
+            "cost_per_energy": float(s.cost_per_energy),
+            "success_rate": float(s.success_rate),
+            "total_energy_supplied": s.total_energy_supplied
+        }
+        for s in suppliers
+    ]
+
+
+@router.put("/suppliers/{supplier_id}/priority")
+async def update_supplier_priority(
+    supplier_id: int,
+    priority: int,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user),
+):
+    """공급원 우선순위 변경"""
+    from app.models.energy_supplier import EnergySupplier
+    
+    supplier = db.query(EnergySupplier).filter(EnergySupplier.id == supplier_id).first()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="공급원을 찾을 수 없습니다")
+    
+    supplier.priority = priority
+    db.commit()
+    
+    return {"message": "우선순위가 업데이트되었습니다", "supplier_id": supplier_id, "new_priority": priority}
+
+
+@router.put("/suppliers/{supplier_id}/status")
+async def update_supplier_status(
+    supplier_id: int,
+    status: str,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user),
+):
+    """공급원 상태 변경"""
+    from app.models.energy_supplier import EnergySupplier, SupplierStatus
+    
+    supplier = db.query(EnergySupplier).filter(EnergySupplier.id == supplier_id).first()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="공급원을 찾을 수 없습니다")
+    
+    try:
+        supplier.status = SupplierStatus(status)
+        db.commit()
+        return {"message": "상태가 업데이트되었습니다", "supplier_id": supplier_id, "new_status": status}
+    except ValueError:
+        raise HTTPException(status_code=400, detail="유효하지 않은 상태값입니다")
+
+
+@router.get("/allocations/history")
+async def get_allocation_history(
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user),
+):
+    """에너지 할당 이력 조회"""
+    from app.models.energy_allocation import EnergyAllocation
+    
+    allocations = db.query(EnergyAllocation)\
+        .order_by(EnergyAllocation.created_at.desc())\
+        .offset(offset)\
+        .limit(limit)\
+        .all()
+    
+    return [
+        {
+            "allocation_id": a.allocation_id,
+            "partner_id": a.partner_id,
+            "energy_amount": a.energy_amount,
+            "supplier_type": a.supplier_type,
+            "status": a.status.value,
+            "total_cost_trx": float(a.total_cost_trx) if a.total_cost_trx else None,
+            "created_at": a.created_at.isoformat(),
+            "completed_at": a.completed_at.isoformat() if a.completed_at else None
+        }
+        for a in allocations
+    ]
+
+
+@router.get("/statistics")
+async def get_energy_statistics(
+    days: int = 30,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user),
+):
+    """에너지 풀 통계 조회"""
+    service = EnergyPoolService(db)
+    stats = await service.get_energy_statistics(days)
+    return stats
