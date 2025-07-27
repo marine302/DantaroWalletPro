@@ -27,7 +27,7 @@ class EnergyAllocation(BaseModel):
     batch_id = Column(String(32))  # 배치 처리 ID
 
     # 공급원 정보
-    supplier_id = Column(Integer, ForeignKey("energy_suppliers.id"))
+    supplier_id = Column(Integer, nullable=True)  # 임시로 FK 제거
     supplier_type = Column(String(20))
 
     # 할당 정보
@@ -62,10 +62,6 @@ class EnergyAllocation(BaseModel):
     delegated_at = Column(DateTime)
     completed_at = Column(DateTime)
     expires_at = Column(DateTime)
-
-    # 관계
-    partner = relationship("Partner", back_populates="energy_allocations")
-    supplier = relationship("EnergySupplier", back_populates="allocations")
 
     def __repr__(self):
         return f"<EnergyAllocation {self.allocation_id} {self.status.value} {self.energy_amount}>"

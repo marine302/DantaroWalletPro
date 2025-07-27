@@ -24,6 +24,8 @@ class SupplierStatus(enum.Enum):
 
 class EnergySupplier(BaseModel):
     """에너지 공급원 정보"""
+    
+    __tablename__ = "energy_suppliers"
 
     supplier_type = Column(Enum(SupplierType), unique=True, nullable=False)
     name = Column(String(100), nullable=False)
