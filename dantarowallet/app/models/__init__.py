@@ -17,6 +17,8 @@ from app.models.energy_allocation import AllocationStatus, EnergyAllocation
 from app.models.energy_pool import EnergyPool, EnergySourceStatus, EnergySourceType
 from app.models.energy_supplier import EnergySupplier, SupplierStatus, SupplierType
 from app.models.energy_supplier_price_history import EnergySupplierPriceHistory
+from app.models.withdrawal_batch import WithdrawalBatch, BatchStatus
+from app.models.withdrawal_queue import WithdrawalQueue
 from app.models.deposit import Deposit
 from app.models.fee_config import FeeCalculationLog
 from app.models.fee_policy import (
@@ -81,7 +83,6 @@ from app.models.withdrawal_policy import (
     WithdrawalApprovalRule,
     WithdrawalWhitelist,
 )
-from app.models.withdrawal_queue import WithdrawalQueue
 
 __all__ = [
     "BaseModel",
@@ -158,4 +159,7 @@ __all__ = [
     "AuditEventType",
     "ComplianceCheck",
     "SuspiciousActivity",
+    # 새로 추가된 모델
+    "WithdrawalBatch",
+    "BatchStatus",
 ]
