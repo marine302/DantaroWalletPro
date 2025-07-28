@@ -1,0 +1,152 @@
+{
+  // Python 백엔드 전용 최적화 설정
+  "python.defaultInterpreterPath": "./.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "basic",
+  // 백엔드 전용 언어 서버 활성화
+  "python.languageServer": "Pylance",
+  "python.analysis.exclude": [
+    "../frontend/**",
+    "../docs/**"
+  ],
+  // 파일 감시 최적화 (백엔드 전용)
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.mypy_cache/**": true,
+    "**/logs/**": true,
+    "**/archive/**": true,
+    "**/*.log": true,
+    "**/.DS_Store": true,
+    "**/dev.db": false,
+    "**/dev.db.backup": true,
+    // 프론트엔드 폴더 파일 감시에서 완전 제외
+    "../frontend/**": true,
+    "../frontend": true,
+    "../docs/**": true,
+    "../docs": true,
+    "**/node_modules/**": true,
+    "**/node_modules": true,
+    "../**/*.tsx": true,
+    "../**/*.jsx": true,
+    "../**/*.ts": true,
+    "../**/*.js": true,
+    "../**/*.css": true,
+    "../**/*.scss": true,
+    "../**/*.html": true
+  },
+  "files.exclude": {
+    "**/venv_new": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/logs": true,
+    "**/archive": true,
+    "**/*.log": true,
+    "**/.DS_Store": true,
+    // 프론트엔드 폴더 완전 제외 (백엔드 개발 시)
+    "../frontend": true,
+    "../frontend/**": true,
+    "**/node_modules": true,
+    "**/node_modules/**": true,
+    "../**/*.tsx": true,
+    "../**/*.jsx": true,
+    "../docs": true,
+    "../docs/**": true
+  },
+  // 에디터 최적화
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
+  },
+  // Python 포맷터 설정
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": [
+    "--line-length=88"
+  ],
+  "python.sortImports.args": [
+    "--profile=black"
+  ],
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.banditEnabled": true,
+  "python.linting.lintOnSave": true,
+  "python.linting.flake8Args": [
+    "--max-line-length=88",
+    "--extend-ignore=E203,W503"
+  ],
+  // 테스트 설정
+  "python.testing.pytestEnabled": true,
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  // Git 최적화
+  "git.enabled": true,
+  "git.autofetch": false,
+  "git.autoStash": false,
+  // 자동 저장 설정
+  "files.autoSave": "off",
+  "files.autoSaveDelay": 1000,
+  // 검색 최적화 (프론트엔드 완전 제외)
+  "search.exclude": {
+    "**/venv_new": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/logs": true,
+    "**/archive": true,
+    "**/*.log": true,
+    // 프론트엔드 폴더 검색에서 완전 제외
+    "../frontend": true,
+    "../frontend/**": true,
+    "../docs": true,
+    "../docs/**": true,
+    "**/node_modules": true,
+    "**/node_modules/**": true,
+    "../**/*.tsx": true,
+    "../**/*.jsx": true,
+    "../**/*.ts": true,
+    "../**/*.js": true,
+    "../**/*.css": true,
+    "../**/*.scss": true,
+    "../**/*.html": true,
+    "../**/*.json": true
+  },
+  // 성능 최적화 (향상된 설정)
+  "extensions.autoUpdate": false,
+  "telemetry.telemetryLevel": "off",
+  "workbench.enableExperiments": false,
+  "files.maxMemoryForLargeFilesMB": 4096,
+  "search.maxResults": 2000,
+  "search.quickOpen.includeSymbols": false,
+  "search.quickOpen.includeHistory": false,
+  "editor.wordBasedSuggestions": "currentDocument",
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  // TypeScript/JavaScript 설정 (프론트엔드 파일 제외)
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.validate.enable": false,
+  "javascript.validate.enable": false,
+  "eslint.enable": false,
+  // 언어별 설정
+  "[typescript]": {
+    "editor.defaultFormatter": null
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": null
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": null
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": null
+  },
+  // 파일 연결 제외
+  "files.associations": {
+    "*.tsx": "plaintext",
+    "*.jsx": "plaintext"
+  }
+}
